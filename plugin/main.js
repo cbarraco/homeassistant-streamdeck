@@ -1,18 +1,23 @@
 let websocket = null;
 let pluginUUID = null;
-let settingsCache = {};
 
-const baseAction = {
+const actionMap = {
+  "ca.barraco.carlo.toggleEntity.action": toggleEntityAction,
+};
+
+showAlert = function (context) {
+  const json = {
+    event: "showAlert",
+    context: context,
+  };
+  websocket.send(JSON.stringify(json));
+};
+
+const toggleEntityAction = {
+  type: "ca.barraco.carlo.toggleEntity.action",
+  settingsCache: {},
   onWillAppear: function (context, settings, coordinates) {
     settingsCache[context] = settings;
-  },
-
-  showAlert: function (context) {
-    const json = {
-      event: "showAlert",
-      context: context,
-    };
-    websocket.send(JSON.stringify(json));
   },
 
   onUpdateSettings: function (context, settings) {
@@ -34,12 +39,7 @@ const baseAction = {
 
     websocket.send(JSON.stringify(json));
   },
-};
-
-const webhookAction = {
-  type: "ca.barraco.carlo.toggleEntity.action",
-
-  callService: function (context, settings, coordinates, userDesiredState) {
+  onKeyUp: function (context, settings, coordinates, userDesiredState) {
     if (settings["ip"] == null) {
       this.showAlert(context);
     } else if (settings["authtoken"] == null) {
@@ -71,7 +71,7 @@ const webhookAction = {
 function connectSocket(inPort, inPluginUUID, inRegisterEvent, inInfo) {
   pluginUUID = inPluginUUID;
 
-  websocket = new WebSocket("ws://localhost:" + inPort);
+  websocket = new WebSocket("ws://127.0.0.1:" + inPort);
 
   function registerPlugin(inPluginUUID) {
     const json = {
@@ -86,7 +86,6 @@ function connectSocket(inPort, inPluginUUID, inRegisterEvent, inInfo) {
   };
 
   websocket.onmessage = function (event) {
-    // Received message from Stream Deck
     const eventData = JSON.parse(event.data);
     const event = eventData["event"];
     const action = eventData["action"];
@@ -97,7 +96,7 @@ function connectSocket(inPort, inPluginUUID, inRegisterEvent, inInfo) {
       const settings = payload["settings"];
       const coordinates = payload["coordinates"];
       const userDesiredState = payload["userDesiredState"];
-      webhookAction.callService(
+      actionMap[action].onKeyUp(
         context,
         settings,
         coordinates,
@@ -106,13 +105,13 @@ function connectSocket(inPort, inPluginUUID, inRegisterEvent, inInfo) {
     } else if (event == "willAppear") {
       const settings = payload["settings"];
       const coordinates = payload["coordinates"];
-      baseAction.onWillAppear(context, settings, coordinates);
+      actionMap[action].onWillAppear(context, settings, coordinates);
     } else if (event == "sendToPlugin") {
       if (payload["type"] == "updateSettings") {
-        baseAction.onUpdateSettings(context, payload);
+        actionMap[action].onUpdateSettings(context, payload);
         settingsCache[context] = payload;
       } else if (payload["type"] == "requestSettings") {
-        baseAction.onRequestSettings(action, context);
+        actionMap[action].onRequestSettings(action, context);
       }
     }
   };
