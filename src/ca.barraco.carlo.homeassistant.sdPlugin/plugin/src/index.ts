@@ -10,9 +10,18 @@ const showAlert = function (context: any) {
   websocket?.send(JSON.stringify(json));
 };
 
+const setTitle = function (context: any) {
+  const json = {
+    event: "setTitle",
+    context: context,
+    title: "CarloB"
+  };
+  websocket?.send(JSON.stringify(json));
+};
+
 const toggleSwitchAction = new ToggleSwitchAction(websocket);
 const actionMap: {[x:string]: BaseAction} = {
-  "ca.barraco.carlo.toggleSwitch.action": toggleSwitchAction,
+  "ca.barraco.carlo.homeassistant.toggleSwitch.action": toggleSwitchAction,
 };
 function connectSocket(inPort: string, inPluginUUID: string, inRegisterEvent: any, _inInfo: any) {
   pluginUUID = inPluginUUID;
@@ -42,6 +51,7 @@ function connectSocket(inPort: string, inPluginUUID: string, inRegisterEvent: an
       const settings = payload["settings"];
       const coordinates = payload["coordinates"];
       const userDesiredState = payload["userDesiredState"];
+      showAlert(context);
       actionMap[action].onKeyUp(
         context,
         settings,

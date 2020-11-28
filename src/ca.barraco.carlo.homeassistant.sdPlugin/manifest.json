@@ -1,41 +1,42 @@
 {
-    "Actions": [
-      {
-        "Icon": "resources/actionIcon",
-        "Name": "Toggle switch",
-        "States": [
-          {
-            "Image": "resources/actionDefaultImage",
-            "TitleAlignment": "middle",
-            "FontSize": "16"
-          }
-        ],
-        "SupportedInMultiActions": false,
-        "Tooltip": "This action toggles a switch",
-        "UUID": "ca.barraco.carlo.toggleSwitch.action"
-      }
-    ],
-    "SDKVersion": 2,
-    "Author": "Carlo Barraco",
-    "CodePath": "plugin/src/index.html",
-    "Description": "This lets you control and monitor your Home Assistant with the Stream Deck",
-    "Name": "Home Assistant Integration",
-    "Icon": "resources/pluginIcon",
-    "URL": "http://carlo.barraco.ca/",
-    "PropertyInspectorPath": "propertyInspector/main-pi.html",
-    "Version": "1.0",
-    "OS": [
-      {
-        "Platform": "mac",
-        "MinimumVersion": "10.11"
-      },
-      {
-        "Platform": "windows",
-        "MinimumVersion": "10"
-      }
-    ],
-    "Software": 
-      {
-          "MinimumVersion" : "4.1"
-      }
+  "Actions": [
+    {
+      "Icon": "resources/actionIcon",
+      "Name": "Toggle switch",
+      "States": [
+        {
+          "Image": "resources/actionDefaultImage",
+          "TitleAlignment": "middle",
+          "FontSize": "16"
+        }
+      ],
+      "SupportedInMultiActions": false,
+      "Tooltip": "This action toggles a switch",
+      "UUID": "ca.barraco.carlo.homeassistant.toggleSwitch.action"
+    }
+  ],
+  "Author": "Carlo Barraco",
+  "CodePath": "plugin/src/index.html",
+  "Description": "This lets you control and monitor your Home Assistant with the Stream Deck",
+  "Name": "Home Assistant Integration",
+  "Icon": "resources/pluginIcon",
+  "URL": "http://carlo.barraco.ca/",
+  "PropertyInspectorPath": "propertyInspector/index.html",
+  "Version": "1.0",
+  "Category": "Home Assistant Integration",
+  "CategoryIcon": "resources/categoryIcon",
+  "SDKVersion": 2,
+  "OS": [
+    {
+      "Platform": "mac",
+      "MinimumVersion": "10.11"
+    },
+    {
+      "Platform": "windows",
+      "MinimumVersion": "10"
+    }
+  ],
+  "Software": {
+    "MinimumVersion": "4.1"
   }
+}

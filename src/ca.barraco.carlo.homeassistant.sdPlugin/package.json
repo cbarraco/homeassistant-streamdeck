@@ -5,8 +5,9 @@
   "main": "index.js",
   "scripts": {
     "build:plugin": "tsc -p plugin/tsconfig.json && tsc -p plugin/tsconfig.json --module commonjs --outDir ./plugin/build",
-    "export": "rm ../../build/ca.barraco.carlo.homeassistant.streamDeckPlugin && DistributionTool -b -i ../ca.barraco.carlo.homeassistant.sdPlugin -o ../../build",
-    "build": "npm run build:plugin && npm run export"
+    "build:property-inspector": "tsc -p propertyInspector/tsconfig.json && tsc -p propertyInspector/tsconfig.json --module commonjs --outDir ./propertyInspector/build",
+    "export": "rm -f ../../build/ca.barraco.carlo.homeassistant.streamDeckPlugin && DistributionTool -b -i ../ca.barraco.carlo.homeassistant.sdPlugin -o ../../build",
+    "build": "npm run build:plugin && npm run build:property-inspector && npm run export"
   },
   "repository": {
     "type": "git",
