@@ -1,0 +1,41 @@
+{
+    "Actions": [
+      {
+        "Icon": "actionIcon",
+        "Name": "Toggle entity",
+        "States": [
+          {
+            "Image": "actionDefaultImage",
+            "TitleAlignment": "middle",
+            "FontSize": "16"
+          }
+        ],
+        "SupportedInMultiActions": false,
+        "Tooltip": "This action toggles an entity",
+        "UUID": "ca.barraco.carlo.toggleEntity.action"
+      }
+    ],
+    "SDKVersion": 2,
+    "Author": "Carlo Barraco",
+    "CodePath": "plugin/index.html",
+    "Description": "This lets you control and monitor your Home Assistant with the Stream Deck",
+    "Name": "Number Display",
+    "Icon": "pluginIcon",
+    "URL": "http://carlo.barraco.ca/",
+    "PropertyInspectorPath": "homeassistantintegration_pi.html",
+    "Version": "1.4",
+    "OS": [
+      {
+        "Platform": "mac",
+        "MinimumVersion": "10.11"
+      },
+      {
+        "Platform": "windows",
+        "MinimumVersion": "10"
+      }
+    ],
+    "Software": 
+      {
+          "MinimumVersion" : "4.1"
+      }
+  }
