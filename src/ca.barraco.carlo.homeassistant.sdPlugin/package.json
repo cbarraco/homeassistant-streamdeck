@@ -1,0 +1,29 @@
+{
+  "name": "homeassistant-streamdeck",
+  "version": "1.0.0",
+  "description": "This lets you control and monitor your Home Assistant with the Stream Deck",
+  "main": "index.js",
+  "scripts": {
+    "build-plugin": "tsc -p plugin/tsconfig.json && tsc -p plugin/tsconfig.json --module commonjs --outDir ./plugin/build"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cbarraco/homeassistant-streamdeck.git"
+  },
+  "keywords": [
+    "streamdeck",
+    "homeassistant"
+  ],
+  "author": "Carlo Barraco",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/cbarraco/homeassistant-streamdeck/issues"
+  },
+  "homepage": "https://github.com/cbarraco/homeassistant-streamdeck#readme",
+  "devDependencies": {
+    "typescript": "^4.1.2"
+  },
+  "files": [
+    "*.ts"
+  ]
+}
