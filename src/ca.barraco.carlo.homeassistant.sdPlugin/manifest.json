@@ -1,11 +1,14 @@
 {
   "Actions": [
     {
-      "Icon": "action/images/actionimage",
+      "Icon": "action/images/actionToggleOn",
       "Name": "Toggle a switch",
       "States": [
         {
-          "Image": "action/images/action"
+          "Image": "action/images/actionToggleOn"
+        },
+        {
+          "Image": "action/images/actionToggleOff"
         }
       ],
       "Tooltip": "Toggles a switch entity in Home Assistant",

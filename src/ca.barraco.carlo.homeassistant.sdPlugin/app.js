@@ -11,22 +11,22 @@ function connected(jsn) {
 
     $SD.on(
         "ca.barraco.carlo.homeassistant.action.toggle.willAppear",
-        (jsonObj) => action.onWillAppear(jsonObj)
+        (jsonObj) => toggleAction.onWillAppear(jsonObj)
     );
     $SD.on(
         "ca.barraco.carlo.homeassistant.action.toggle.willDisappear",
-        (jsonObj) => action.onWillDisappear(jsonObj)
+        (jsonObj) => toggleAction.onWillDisappear(jsonObj)
     );
     $SD.on("ca.barraco.carlo.homeassistant.action.toggle.keyUp", (jsonObj) =>
-        action.onKeyUp(jsonObj)
+        toggleAction.onKeyUp(jsonObj)
     );
     $SD.on(
         "ca.barraco.carlo.homeassistant.action.toggle.sendToPlugin",
-        (jsonObj) => action.onSendToPlugin(jsonObj)
+        (jsonObj) => toggleAction.onSendToPlugin(jsonObj)
     );
     $SD.on(
         "ca.barraco.carlo.homeassistant.action.toggle.didReceiveSettings",
-        (jsonObj) => action.onDidReceiveSettings(jsonObj)
+        (jsonObj) => toggleAction.onDidReceiveSettings(jsonObj)
     );
     $SD.on(
         "ca.barraco.carlo.homeassistant.action.toggle.propertyInspectorDidAppear",
@@ -38,7 +38,7 @@ function connected(jsn) {
     );
 }
 
-const action = {
+const toggleAction = {
     settings: {},
 
     onDidReceiveSettings: function (jsn) {
@@ -83,10 +83,12 @@ const action = {
                 const entityIdInput = this.settings.entityIdInput;
                 if (data.event.data.entity_id === entityIdInput) {
                     logHomeAssistantEvent(data);
-                    $SD.api.setTitle(
-                        jsn.context,
-                        "" + data.event.data.new_state.state
-                    );
+                    const newState = data.event.data.new_state.state;
+                    if (newState === "on") {
+                        $SD.api.setState(jsn.context, 0);
+                    } else if (newState === "off") {
+                        $SD.api.setState(jsn.context, 1);
+                    }
                 }
             });
         }
