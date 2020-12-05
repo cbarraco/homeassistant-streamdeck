@@ -3,7 +3,6 @@ Home Assistant integration with the Elgato Stream Deck
 
 ## Release 0 Feature List
 - [ ] Working prototype
-- [ ] Set up TypeScript and create template plugin repo
 
 ## Release 1 Feature List
 - [ ] Store authentication details in secure global settings
