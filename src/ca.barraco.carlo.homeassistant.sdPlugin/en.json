@@ -1,11 +1,10 @@
 {
-  "Description": "Home Assistant integration with the Elgato Stream Deck", 
-  "Name": "Home Assistant Integration", 
-  "Category": "Home Assistant Integration", 
+  "Description": "Home Assistant integration with the Elgato Stream Deck",
+  "Name": "Home Assistant Integration",
+  "Category": "Home Assistant Integration",
   "ca.barraco.carlo.homeassistant.action.toggle": {
-    "Name": "Toggle a switch", 
+    "Name": "Toggle a switch",
     "Tooltip": "Toggles a switch entity in Home Assistant"
   },
-  "Localization": {
-  }
+  "Localization": {}
 }

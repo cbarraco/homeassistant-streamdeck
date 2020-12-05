@@ -1,13 +1,10 @@
 # homeassistant-streamdeck
 Home Assistant integration with the Elgato Stream Deck
 
-## Release 0 Feature List
-- [ ] Working prototype
-
 ## Release 1 Feature List
 - [ ] Store authentication details in secure global settings
-- [ ] Create action with parameters that toggles a switch
-- [ ] Have the state of the switch update the action title asynchronously with the HA WebSocket API
+- [x] Create action with parameters that toggles a switch
+- [x] Have the state of the switch update the action title asynchronously with the HA WebSocket API
 
 ## Release 2 Feature List
 - [ ] Create action that can call an HA service

@@ -21,6 +21,8 @@
   "Icon": "action/images/action",
   "URL": "https://github.com/cbarraco/homeassistant-streamdeck",
   "Version": "1.0.0",
+  "Category": "Home Assistant Integration",
+  "CategoryIcon": "action/images/action",
   "OS": [
     {
       "Platform": "mac",
