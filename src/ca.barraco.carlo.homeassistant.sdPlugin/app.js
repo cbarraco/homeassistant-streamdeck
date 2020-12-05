@@ -4,49 +4,53 @@ var homeAssistantWebsocket;
 var currentMessageId = 1;
 var homeAssistantEvents = ELGEvents.eventEmitter();
 
-$SD.on("connected", (jsonObj) => connected(jsonObj));
+$SD.on('connected', (jsonObj) => connected(jsonObj));
+
+function logData(jsn, tagColor, caller) {
+    console.logs(
+        "%c%s",
+        `color: white; background: ${tagColor || 'red'};`,
+        `${caller || arguments.callee.name}: ${JSON.stringify(jsn)}`
+    );
+}
+
+function logMessage(message, tagColor, caller) {
+    console.logs(
+        "%c%s",
+        `color: white; background: ${tagColor || 'red'};`,
+        `${caller || arguments.callee.name}: ${message}`
+    );
+}
 
 function connected(jsn) {
-    console.log("connected: " + JSON.stringify(jsn));
+    logData(jsn);
 
     $SD.on(
-        "ca.barraco.carlo.homeassistant.action.toggle.willAppear",
+        'ca.barraco.carlo.homeassistant.action.toggle.willAppear',
         (jsonObj) => action.onWillAppear(jsonObj)
     );
     $SD.on(
-        "ca.barraco.carlo.homeassistant.action.toggle.willDisappear",
+        'ca.barraco.carlo.homeassistant.action.toggle.willDisappear',
         (jsonObj) => action.onWillDisappear(jsonObj)
     );
-    $SD.on("ca.barraco.carlo.homeassistant.action.toggle.keyUp", (jsonObj) =>
+    $SD.on('ca.barraco.carlo.homeassistant.action.toggle.keyUp', (jsonObj) =>
         action.onKeyUp(jsonObj)
     );
     $SD.on(
-        "ca.barraco.carlo.homeassistant.action.toggle.sendToPlugin",
+        'ca.barraco.carlo.homeassistant.action.toggle.sendToPlugin',
         (jsonObj) => action.onSendToPlugin(jsonObj)
     );
     $SD.on(
-        "ca.barraco.carlo.homeassistant.action.toggle.didReceiveSettings",
+        'ca.barraco.carlo.homeassistant.action.toggle.didReceiveSettings',
         (jsonObj) => action.onDidReceiveSettings(jsonObj)
     );
     $SD.on(
-        "ca.barraco.carlo.homeassistant.action.toggle.propertyInspectorDidAppear",
-        (jsonObj) => {
-            console.log(
-                "%c%s",
-                "color: white; background: black; font-size: 13px;",
-                "[app.js]propertyInspectorDidAppear:"
-            );
-        }
+        'ca.barraco.carlo.homeassistant.action.toggle.propertyInspectorDidAppear',
+        (jsonObj) => logData(jsonObj)
     );
     $SD.on(
-        "ca.barraco.carlo.homeassistant.action.toggle.propertyInspectorDidDisappear",
-        (jsonObj) => {
-            console.log(
-                "%c%s",
-                "color: white; background: red; font-size: 13px;",
-                "[app.js]propertyInspectorDidDisappear:"
-            );
-        }
+        'ca.barraco.carlo.homeassistant.action.toggle.propertyInspectorDidDisappear',
+        (jsonObj) => logData(jsonObj)
     );
 }
 
@@ -54,17 +58,18 @@ const action = {
     settings: {},
 
     onDidReceiveSettings: function (jsn) {
-        console.log("onDidReceiveSettings: " + JSON.stringify(jsn));
-        this.settings = Utils.getProp(jsn, "payload.settings", {});
+        logData(jsn, 'green');
+        this.settings = Utils.getProp(jsn, 'payload.settings', {});
     },
 
     onWillAppear: function (jsn) {
-        console.log("onWillAppear: " + JSON.stringify(jsn));
+        logData(jsn, 'blue');
         if (homeAssistantWebsocket == null || homeAssistantWebsocket.isclosed) {
             homeAssistantWebsocket = new WebSocket(
                 `wss://${jsn.payload.settings.homeAssistantAddress}/api/websocket`
             );
             homeAssistantWebsocket.onopen = function () {
+                logMessage('WebSocket to HA opened, authenticating');
                 // authenticate
                 const authMessage = `{"type": "auth","access_token": "${jsn.payload.settings.accessToken}"}`;
                 homeAssistantWebsocket.send(authMessage);
@@ -79,18 +84,18 @@ const action = {
             };
 
             homeAssistantWebsocket.onmessage = function (e) {
-                console.log("onmessage: " + JSON.stringify(e.data));
+                logData(jsn);
                 const data = JSON.parse(e.data);
                 const eventType = data.event.event_type;
                 homeAssistantEvents.emit(eventType, data);
             };
 
-            homeAssistantEvents.on("state_changed", (data) => {
+            homeAssistantEvents.on('state_changed', (data) => {
                 const entityIdInput = this.settings.entityIdInput;
                 if (data.event.data.entity_id === entityIdInput) {
                     $SD.api.setTitle(
                         jsn.context,
-                        "" + data.event.data.new_state.state
+                        '' + data.event.data.new_state.state
                     );
                 }
             });
@@ -100,13 +105,13 @@ const action = {
     },
 
     onWillDisappear: function (jsn) {
-        console.log("onWillDisappear: " + JSON.stringify(jsn));
+        logData(jsn, 'blue');
         homeAssistantWebsocket.close();
         homeAssistantWebsocket = null;
     },
 
     onKeyUp: function (jsn) {
-        console.log("onKeyUp: " + JSON.stringify(jsn));
+        logData(jsn, 'black');
         const entityIdInput = jsn.payload.settings.entityIdInput;
         const testMessage = `{
             "id": ${currentMessageId++},
@@ -121,31 +126,20 @@ const action = {
     },
 
     onSendToPlugin: function (jsn) {
-        console.log("onSendToPlugin: " + JSON.stringify(jsn));
+        logData(jsn, 'green');
         const sdpi_collection = Utils.getProp(
             jsn,
-            "payload.sdpi_collection",
+            'payload.sdpi_collection',
             {}
         );
 
         if (sdpi_collection.value && sdpi_collection.value !== undefined) {
-            console.log(
-                `Setting value for ${sdpi_collection.key} to ${sdpi_collection.value}`
+            logMessage(
+                `Setting value for ${sdpi_collection.key} to ${sdpi_collection.value}`,
+                'magenta'
             );
             this.settings[sdpi_collection.key] = sdpi_collection.value;
             $SD.api.setSettings(jsn.context, this.settings);
         }
-    },
-
-    saveSettings: function (jsn, sdpi_collection) {
-        console.log("saveSettings:", jsn);
-    },
-
-    logStuff: function (inJsonData, caller, tagColor) {
-        console.log(
-            "%c%s",
-            `color: white; background: ${tagColor || "grey"}; font-size: 15px;`,
-            `[app.js]logStuff from: ${caller}`
-        );
-    },
+    }
 };
