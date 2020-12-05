@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>ca.barraco.carlo.homeassistant.externalWindow</title>
+        <meta charset="utf-8" />
+        <link rel="stylesheet" href="css/sdpi.css" />
+        <style>
+            body {
+                background-color: transparent;
+            }
+
+            .sdpi-item {
+                max-width: none !important;
+            }
+
+            .sdpi-heading {
+                margin: 16px 0;
+            }
+
+            ul {
+                max-height: none;
+            }
+            li * {
+                min-height: 18px;
+                padding: 4px;
+                display: flex;
+                align-items: center;
+            }
+
+            .wrap {
+                margin: 8px;
+            }
+            .title {
+                font-weight: bold;
+                padding-bottom: 2px;
+                margin-bottom: 6px;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+                text-transform: uppercase;
+            }
+
+            .wrap {
+                text-align: center;
+            }
+
+            .g {
+                position: absolute;
+                z-index: -10;
+                top: auto;
+                height: 80px;
+                left: 0;
+                bottom: 0;
+                right: 0;
+                background-color: red;
+                background: url(css/g_d8d8d8.svg) no-repeat center;
+                background-size: 10%;
+            }
+        </style>
+    </head>
+
+    <body onload="loaded()">
+        <div class="g"></div>
+
+        <div class="sdpi-wrapper">
+            <div class="sdpi-heading">INFORMATION</div>
+            <div class="wrap">
+                <p>
+                    Enter the credentials for your instance of Home Assistant
+                    below. They will be saved and reused for other actions
+                    automatically.
+                </p>
+            </div>
+
+            <div class="sdpi-heading">Credentials</div>
+            <div class="sdpi-item">
+                <div class="sdpi-item-label">Home Assistant Address</div>
+                <input
+                    id="homeAssistantAddress"
+                    class="sdpi-item-value"
+                    type="text"
+                    value=""
+                />
+            </div>
+            <div class="sdpi-item">
+                <div class="sdpi-item-label">Long Access Token</div>
+                <input
+                    id="accessToken"
+                    class="sdpi-item-value"
+                    type="text"
+                    value=""
+                />
+            </div>
+            <div class="wrap">
+                <button
+                    id="clickme"
+                    type="button"
+                    value="Test Credentials"
+                    onclick="sendmessage()"
+                >
+                    Test Credentials
+                </button>
+            </div>
+        </div>
+
+        <script src="../lib/sd.js"></script>
+        <script src="../lib/logging.js"></script>
+        <script src="js/common_pi.js"></script>
+        <script src="js/authenticationParameters.js"></script>
+    </body>
+</html>

@@ -2,10 +2,13 @@
  * to Property Inspector. Here we 'inject' the CSS styles into the DOM
  * when we receive this information. */
 
-function addDynamicStyles (clrs, fromWhere) {
+function addDynamicStyles(clrs, fromWhere) {
     // console.log("addDynamicStyles", clrs.highlightColor, clrs.highlightColor.slice(0, 7));
-    const node = document.getElementById('#sdpi-dynamic-styles') || document.createElement('style');
-    if (!clrs.mouseDownColor) clrs.mouseDownColor = Utils.fadeColor(clrs.highlightColor, -100);
+    const node =
+        document.getElementById("#sdpi-dynamic-styles") ||
+        document.createElement("style");
+    if (!clrs.mouseDownColor)
+        clrs.mouseDownColor = Utils.fadeColor(clrs.highlightColor, -100);
     const clr = clrs.highlightColor.slice(0, 7);
     const clr1 = Utils.fadeColor(clr, 100);
     const clr2 = Utils.fadeColor(clr, 60);
@@ -16,7 +19,7 @@ function addDynamicStyles (clrs, fromWhere) {
     // console.log("%c    ", `background-color: #${clr2}`, 'addDS2', clr2);
     // console.log("%c    ", `background-color: #${metersActiveColor}`, 'metersActiveColor', metersActiveColor);
 
-    node.setAttribute('id', 'sdpi-dynamic-styles');
+    node.setAttribute("id", "sdpi-dynamic-styles");
     node.innerHTML = `
 
     input[type="radio"]:checked + label span,
@@ -65,4 +68,27 @@ function addDynamicStyles (clrs, fromWhere) {
     }
     `;
     document.body.appendChild(node);
-};
+}
+
+function updateUI(pl) {
+    Object.keys(pl).map((e) => {
+        if (e && e != "") {
+            const foundElement = document.querySelector(`#${e}`);
+            console.log(`searching for: #${e}`, "found:", foundElement);
+            if (foundElement && foundElement.type !== "file") {
+                foundElement.value = pl[e];
+                const maxl = foundElement.getAttribute("maxlength") || 50;
+                const labels = document.querySelectorAll(
+                    `[for='${foundElement.id}']`
+                );
+                if (labels.length) {
+                    for (let x of labels) {
+                        x.textContent = maxl
+                            ? `${foundElement.value.length}/${maxl}`
+                            : `${foundElement.value.length}`;
+                    }
+                }
+            }
+        }
+    });
+}

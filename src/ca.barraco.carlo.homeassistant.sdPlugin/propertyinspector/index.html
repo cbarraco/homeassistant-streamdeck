@@ -23,25 +23,18 @@
             This will get the 'key', which is sent to the plugin (or settings), along with the value of
             the control.
           -->
+            <div class="sdpi-item">
+                <div class="sdpi-item-label">Authentication</div>
+                <button
+                    class="sdpi-item-value"
+                    id="authenticationParametersEnterCredentials"
+                    value="Enter Credentials"
+                    data-localize="Enter Credentials"
+                >
+                    Enter Credentials
+                </button>
+            </div>
 
-            <div class="sdpi-item">
-                <div class="sdpi-item-label">Home Assistant Address</div>
-                <input
-                    id="homeAssistantAddress"
-                    class="sdpi-item-value"
-                    type="text"
-                    value=""
-                />
-            </div>
-            <div class="sdpi-item">
-                <div class="sdpi-item-label">Long Access Token</div>
-                <input
-                    id="accessToken"
-                    class="sdpi-item-value"
-                    type="text"
-                    value=""
-                />
-            </div>
             <div class="sdpi-item">
                 <div class="sdpi-item-label">Entity ID</div>
                 <input
@@ -55,7 +48,8 @@
         </div>
 
         <div class="sdpi-info-label hidden" style="top: -1000" value=""></div>
-        <script src="js/common.js"></script>
+        <script src="../lib/sd.js"></script>
+        <script src="../lib/logging.js"></script>
         <script src="js/common_pi.js"></script>
         <script src="js/index_pi.js"></script>
     </body>

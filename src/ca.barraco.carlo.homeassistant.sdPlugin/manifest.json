@@ -18,11 +18,11 @@
   "PropertyInspectorPath": "propertyinspector/index.html",
   "Description": "Home Assistant integration with the Elgato Stream Deck",
   "Name": "Home Assistant Integration",
-  "Icon": "action/images/action",
+  "Icon": "action/images/pluginIcon",
   "URL": "https://github.com/cbarraco/homeassistant-streamdeck",
   "Version": "1.0.0",
   "Category": "Home Assistant Integration",
-  "CategoryIcon": "action/images/action",
+  "CategoryIcon": "action/images/pluginIcon",
   "OS": [
     {
       "Platform": "mac",
