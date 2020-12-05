@@ -58,12 +58,11 @@ const action = {
         );
 
         this.settings = jsn.payload.settings;
-
         var arequest = {
             contentType: "application/json",
-            url: `${ip}/api/states/switch.office_lamp_msl120_main_channel`,
+            url: `${ip}/api/states/switch.office_lamp_msl120_main_channel`, // ip from secrets.js
             beforeSend: function (xhr) {
-                xhr.setRequestHeader("Authorization", `Bearer ${authtoken}`);
+                xhr.setRequestHeader("Authorization", `Bearer ${authtoken}`); // authtoken from secrets.js
             },
             type: "GET",
             success: function (result) {
@@ -77,10 +76,10 @@ const action = {
         const domain = "homeassistant";
         const service = "toggle";
         const data = '{"entity_id":"switch.office_lamp_msl120_main_channel"}';
-        const url = `${ip}/api/services/${domain}/${service}`;
+        const url = `${ip}/api/services/${domain}/${service}`; // ip from secrets.js
         const request = new XMLHttpRequest();
         request.open("POST", url, false);
-        request.setRequestHeader("Authorization", `Bearer ${authtoken}`);
+        request.setRequestHeader("Authorization", `Bearer ${authtoken}`); // authtoken from secrets.js
         if (data !== "") {
             request.setRequestHeader("Content-Type", "application/json");
             request.send(data);
@@ -90,9 +89,9 @@ const action = {
 
         var arequest = {
             contentType: "application/json",
-            url: `${ip}/api/states/switch.office_lamp_msl120_main_channel`,
+            url: `${ip}/api/states/switch.office_lamp_msl120_main_channel`, // ip from secrets.js
             beforeSend: function (xhr) {
-                xhr.setRequestHeader("Authorization", `Bearer ${authtoken}`);
+                xhr.setRequestHeader("Authorization", `Bearer ${authtoken}`); // authtoken from secrets.js
             },
             type: "GET",
             success: function (result) {
