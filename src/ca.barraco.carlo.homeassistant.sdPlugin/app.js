@@ -2,14 +2,18 @@
 
 var homeAssistantWebsocket;
 var currentMessageId = 1;
+var homeAssistantEvents = ELGEvents.eventEmitter();
 
 $SD.on("connected", (jsonObj) => connected(jsonObj));
 
 function connected(jsn) {
-    homeAssistantWebsocket = new WebSocket(`wss://${ip}/api/websocket`);
+    console.log("connected: " + JSON.stringify(jsn));
 
     $SD.on("com.elgato.template.action.willAppear", (jsonObj) =>
         action.onWillAppear(jsonObj)
+    );
+    $SD.on("com.elgato.template.action.willDisappear", (jsonObj) =>
+        action.onwillDisappear(jsonObj)
     );
     $SD.on("com.elgato.template.action.keyUp", (jsonObj) =>
         action.onKeyUp(jsonObj)
@@ -46,55 +50,57 @@ const action = {
     settings: {},
 
     onDidReceiveSettings: function (jsn) {
-        console.log(
-            "%c%s",
-            "color: white; background: red; font-size: 15px;",
-            "[app.js]onDidReceiveSettings:"
-        );
-
+        console.log("onDidReceiveSettings: " + JSON.stringify(jsn));
         this.settings = Utils.getProp(jsn, "payload.settings", {});
-        this.logStuff(this.settings, "onDidReceiveSettings", "orange");
-        this.setTitle(jsn);
     },
 
     onWillAppear: function (jsn) {
-        console.log(
-            "You can cache your settings in 'onWillAppear'",
-            jsn.payload.settings
-        );
+        console.log("onWillAppear: " + JSON.stringify(jsn));
+        if (homeAssistantWebsocket == null) {
+            homeAssistantWebsocket = new WebSocket(
+                `wss://${jsn.payload.settings.homeAssistantAddress}/api/websocket`
+            );
+            homeAssistantWebsocket.onopen = function () {
+                // authenticate
+                const authMessage = `{"type": "auth","access_token": "${jsn.payload.settings.accessToken}"}`;
+                homeAssistantWebsocket.send(authMessage);
 
-        var self = this;
-        homeAssistantWebsocket.onopen = function () {
-            // authenticate
-            const authMessage = `{"type": "auth","access_token": "${authtoken}"}`;
-            homeAssistantWebsocket.send(authMessage);
-
-            // subscribe to state change events
-            const subscribeMessage = `{
+                // subscribe to state change events
+                const subscribeMessage = `{
                 "id": ${currentMessageId++},
                 "type": "subscribe_events",
                 "event_type": "state_changed"
               }`;
-            homeAssistantWebsocket.send(subscribeMessage);
-        };
+                homeAssistantWebsocket.send(subscribeMessage);
+            };
 
-        homeAssistantWebsocket.onmessage = function (e) {
-            var data = JSON.parse(e.data);
-            if (
-                data.event.data.entity_id ==
-                "switch.office_lamp_msl120_main_channel"
-            ) {
-                $SD.api.setTitle(
-                    jsn.context,
-                    "" + data.event.data.new_state.state
-                );
-            }
-        };
+            homeAssistantWebsocket.onmessage = function (e) {
+                console.log("onmessage: " + JSON.stringify(e.data));
+                const data = JSON.parse(e.data);
+                const eventType = data.event.event_type;
+                homeAssistantEvents.emit(eventType, data);
+            };
+
+            homeAssistantEvents.on("state_changed", (data) => {
+                const entityIdInput = jsn.payload.settings.entityIdInput;
+                if (data.event.data.entity_id === entityIdInput) {
+                    $SD.api.setTitle(
+                        jsn.context,
+                        "" + data.event.data.new_state.state
+                    );
+                }
+            });
+        }
 
         this.settings = jsn.payload.settings;
     },
 
+    onWillDisappear: function (jsn) {
+        console.log("onWillDisappear: " + JSON.stringify(jsn));
+    },
+
     onKeyUp: function (jsn) {
+        console.log("onKeyUp: " + JSON.stringify(jsn));
         const testMessage = `{
             "id": ${currentMessageId++},
             "type": "call_service",
@@ -108,6 +114,7 @@ const action = {
     },
 
     onSendToPlugin: function (jsn) {
+        console.log("onSendToPlugin: " + JSON.stringify(jsn));
         const sdpi_collection = Utils.getProp(
             jsn,
             "payload.sdpi_collection",
@@ -133,16 +140,6 @@ const action = {
                 console.log("setSettings....", this.settings);
                 $SD.api.setSettings(jsn.context, this.settings);
             }
-        }
-    },
-
-    setTitle: function (jsn) {
-        if (this.settings && this.settings.hasOwnProperty("mynameinput")) {
-            console.log(
-                "watch the key on your StreamDeck - it got a new title...",
-                this.settings.mynameinput
-            );
-            $SD.api.setTitle(jsn.context, this.settings.mynameinput);
         }
     },
 
