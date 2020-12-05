@@ -1,15 +1,11 @@
 {
-  "Description": "Use this to create your own plugin", 
-  "Name": "Stream Deck Template", 
-  "Category": "Templates", 
+  "Description": "Home Assistant integration with the Elgato Stream Deck", 
+  "Name": "Home Assistant Integration", 
+  "Category": "Home Assistant Integration", 
   "ca.barraco.carlo.homeassistant.action.toggle": {
-    "Name": "Action", 
-    "Tooltip": "This is the only action in this plugin"
+    "Name": "Toggle a switch", 
+    "Tooltip": "Toggles a switch entity in Home Assistant"
   },
   "Localization": {
-    "More info": "More info",
-    "Message": "Message",
-    "Click Me": "Click Me",
-    "Button": "Button"
   }
 }

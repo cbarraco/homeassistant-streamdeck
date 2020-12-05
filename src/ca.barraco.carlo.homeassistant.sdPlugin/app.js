@@ -4,53 +4,61 @@ var homeAssistantWebsocket;
 var currentMessageId = 1;
 var homeAssistantEvents = ELGEvents.eventEmitter();
 
-$SD.on('connected', (jsonObj) => connected(jsonObj));
+$SD.on("connected", (jsonObj) => connected(jsonObj));
 
-function logData(jsn, tagColor, caller) {
-    console.logs(
+function logStreamDeckEvent(jsn) {
+    console.log(
         "%c%s",
-        `color: white; background: ${tagColor || 'red'};`,
-        `${caller || arguments.callee.name}: ${JSON.stringify(jsn)}`
+        'color: white; background: green;',
+        `${arguments.callee.caller.name || 'SD callback'}: ${JSON.stringify(jsn)}`
     );
 }
 
-function logMessage(message, tagColor, caller) {
-    console.logs(
+function logHomeAssistantEvent(jsn) {
+    console.log(
         "%c%s",
-        `color: white; background: ${tagColor || 'red'};`,
-        `${caller || arguments.callee.name}: ${message}`
+        'color: white; background: blue;',
+        `${arguments.callee.caller.name || 'HA callback'}: ${JSON.stringify(jsn)}`
+    );
+}
+
+function logMessage(message) {
+    console.log(
+        "%c%s",
+        'color: white; background: magenta;',
+        `${arguments.callee.caller.name || 'callback'}: ${message}`
     );
 }
 
 function connected(jsn) {
-    logData(jsn);
+    logStreamDeckEvent(jsn);
 
     $SD.on(
-        'ca.barraco.carlo.homeassistant.action.toggle.willAppear',
+        "ca.barraco.carlo.homeassistant.action.toggle.willAppear",
         (jsonObj) => action.onWillAppear(jsonObj)
     );
     $SD.on(
-        'ca.barraco.carlo.homeassistant.action.toggle.willDisappear',
+        "ca.barraco.carlo.homeassistant.action.toggle.willDisappear",
         (jsonObj) => action.onWillDisappear(jsonObj)
     );
-    $SD.on('ca.barraco.carlo.homeassistant.action.toggle.keyUp', (jsonObj) =>
+    $SD.on("ca.barraco.carlo.homeassistant.action.toggle.keyUp", (jsonObj) =>
         action.onKeyUp(jsonObj)
     );
     $SD.on(
-        'ca.barraco.carlo.homeassistant.action.toggle.sendToPlugin',
+        "ca.barraco.carlo.homeassistant.action.toggle.sendToPlugin",
         (jsonObj) => action.onSendToPlugin(jsonObj)
     );
     $SD.on(
-        'ca.barraco.carlo.homeassistant.action.toggle.didReceiveSettings',
+        "ca.barraco.carlo.homeassistant.action.toggle.didReceiveSettings",
         (jsonObj) => action.onDidReceiveSettings(jsonObj)
     );
     $SD.on(
-        'ca.barraco.carlo.homeassistant.action.toggle.propertyInspectorDidAppear',
-        (jsonObj) => logData(jsonObj)
+        "ca.barraco.carlo.homeassistant.action.toggle.propertyInspectorDidAppear",
+        (jsonObj) => logStreamDeckEvent(jsonObj)
     );
     $SD.on(
-        'ca.barraco.carlo.homeassistant.action.toggle.propertyInspectorDidDisappear',
-        (jsonObj) => logData(jsonObj)
+        "ca.barraco.carlo.homeassistant.action.toggle.propertyInspectorDidDisappear",
+        (jsonObj) => logStreamDeckEvent(jsonObj)
     );
 }
 
@@ -58,18 +66,18 @@ const action = {
     settings: {},
 
     onDidReceiveSettings: function (jsn) {
-        logData(jsn, 'green');
-        this.settings = Utils.getProp(jsn, 'payload.settings', {});
+        logStreamDeckEvent(jsn);
+        this.settings = Utils.getProp(jsn, "payload.settings", {});
     },
 
     onWillAppear: function (jsn) {
-        logData(jsn, 'blue');
+        logStreamDeckEvent(jsn);
         if (homeAssistantWebsocket == null || homeAssistantWebsocket.isclosed) {
             homeAssistantWebsocket = new WebSocket(
                 `wss://${jsn.payload.settings.homeAssistantAddress}/api/websocket`
             );
             homeAssistantWebsocket.onopen = function () {
-                logMessage('WebSocket to HA opened, authenticating');
+                logMessage("connected to HA, authenticating");
                 // authenticate
                 const authMessage = `{"type": "auth","access_token": "${jsn.payload.settings.accessToken}"}`;
                 homeAssistantWebsocket.send(authMessage);
@@ -84,18 +92,24 @@ const action = {
             };
 
             homeAssistantWebsocket.onmessage = function (e) {
-                logData(jsn);
                 const data = JSON.parse(e.data);
-                const eventType = data.event.event_type;
+                const eventType = data.type;
+
+                // only want to log relevant events
+                if (eventType !== "event") {
+                    logHomeAssistantEvent(data);
+                }
+
                 homeAssistantEvents.emit(eventType, data);
             };
 
-            homeAssistantEvents.on('state_changed', (data) => {
+            homeAssistantEvents.on("event", (data) => {
                 const entityIdInput = this.settings.entityIdInput;
                 if (data.event.data.entity_id === entityIdInput) {
+                    logHomeAssistantEvent(data);
                     $SD.api.setTitle(
                         jsn.context,
-                        '' + data.event.data.new_state.state
+                        "" + data.event.data.new_state.state
                     );
                 }
             });
@@ -105,13 +119,13 @@ const action = {
     },
 
     onWillDisappear: function (jsn) {
-        logData(jsn, 'blue');
+        logStreamDeckEvent(jsn);
         homeAssistantWebsocket.close();
         homeAssistantWebsocket = null;
     },
 
     onKeyUp: function (jsn) {
-        logData(jsn, 'black');
+        logStreamDeckEvent(jsn);
         const entityIdInput = jsn.payload.settings.entityIdInput;
         const testMessage = `{
             "id": ${currentMessageId++},
@@ -126,20 +140,20 @@ const action = {
     },
 
     onSendToPlugin: function (jsn) {
-        logData(jsn, 'green');
+        logStreamDeckEvent(jsn);
         const sdpi_collection = Utils.getProp(
             jsn,
-            'payload.sdpi_collection',
+            "payload.sdpi_collection",
             {}
         );
 
         if (sdpi_collection.value && sdpi_collection.value !== undefined) {
             logMessage(
                 `Setting value for ${sdpi_collection.key} to ${sdpi_collection.value}`,
-                'magenta'
+                "magenta"
             );
             this.settings[sdpi_collection.key] = sdpi_collection.value;
             $SD.api.setSettings(jsn.context, this.settings);
         }
-    }
+    },
 };

@@ -1,38 +1,37 @@
 {
   "Actions": [
     {
-      "Icon": "action/images/actionimage", 
-      "Name": "Toggle a switch", 
+      "Icon": "action/images/actionimage",
+      "Name": "Toggle a switch",
       "States": [
         {
           "Image": "action/images/action"
         }
-      ], 
-      "Tooltip": "Toggles a switch entity", 
+      ],
+      "Tooltip": "Toggles a switch entity in Home Assistant",
       "UUID": "ca.barraco.carlo.homeassistant.action.toggle"
     }
-  ], 
+  ],
   "SDKVersion": 2,
-  "Author": "Carlo Barraco", 
-  "CodePath": "index.html", 
-  "PropertyInspectorPath": "propertyinspector/index.html", 
-  "Description": "Home Assistant integration with the Elgato Stream Deck", 
-  "Name": "Home Assistant Integration", 
-  "Icon": "action/images/action", 
-  "URL": "https://github.com/cbarraco/homeassistant-streamdeck", 
+  "Author": "Carlo Barraco",
+  "CodePath": "index.html",
+  "PropertyInspectorPath": "propertyinspector/index.html",
+  "Description": "Home Assistant integration with the Elgato Stream Deck",
+  "Name": "Home Assistant Integration",
+  "Icon": "action/images/action",
+  "URL": "https://github.com/cbarraco/homeassistant-streamdeck",
   "Version": "1.0.0",
   "OS": [
     {
-        "Platform": "mac", 
-        "MinimumVersion" : "10.11"
+      "Platform": "mac",
+      "MinimumVersion": "10.11"
     },
     {
-        "Platform": "windows", 
-        "MinimumVersion" : "10"
+      "Platform": "windows",
+      "MinimumVersion": "10"
     }
   ],
-  "Software": 
-    {
-        "MinimumVersion" : "4.1"
+  "Software": {
+    "MinimumVersion": "4.1"
   }
 }
