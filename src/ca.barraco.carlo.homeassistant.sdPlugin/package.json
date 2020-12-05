@@ -7,8 +7,5 @@
     "export": "rm -f ../../build/ca.barraco.carlo.homeassistant.streamDeckPlugin && DistributionTool -b -i ../ca.barraco.carlo.homeassistant.sdPlugin -o ../../build"
   },
   "author": "Carlo Barraco",
-  "license": "MIT",
-  "dependencies": {
-    "home-assistant-js-websocket": "^5.7.0"
-  }
+  "license": "MIT"
 }
