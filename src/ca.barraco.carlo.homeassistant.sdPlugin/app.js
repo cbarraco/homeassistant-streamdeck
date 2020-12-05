@@ -1,8 +1,13 @@
 /* global $CC, Utils, $SD */
 
+var homeAssistantWebsocket;
+var currentMessageId = 1;
+
 $SD.on("connected", (jsonObj) => connected(jsonObj));
 
 function connected(jsn) {
+    homeAssistantWebsocket = new WebSocket(`wss://${ip}/api/websocket`);
+
     $SD.on("com.elgato.template.action.willAppear", (jsonObj) =>
         action.onWillAppear(jsonObj)
     );
@@ -39,6 +44,7 @@ function connected(jsn) {
 
 const action = {
     settings: {},
+
     onDidReceiveSettings: function (jsn) {
         console.log(
             "%c%s",
@@ -57,48 +63,48 @@ const action = {
             jsn.payload.settings
         );
 
-        this.settings = jsn.payload.settings;
-        var arequest = {
-            contentType: "application/json",
-            url: `${ip}/api/states/switch.office_lamp_msl120_main_channel`, // ip from secrets.js
-            beforeSend: function (xhr) {
-                xhr.setRequestHeader("Authorization", `Bearer ${authtoken}`); // authtoken from secrets.js
-            },
-            type: "GET",
-            success: function (result) {
-                $SD.api.setTitle(jsn.context, result.state);
-            },
+        var self = this;
+        homeAssistantWebsocket.onopen = function () {
+            // authenticate
+            const authMessage = `{"type": "auth","access_token": "${authtoken}"}`;
+            homeAssistantWebsocket.send(authMessage);
+
+            // subscribe to state change events
+            const subscribeMessage = `{
+                "id": ${currentMessageId++},
+                "type": "subscribe_events",
+                "event_type": "state_changed"
+              }`;
+            homeAssistantWebsocket.send(subscribeMessage);
         };
-        $.ajax(arequest);
+
+        homeAssistantWebsocket.onmessage = function (e) {
+            var data = JSON.parse(e.data);
+            if (
+                data.event.data.entity_id ==
+                "switch.office_lamp_msl120_main_channel"
+            ) {
+                $SD.api.setTitle(
+                    jsn.context,
+                    "" + data.event.data.new_state.state
+                );
+            }
+        };
+
+        this.settings = jsn.payload.settings;
     },
 
     onKeyUp: function (jsn) {
-        const domain = "homeassistant";
-        const service = "toggle";
-        const data = '{"entity_id":"switch.office_lamp_msl120_main_channel"}';
-        const url = `${ip}/api/services/${domain}/${service}`; // ip from secrets.js
-        const request = new XMLHttpRequest();
-        request.open("POST", url, false);
-        request.setRequestHeader("Authorization", `Bearer ${authtoken}`); // authtoken from secrets.js
-        if (data !== "") {
-            request.setRequestHeader("Content-Type", "application/json");
-            request.send(data);
-        } else {
-            request.send();
-        }
-
-        var arequest = {
-            contentType: "application/json",
-            url: `${ip}/api/states/switch.office_lamp_msl120_main_channel`, // ip from secrets.js
-            beforeSend: function (xhr) {
-                xhr.setRequestHeader("Authorization", `Bearer ${authtoken}`); // authtoken from secrets.js
-            },
-            type: "GET",
-            success: function (result) {
-                $SD.api.setTitle(jsn.context, result.state);
-            },
-        };
-        $.ajax(arequest);
+        const testMessage = `{
+            "id": ${currentMessageId++},
+            "type": "call_service",
+            "domain": "switch",
+            "service": "toggle",
+            "service_data": {
+              "entity_id": "switch.office_lamp_msl120_main_channel"
+            }
+          }`;
+        homeAssistantWebsocket.send(testMessage);
     },
 
     onSendToPlugin: function (jsn) {
