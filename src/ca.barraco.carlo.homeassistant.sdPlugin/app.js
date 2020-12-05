@@ -9,23 +9,27 @@ $SD.on("connected", (jsonObj) => connected(jsonObj));
 function connected(jsn) {
     console.log("connected: " + JSON.stringify(jsn));
 
-    $SD.on("com.elgato.template.action.willAppear", (jsonObj) =>
-        action.onWillAppear(jsonObj)
-    );
-    $SD.on("com.elgato.template.action.willDisappear", (jsonObj) =>
-        action.onwillDisappear(jsonObj)
-    );
-    $SD.on("com.elgato.template.action.keyUp", (jsonObj) =>
-        action.onKeyUp(jsonObj)
-    );
-    $SD.on("com.elgato.template.action.sendToPlugin", (jsonObj) =>
-        action.onSendToPlugin(jsonObj)
-    );
-    $SD.on("com.elgato.template.action.didReceiveSettings", (jsonObj) =>
-        action.onDidReceiveSettings(jsonObj)
+    $SD.on(
+        "ca.barraco.carlo.homeassistant.action.toggle.willAppear",
+        (jsonObj) => action.onWillAppear(jsonObj)
     );
     $SD.on(
-        "com.elgato.template.action.propertyInspectorDidAppear",
+        "ca.barraco.carlo.homeassistant.action.toggle.willDisappear",
+        (jsonObj) => action.onWillDisappear(jsonObj)
+    );
+    $SD.on("ca.barraco.carlo.homeassistant.action.toggle.keyUp", (jsonObj) =>
+        action.onKeyUp(jsonObj)
+    );
+    $SD.on(
+        "ca.barraco.carlo.homeassistant.action.toggle.sendToPlugin",
+        (jsonObj) => action.onSendToPlugin(jsonObj)
+    );
+    $SD.on(
+        "ca.barraco.carlo.homeassistant.action.toggle.didReceiveSettings",
+        (jsonObj) => action.onDidReceiveSettings(jsonObj)
+    );
+    $SD.on(
+        "ca.barraco.carlo.homeassistant.action.toggle.propertyInspectorDidAppear",
         (jsonObj) => {
             console.log(
                 "%c%s",
@@ -35,7 +39,7 @@ function connected(jsn) {
         }
     );
     $SD.on(
-        "com.elgato.template.action.propertyInspectorDidDisappear",
+        "ca.barraco.carlo.homeassistant.action.toggle.propertyInspectorDidDisappear",
         (jsonObj) => {
             console.log(
                 "%c%s",
@@ -56,7 +60,7 @@ const action = {
 
     onWillAppear: function (jsn) {
         console.log("onWillAppear: " + JSON.stringify(jsn));
-        if (homeAssistantWebsocket == null) {
+        if (homeAssistantWebsocket == null || homeAssistantWebsocket.isclosed) {
             homeAssistantWebsocket = new WebSocket(
                 `wss://${jsn.payload.settings.homeAssistantAddress}/api/websocket`
             );
@@ -82,7 +86,7 @@ const action = {
             };
 
             homeAssistantEvents.on("state_changed", (data) => {
-                const entityIdInput = jsn.payload.settings.entityIdInput;
+                const entityIdInput = this.settings.entityIdInput;
                 if (data.event.data.entity_id === entityIdInput) {
                     $SD.api.setTitle(
                         jsn.context,
@@ -97,17 +101,20 @@ const action = {
 
     onWillDisappear: function (jsn) {
         console.log("onWillDisappear: " + JSON.stringify(jsn));
+        homeAssistantWebsocket.close();
+        homeAssistantWebsocket = null;
     },
 
     onKeyUp: function (jsn) {
         console.log("onKeyUp: " + JSON.stringify(jsn));
+        const entityIdInput = jsn.payload.settings.entityIdInput;
         const testMessage = `{
             "id": ${currentMessageId++},
             "type": "call_service",
             "domain": "switch",
             "service": "toggle",
             "service_data": {
-              "entity_id": "switch.office_lamp_msl120_main_channel"
+              "entity_id": "${entityIdInput}"
             }
           }`;
         homeAssistantWebsocket.send(testMessage);
@@ -120,27 +127,18 @@ const action = {
             "payload.sdpi_collection",
             {}
         );
+
         if (sdpi_collection.value && sdpi_collection.value !== undefined) {
-            this.logStuff(
-                { [sdpi_collection.key]: sdpi_collection.value },
-                "onSendToPlugin",
-                "fuchsia"
+            console.log(
+                `Setting value for ${sdpi_collection.key} to ${sdpi_collection.value}`
             );
+            this.settings[sdpi_collection.key] = sdpi_collection.value;
+            $SD.api.setSettings(jsn.context, this.settings);
         }
     },
 
     saveSettings: function (jsn, sdpi_collection) {
         console.log("saveSettings:", jsn);
-        if (
-            sdpi_collection.hasOwnProperty("key") &&
-            sdpi_collection.key != ""
-        ) {
-            if (sdpi_collection.value && sdpi_collection.value !== undefined) {
-                this.settings[sdpi_collection.key] = sdpi_collection.value;
-                console.log("setSettings....", this.settings);
-                $SD.api.setSettings(jsn.context, this.settings);
-            }
-        }
     },
 
     logStuff: function (inJsonData, caller, tagColor) {

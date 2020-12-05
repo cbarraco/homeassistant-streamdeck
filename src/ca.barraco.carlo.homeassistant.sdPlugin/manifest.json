@@ -2,24 +2,24 @@
   "Actions": [
     {
       "Icon": "action/images/actionimage", 
-      "Name": "Example Action", 
+      "Name": "Toggle a switch", 
       "States": [
         {
           "Image": "action/images/action"
         }
       ], 
-      "Tooltip": "This is an example tooltip", 
-      "UUID": "com.elgato.template.action"
+      "Tooltip": "Toggles a switch entity", 
+      "UUID": "ca.barraco.carlo.homeassistant.action.toggle"
     }
   ], 
   "SDKVersion": 2,
-  "Author": "Elgato Systems", 
+  "Author": "Carlo Barraco", 
   "CodePath": "index.html", 
   "PropertyInspectorPath": "propertyinspector/index.html", 
-  "Description": "Example description", 
-  "Name": "Stream Deck Template", 
+  "Description": "Home Assistant integration with the Elgato Stream Deck", 
+  "Name": "Home Assistant Integration", 
   "Icon": "action/images/action", 
-  "URL": "https://www.elgato.com/en/gaming/stream-deck", 
+  "URL": "https://github.com/cbarraco/homeassistant-streamdeck", 
   "Version": "1.0.0",
   "OS": [
     {
