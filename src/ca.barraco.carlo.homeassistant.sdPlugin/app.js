@@ -8,7 +8,7 @@ $SD.on("connected", (jsonObj) => connected(jsonObj));
 
 function connected(jsn) {
     logStreamDeckEvent(jsn);
-
+    
     $SD.on(
         "ca.barraco.carlo.homeassistant.action.toggle.willAppear",
         (jsonObj) => toggleAction.onWillAppear(jsonObj)
@@ -29,6 +29,10 @@ function connected(jsn) {
         (jsonObj) => toggleAction.onDidReceiveSettings(jsonObj)
     );
     $SD.on(
+        "ca.barraco.carlo.homeassistant.action.toggle.didReceiveGlobalSettings",
+        (jsonObj) => toggleAction.onDidReceiveGlobalSettings(jsonObj)
+    );
+    $SD.on(
         "ca.barraco.carlo.homeassistant.action.toggle.propertyInspectorDidAppear",
         (jsonObj) => logStreamDeckEvent(jsonObj)
     );
@@ -41,6 +45,10 @@ function connected(jsn) {
 const toggleAction = {
     settings: {},
 
+    onDidReceiveGlobalSettings: function (jsn) {
+        logStreamDeckEvent(jsn);
+    },
+
     onDidReceiveSettings: function (jsn) {
         logStreamDeckEvent(jsn);
         this.settings = Utils.getProp(jsn, "payload.settings", {});
@@ -48,6 +56,7 @@ const toggleAction = {
 
     onWillAppear: function (jsn) {
         logStreamDeckEvent(jsn);
+
         if (homeAssistantWebsocket == null || homeAssistantWebsocket.isclosed) {
             homeAssistantWebsocket = new WebSocket(
                 `wss://${jsn.payload.settings.homeAssistantAddress}/api/websocket`
