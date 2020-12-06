@@ -1,14 +1,14 @@
 {
   "Actions": [
     {
-      "Icon": "action/images/actionToggleOn",
+      "Icon": "plugin/images/actions/actionToggleOn",
       "Name": "Toggle a switch",
       "States": [
         {
-          "Image": "action/images/actionToggleOn"
+          "Image": "plugin/images/actions/actionToggleOn"
         },
         {
-          "Image": "action/images/actionToggleOff"
+          "Image": "plugin/images/actions/actionToggleOff"
         }
       ],
       "Tooltip": "Toggles a switch entity in Home Assistant",
@@ -17,15 +17,15 @@
   ],
   "SDKVersion": 2,
   "Author": "Carlo Barraco",
-  "CodePath": "index.html",
-  "PropertyInspectorPath": "propertyinspector/index.html",
+  "CodePath": "plugin/index.html",
+  "PropertyInspectorPath": "pi/index.html",
   "Description": "Home Assistant integration with the Elgato Stream Deck",
   "Name": "Home Assistant Integration",
-  "Icon": "action/images/pluginIcon",
+  "Icon": "images/pluginIcon",
   "URL": "https://github.com/cbarraco/homeassistant-streamdeck",
   "Version": "1.0.0",
   "Category": "Home Assistant Integration",
-  "CategoryIcon": "action/images/pluginIcon",
+  "CategoryIcon": "images/pluginIcon",
   "OS": [
     {
       "Platform": "mac",
@@ -37,6 +37,6 @@
     }
   ],
   "Software": {
-    "MinimumVersion": "4.1"
+    "MinimumVersion": "4.9"
   }
 }
