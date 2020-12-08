@@ -18,6 +18,8 @@ function Action(inContext, inSettings) {
     // Private variable containing the settings of the action
     var settings = inSettings;
 
+    var entityId = "";
+
     // Private map used for string migration in settings
     const stringMap = {
         "0m": "",

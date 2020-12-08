@@ -1,18 +1,15 @@
 {
   "Actions": [
     {
-      "Icon": "plugin/images/actions/actionToggleOn",
+      "Icon": "plugin/images/actions/actionToggleSwitch",
       "Name": "Toggle a switch",
       "States": [
         {
-          "Image": "plugin/images/actions/actionToggleOn"
-        },
-        {
-          "Image": "plugin/images/actions/actionToggleOff"
+          "Image": "plugin/images/actions/actionToggleSwitch"
         }
       ],
       "Tooltip": "Toggles a switch entity in Home Assistant",
-      "UUID": "ca.barraco.carlo.homeassistant.action.toggle"
+      "UUID": "ca.barraco.carlo.homeassistant.action.toggleswitch"
     }
   ],
   "SDKVersion": 2,

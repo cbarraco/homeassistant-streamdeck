@@ -54,11 +54,11 @@ function connectElgatoStreamDeckSocket(
 
     var homeAssistantAddress = document.getElementById("homeAssistantAddress");
     homeAssistantAddress.value = globalSettings.homeAssistantAddress;
-    homeAssistantAddress.addEventListener("input", onHomeAssistantAddress);
+    homeAssistantAddress.addEventListener("change", onHomeAssistantAddress);
 
     var accessToken = document.getElementById("accessToken");
     accessToken.value = globalSettings.accessToken;
-    accessToken.addEventListener("input", onAccessToken);
+    accessToken.addEventListener("change", onAccessToken);
 
     var entityIdInput = document.getElementById("entityIdInput");
     entityIdInput.value = settings.entityIdInput;
@@ -75,12 +75,16 @@ function connectElgatoStreamDeckSocket(
         var value = inEvent.target.value;
         globalSettings.homeAssistantAddress = value;
         saveGlobalSettings(inUUID);
+        // TODO supply some data to be explicit
+        sendToPlugin(action, inUUID, {});
     }
 
     function onAccessToken(inEvent) {
         var value = inEvent.target.value;
         globalSettings.accessToken = value;
         saveGlobalSettings(inUUID);
+        // TODO supply some data to be explicit
+        sendToPlugin(action, inUUID, {});
     }
 
     function onEntityIdInput(inEvent) {

@@ -23,7 +23,10 @@ function ToggleSwitchAction(inContext, inSettings) {
 		"service_data": {
 		  "entity_id": "${entityIdInput}"
 		}
-	  }`;
+    }`;
+
+        logMessage(`Sending service call to HA: ${testMessage}`);
+
         homeAssistantWebsocket.send(testMessage);
 
         inCallback();

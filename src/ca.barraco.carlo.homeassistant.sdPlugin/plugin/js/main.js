@@ -5,10 +5,7 @@ var websocket = null;
 var cache = {};
 
 // Global settings
-var globalSettings = {
-    accessToken: haToken,
-    homeAssistantAddress: haAddress,
-};
+var globalSettings = {};
 
 // Global Home Assistant socket
 var homeAssistantWebsocket = null;
@@ -57,7 +54,7 @@ function connectElgatoStreamDeckSocket(
                     // Find out type of action
                     if (actions[inContext] instanceof ToggleSwitchAction) {
                         var action =
-                            "ca.barraco.carlo.homeassistant.action.toggle";
+                            "ca.barraco.carlo.homeassistant.action.toggleswitch";
                     }
                     // Inform PI of new cache
                     sendToPropertyInspector(action, inContext, cache.data);
@@ -108,7 +105,10 @@ function connectElgatoStreamDeckSocket(
             // Current instance is not in actions array
             if (!(context in actions)) {
                 // Add current instance to array
-                if (action == "ca.barraco.carlo.homeassistant.action.toggle") {
+                if (
+                    action ===
+                    "ca.barraco.carlo.homeassistant.action.toggleswitch"
+                ) {
                     actions[context] = new ToggleSwitchAction(
                         context,
                         settings
@@ -123,6 +123,10 @@ function connectElgatoStreamDeckSocket(
         } else if (event == "didReceiveGlobalSettings") {
             // Set global settings
             globalSettings = jsonPayload["settings"];
+
+            if (homeAssistantWebsocket) {
+                homeAssistantWebsocket.close();
+            }
 
             homeAssistantWebsocket = new WebSocket(
                 `wss://${globalSettings.homeAssistantAddress}/api/websocket`
@@ -147,12 +151,30 @@ function connectElgatoStreamDeckSocket(
                 const eventType = data.type;
 
                 if (eventType === "event") {
-                    // // TODO create map to determine which actions need which event data
-                    // logHomeAssistantEvent(data);
-                    // const newState = data.event.data.new_state.state;
-                    // if (data.event.data.entity_id === settings.entityIdInput) {
-                    // // TODO send new state data to corresponding actions
-                    // }
+                    const newState = data.event.data.new_state.state;
+                    for (context in actions) {
+                        var actionSettings = actions[context].getSettings();
+                        if (
+                            data.event.data.entity_id ===
+                            actionSettings["entityIdInput"]
+                        ) {
+                            logHomeAssistantEvent(data);
+                            const mainCanvas = document.getElementById(
+                                "mainCanvas"
+                            );
+                            var ctx = mainCanvas.getContext("2d");
+
+                            if (newState === "on") {
+                                ctx.fillStyle = "#1976D2";
+                                ctx.fillRect(0, 0, mainCanvas.width, mainCanvas.height);
+                            } else {
+                                ctx.fillStyle = "#FF5252";
+                                ctx.fillRect(0, 0, mainCanvas.width, mainCanvas.height);
+                            }
+                            ctx.drawImage();
+                            setImage(context, mainCanvas.toDataURL());
+                        }
+                    }
                 } else {
                     logHomeAssistantEvent(data);
                 }
@@ -176,6 +198,8 @@ function connectElgatoStreamDeckSocket(
         } else if (event == "propertyInspectorDidAppear") {
             // Send cache to PI
             sendToPropertyInspector(action, context, cache.data);
+        } else if (event == "sendToPlugin") {
+            requestGlobalSettings(inPluginUUID);
         }
     };
 }
