@@ -339,8 +339,6 @@ function connectElgatoStreamDeckSocket(
         } else if (event == "propertyInspectorDidAppear") {
             // Send cache to PI
             sendToPropertyInspector(action, context, cache.data);
-        } else if (event == "sendToPlugin") {
-            //requestGlobalSettings(inPluginUUID);
         }
     };
 }
