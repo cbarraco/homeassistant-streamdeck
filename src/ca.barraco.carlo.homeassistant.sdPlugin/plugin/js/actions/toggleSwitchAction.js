@@ -16,14 +16,14 @@ function ToggleSwitchAction(inContext, inSettings) {
 
         const entityIdInput = inData.settings.entityIdInput;
         const testMessage = `{
-		"id": ${currentMessageId++},
-		"type": "call_service",
-		"domain": "switch",
-		"service": "toggle",
-		"service_data": {
-		  "entity_id": "${entityIdInput}"
-		}
-    }`;
+          "id": ${++currentMessageId},
+          "type": "call_service",
+          "domain": "switch",
+          "service": "toggle",
+          "service_data": {
+            "entity_id": "${entityIdInput}"
+          }
+        }`;
 
         logMessage(`Sending service call to HA: ${testMessage}`);
 

@@ -12,6 +12,11 @@ var homeAssistantWebsocket = null;
 
 var currentMessageId = 0;
 
+// TODO: since it's just simple colours try constructing image data without canvas
+var mainCanvas = null;
+
+var mainCanvasContext = null;
+
 const ConnectionState = {
     NOT_CONNECTED: "not_connected",
     INVALID_ADDRESS: "invalid_address",
@@ -38,6 +43,9 @@ function connectElgatoStreamDeckSocket(
 
     // Create a cache
     cache = new Cache();
+
+    mainCanvas = document.getElementById("mainCanvas");
+    mainCanvasContext = mainCanvas.getContext("2d");
 
     // Open the web socket to Stream Deck
     // Use 127.0.0.1 because Windows needs 300ms to resolve localhost
@@ -124,6 +132,13 @@ function connectElgatoStreamDeckSocket(
                     );
                 }
             }
+
+            logMessage("Fetching all states");
+            const fetchMessage = `{
+                    "id": ${++currentMessageId},
+                    "type": "get_states"
+                  }`;
+            homeAssistantWebsocket.send(fetchMessage);
         } else if (event == "willDisappear") {
             // Remove current instance from array
             if (context in actions) {
@@ -134,18 +149,14 @@ function connectElgatoStreamDeckSocket(
             globalSettings = jsonPayload["settings"];
 
             logMessage("Creating websocket");
-            try {
-                homeAssistantWebsocket = new WebSocket(
-                    `wss://${globalSettings.homeAssistantAddress}/api/websocket`
-                );
-            } catch (e) {
-                logMessage("Exception connecting to HA");
-                if (e instanceof DOMException) {
-                    logHomeAssistantEvent(e);
-                    homeAssistantConnectionState =
-                        ConnectionState.INVALID_ADDRESS;
-                    return;
-                }
+            homeAssistantWebsocket = new WebSocket(
+                `wss://${globalSettings.homeAssistantAddress}/api/websocket`
+            );
+
+            if (homeAssistantWebsocket == null) {
+                logMessage("Couldn't connect to HA, probably invalid address");
+                homeAssistantConnectionState = ConnectionState.INVALID_ADDRESS;
+                return;
             }
 
             homeAssistantWebsocket.onopen = function () {
@@ -158,11 +169,18 @@ function connectElgatoStreamDeckSocket(
                 // subscribe to all state change events
                 logMessage("Subscribing to state changes");
                 const subscribeMessage = `{
-                        "id": ${currentMessageId++},
+                        "id": ${++currentMessageId},
                         "type": "subscribe_events",
                         "event_type": "state_changed"
                     }`;
                 homeAssistantWebsocket.send(subscribeMessage);
+
+                logMessage("Fetching all states");
+                const fetchMessage = `{
+                    "id": ${++currentMessageId},
+                    "type": "get_states"
+                  }`;
+                homeAssistantWebsocket.send(fetchMessage);
             };
 
             homeAssistantWebsocket.onmessage = function (e) {
@@ -182,16 +200,10 @@ function connectElgatoStreamDeckSocket(
                         ) {
                             logHomeAssistantEvent(data);
 
-                            // TODO: since it's just simple colours try constructing image data without canvas
-                            const mainCanvas = document.getElementById(
-                                "mainCanvas"
-                            );
-                            var ctx = mainCanvas.getContext("2d");
-
                             if (newState === "on") {
                                 // on, make it blue
-                                ctx.fillStyle = "#1976D2";
-                                ctx.fillRect(
+                                mainCanvasContext.fillStyle = "#1976D2";
+                                mainCanvasContext.fillRect(
                                     0,
                                     0,
                                     mainCanvas.width,
@@ -199,8 +211,8 @@ function connectElgatoStreamDeckSocket(
                                 );
                             } else {
                                 // off, make it red
-                                ctx.fillStyle = "#FF5252";
-                                ctx.fillRect(
+                                mainCanvasContext.fillStyle = "#FF5252";
+                                mainCanvasContext.fillRect(
                                     0,
                                     0,
                                     mainCanvas.width,
@@ -220,6 +232,57 @@ function connectElgatoStreamDeckSocket(
                     // everything is good to go
                     logHomeAssistantEvent(data);
                     homeAssistantConnectionState = ConnectionState.CONNECTED;
+                } else if (eventType === "result") {
+                    logHomeAssistantEvent(data);
+                    const results = data.result;
+                    if (results == null) {
+                        logMessage(
+                            "Results message that doesn't contain results"
+                        );
+                        return;
+                    } else {
+                        logMessage(
+                            "Updating button states based on fetched state results"
+                        );
+                        for (var i = 0; i < results.length; i++) {
+                            const result = results[i];
+                            for (context in actions) {
+                                var actionSettings = actions[
+                                    context
+                                ].getSettings();
+                                if (
+                                    result.entity_id ===
+                                    actionSettings["entityIdInput"]
+                                ) {
+                                    logMessage(
+                                        "Updating state for " + result.entity_id
+                                    );
+                                    logHomeAssistantEvent(data);
+
+                                    if (result.state === "on") {
+                                        // on, make it blue
+                                        mainCanvasContext.fillStyle = "#1976D2";
+                                        mainCanvasContext.fillRect(
+                                            0,
+                                            0,
+                                            mainCanvas.width,
+                                            mainCanvas.height
+                                        );
+                                    } else {
+                                        // off, make it red
+                                        mainCanvasContext.fillStyle = "#FF5252";
+                                        mainCanvasContext.fillRect(
+                                            0,
+                                            0,
+                                            mainCanvas.width,
+                                            mainCanvas.height
+                                        );
+                                    }
+                                    setImage(context, mainCanvas.toDataURL());
+                                }
+                            }
+                        }
+                    }
                 } else {
                     // other HA message, log it
                     logHomeAssistantEvent(data);
@@ -233,13 +296,28 @@ function connectElgatoStreamDeckSocket(
             };
 
             homeAssistantWebsocket.onclose = function (e) {
+                logMessage("WebSocket closed");
+                logHomeAssistantEvent(e);
                 // wait 10 seconds and try to reconnect
                 if (homeAssistantConnectionState == ConnectionState.CONNECTED) {
+                    logMessage(
+                        "We were connected and all of a sudden disconnected, need to retry in 30 seconds"
+                    );
                     homeAssistantConnectionState =
                         ConnectionState.NEED_RECONNECT;
                     setTimeout(function () {
                         requestGlobalSettings(inPluginUUID);
-                    }, 10000);
+                    }, 30000);
+                } else if (
+                    homeAssistantConnectionState ==
+                    ConnectionState.NEED_RECONNECT
+                ) {
+                    logMessage(
+                        "Still not connected, need to retry in 30 seconds"
+                    );
+                    setTimeout(function () {
+                        requestGlobalSettings(inPluginUUID);
+                    }, 30000);
                 }
             };
 
@@ -262,7 +340,7 @@ function connectElgatoStreamDeckSocket(
             // Send cache to PI
             sendToPropertyInspector(action, context, cache.data);
         } else if (event == "sendToPlugin") {
-            requestGlobalSettings(inPluginUUID);
+            //requestGlobalSettings(inPluginUUID);
         }
     };
 }
