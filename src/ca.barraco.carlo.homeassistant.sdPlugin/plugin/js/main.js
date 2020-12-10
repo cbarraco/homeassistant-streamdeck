@@ -10,7 +10,16 @@ var globalSettings = {};
 // Global Home Assistant socket
 var homeAssistantWebsocket = null;
 
-var currentMessageId = 1;
+var currentMessageId = 0;
+
+const ConnectionState = {
+    NOT_CONNECTED: "not_connected",
+    INVALID_ADDRESS: "invalid_address",
+    INVALID_TOKEN: "invalid_token",
+    NEED_RECONNECT: "need_reconnect",
+    CONNECTED: "connected",
+};
+var homeAssistantConnectionState = ConnectionState.DONT_KNOW;
 
 // Setup the websocket and handle communication
 function connectElgatoStreamDeckSocket(
@@ -124,25 +133,35 @@ function connectElgatoStreamDeckSocket(
             // Set global settings
             globalSettings = jsonPayload["settings"];
 
-            if (homeAssistantWebsocket) {
-                homeAssistantWebsocket.close();
+            logMessage("Creating websocket");
+            try {
+                homeAssistantWebsocket = new WebSocket(
+                    `wss://${globalSettings.homeAssistantAddress}/api/websocket`
+                );
+            } catch (e) {
+                logMessage("Exception connecting to HA");
+                if (e instanceof DOMException) {
+                    logHomeAssistantEvent(e);
+                    homeAssistantConnectionState =
+                        ConnectionState.INVALID_ADDRESS;
+                    return;
+                }
             }
 
-            homeAssistantWebsocket = new WebSocket(
-                `wss://${globalSettings.homeAssistantAddress}/api/websocket`
-            );
-
             homeAssistantWebsocket.onopen = function () {
-                // authenticate
+                logMessage("Opened connection to HA");
+                // authenticate with access token
+                logMessage("Sending access token");
                 const authMessage = `{"type": "auth", "access_token": "${globalSettings.accessToken}"}`;
                 homeAssistantWebsocket.send(authMessage);
 
-                // subscribe to state change events
+                // subscribe to all state change events
+                logMessage("Subscribing to state changes");
                 const subscribeMessage = `{
-                    "id": ${currentMessageId++},
-                    "type": "subscribe_events",
-                    "event_type": "state_changed"
-                }`;
+                        "id": ${currentMessageId++},
+                        "type": "subscribe_events",
+                        "event_type": "state_changed"
+                    }`;
                 homeAssistantWebsocket.send(subscribeMessage);
             };
 
@@ -151,7 +170,10 @@ function connectElgatoStreamDeckSocket(
                 const eventType = data.type;
 
                 if (eventType === "event") {
+                    // got a new state update
                     const newState = data.event.data.new_state.state;
+
+                    // check if the state update is relevant to our buttons
                     for (context in actions) {
                         var actionSettings = actions[context].getSettings();
                         if (
@@ -159,24 +181,65 @@ function connectElgatoStreamDeckSocket(
                             actionSettings["entityIdInput"]
                         ) {
                             logHomeAssistantEvent(data);
+
+                            // TODO: since it's just simple colours try constructing image data without canvas
                             const mainCanvas = document.getElementById(
                                 "mainCanvas"
                             );
                             var ctx = mainCanvas.getContext("2d");
 
                             if (newState === "on") {
+                                // on, make it blue
                                 ctx.fillStyle = "#1976D2";
-                                ctx.fillRect(0, 0, mainCanvas.width, mainCanvas.height);
+                                ctx.fillRect(
+                                    0,
+                                    0,
+                                    mainCanvas.width,
+                                    mainCanvas.height
+                                );
                             } else {
+                                // off, make it red
                                 ctx.fillStyle = "#FF5252";
-                                ctx.fillRect(0, 0, mainCanvas.width, mainCanvas.height);
+                                ctx.fillRect(
+                                    0,
+                                    0,
+                                    mainCanvas.width,
+                                    mainCanvas.height
+                                );
                             }
-                            ctx.drawImage();
                             setImage(context, mainCanvas.toDataURL());
                         }
                     }
-                } else {
+                } else if (eventType === "auth_invalid") {
+                    // we connected but the access token is invalid
                     logHomeAssistantEvent(data);
+                    homeAssistantConnectionState =
+                        ConnectionState.INVALID_TOKEN;
+                    homeAssistantWebsocket.close();
+                } else if (eventType === "auth_ok") {
+                    // everything is good to go
+                    logHomeAssistantEvent(data);
+                    homeAssistantConnectionState = ConnectionState.CONNECTED;
+                } else {
+                    // other HA message, log it
+                    logHomeAssistantEvent(data);
+                }
+            };
+
+            homeAssistantWebsocket.onerror = function (e) {
+                // error, shut it down
+                logHomeAssistantEvent(e);
+                homeAssistantWebsocket.close();
+            };
+
+            homeAssistantWebsocket.onclose = function (e) {
+                // wait 10 seconds and try to reconnect
+                if (homeAssistantConnectionState == ConnectionState.CONNECTED) {
+                    homeAssistantConnectionState =
+                        ConnectionState.NEED_RECONNECT;
+                    setTimeout(function () {
+                        requestGlobalSettings(inPluginUUID);
+                    }, 10000);
                 }
             };
 
