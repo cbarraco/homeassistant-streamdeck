@@ -7,6 +7,7 @@ Home Assistant integration with the Elgato Stream Deck
 - [x] Have the state of the switch update the action title asynchronously with the HA WebSocket API
 
 ## Release 2 Feature List
+- [ ] Create action that can toggle a light with specific color
 - [ ] Create action that can call an HA service
 - [ ] Create suggestions for action parameters based on existing entities in the system
 
