@@ -28,13 +28,11 @@ function connectElgatoStreamDeckSocket(
         requestGlobalSettings(inUUID);
     };
 
-    var homeAssistantAddress = document.getElementById(
-        "homeAssistantAddress"
-    );
+    var homeAssistantAddress = document.getElementById("homeAssistantAddress");
     var ssl = document.getElementById("ssl");
     var accessToken = document.getElementById("accessToken");
     setUpGlobalSettingsElements(homeAssistantAddress, ssl, accessToken);
-    updateElementsFromGlobalSettings(homeAssistantAddress, ssl, accessToken)
+    updateElementsFromGlobalSettings(homeAssistantAddress, ssl, accessToken);
 
     var entityIdInput = document.getElementById("entityIdInput");
     entityIdInput.value = settings.entityIdInput;
@@ -56,6 +54,8 @@ function connectElgatoStreamDeckSocket(
         var event = jsonObj["event"];
         var jsonPayload = jsonObj["payload"];
 
+        logStreamDeckEvent(jsonObj);
+
         if (event == "didReceiveGlobalSettings") {
             globalSettings = jsonPayload["settings"];
 
@@ -65,25 +65,52 @@ function connectElgatoStreamDeckSocket(
             var ssl = document.getElementById("ssl");
             var accessToken = document.getElementById("accessToken");
 
-            updateElementsFromGlobalSettings(homeAssistantAddress, ssl, accessToken);
+            updateElementsFromGlobalSettings(
+                homeAssistantAddress,
+                ssl,
+                accessToken
+            );
         } else if (event == "didReceiveSettings") {
             settings = jsonPayload["settings"];
-
             var entityIdInput = document.getElementById("entityIdInput");
+            populateEntityOptions(entityIdInput);
             entityIdInput.value = settings.entityIdInput;
         } else if (event == "sendToPropertyInspector") {
             logStreamDeckEvent(evt);
             knownEntityIds = jsonPayload["entityUpdate"];
+            var entityIdInput = document.getElementById("entityIdInput");
+            populateEntityOptions(entityIdInput);
+            entityIdInput.value = settings.entityIdInput;
         }
     };
 
-    function updateElementsFromGlobalSettings(homeAssistantAddress, ssl, accessToken) {
+    function populateEntityOptions(entityIdInput) {
+        entityIdInput.innerHTML = "";
+        knownEntityIds.forEach((element) => {
+            if (element.startsWith("switch.")) {
+                const entityOption = document.createElement("option");
+                entityOption.value = element;
+                entityOption.innerHTML = element;
+                entityIdInput.appendChild(entityOption);
+            }
+        });
+    }
+
+    function updateElementsFromGlobalSettings(
+        homeAssistantAddress,
+        ssl,
+        accessToken
+    ) {
         homeAssistantAddress.value = globalSettings.homeAssistantAddress;
         ssl.checked = globalSettings.ssl;
         accessToken.value = globalSettings.accessToken;
     }
 
-    function setUpGlobalSettingsElements(homeAssistantAddress, ssl, accessToken) {
+    function setUpGlobalSettingsElements(
+        homeAssistantAddress,
+        ssl,
+        accessToken
+    ) {
         homeAssistantAddress.addEventListener("change", function (inEvent) {
             var value = inEvent.target.value;
             globalSettings.homeAssistantAddress = value;

@@ -9,15 +9,15 @@ function ToggleSwitchAction(inContext, inSettings) {
 
     // Public function called on key up event
     this.onKeyUp = function (inData) {
-        actionOnKeyUp.call(this, inData, send);
+        actionOnKeyUp.call(this, inData);
         const entityIdInput = inData.settings.entityIdInput;
         sendToggleCommand(entityIdInput);
     };
 
     function sendToggleCommand(entityId) {
-        logMessage(`Sending service call to HA: ${testMessage}`);
+        logMessage(`Sending toggle command to HA for entity ${entityId}`);
         const testMessage = `{
-          "id": ${++currentMessageId},
+          "id": ${++homeAssistantMessageId},
           "type": "call_service",
           "domain": "switch",
           "service": "toggle",

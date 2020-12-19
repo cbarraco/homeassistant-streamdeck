@@ -81,7 +81,7 @@ function connectElgatoStreamDeckSocket(
         } else if (event == "didReceiveGlobalSettings") {
             globalSettings = jsonPayload["settings"];
 
-            logMessage("Creating websocket");
+            logMessage("Creating HA websocket");
             var webSocketAddress = "";
             if (globalSettings.ssl == true) {
                 webSocketAddress = `wss://${globalSettings.homeAssistantAddress}/api/websocket`;
@@ -140,9 +140,12 @@ function connectElgatoStreamDeckSocket(
                                 context
                             );
                         }
-                        sendToPropertyInspector(action, context, {
-                            entityUpdate: knownEntityIds,
-                        });
+                        for (context in actions) {
+                            const action = actions[context];
+                            sendToPropertyInspector(action, context, {
+                                entityUpdate: knownEntityIds,
+                            });
+                        }
                     }
                 } else {
                     // other HA message, just log it
@@ -198,6 +201,13 @@ function connectElgatoStreamDeckSocket(
             logStreamDeckEvent(inEvent.data);
             clearTimeout(reconnectTimeout);
             requestGlobalSettings(inPluginUUID);
+        } else if (event == "propertyInspectorDidAppear") {
+            for (context in actions) {
+                const action = actions[context];
+                sendToPropertyInspector(action, context, {
+                    entityUpdate: knownEntityIds,
+                });
+            }
         }
     };
 
