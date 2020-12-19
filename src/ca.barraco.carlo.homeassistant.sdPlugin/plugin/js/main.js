@@ -1,9 +1,6 @@
 // Global web socket
 var streamDeckWebSocket = null;
 
-// Global cache
-var cache = {};
-
 // Global settings
 var globalSettings = {};
 
@@ -45,9 +42,6 @@ function connectElgatoStreamDeckSocket(
     // Create array of currently used actions
     var actions = {};
 
-    // Create a cache
-    cache = new Cache();
-
     mainCanvas = document.getElementById("mainCanvas");
     mainCanvasContext = mainCanvas.getContext("2d");
 
@@ -63,26 +57,6 @@ function connectElgatoStreamDeckSocket(
         // Request the global settings of the plugin
         requestGlobalSettings(inPluginUUID);
     };
-
-    // Add event listener
-    document.addEventListener(
-        "newCacheAvailable",
-        function () {
-            // When a new cache is available
-            Object.keys(actions).forEach(function (inContext) {
-                // Inform all used actions that a new cache is available
-                actions[inContext].newCacheAvailable(function () {
-                    // Find out type of action
-                    if (actions[inContext] instanceof ToggleSwitchAction) {
-                        var action = ActionType.TOGGLE_SWITCH;
-                    }
-                    // Inform PI of new cache
-                    sendToPropertyInspector(action, inContext, cache.data);
-                });
-            });
-        },
-        false
-    );
 
     // Web socket received a message
     streamDeckWebSocket.onmessage = function (inEvent) {
@@ -107,20 +81,11 @@ function connectElgatoStreamDeckSocket(
 
             // Send onKeyUp event to actions
             if (context in actions) {
-                actions[context].onKeyUp(data, function () {
-                    // Refresh the cache
-                    cache.update();
-                });
+                actions[context].onKeyUp(data);
             }
         } else if (event == "willAppear") {
             logStreamDeckEvent(inEvent.data);
             var settings = jsonPayload["settings"];
-
-            // If this is the first visible action
-            if (Object.keys(actions).length == 0) {
-                // Start polling
-                cache.update();
-            }
 
             // Current instance is not in actions array
             if (!(context in actions)) {
@@ -252,12 +217,6 @@ function connectElgatoStreamDeckSocket(
                     }, 30000);
                 }
             };
-
-            // If at least one action is active
-            if (Object.keys(actions).length > 0) {
-                // Refresh the cache
-                cache.update();
-            }
         } else if (event == "didReceiveSettings") {
             logStreamDeckEvent(inEvent.data);
             var settings = jsonPayload["settings"];
@@ -266,13 +225,6 @@ function connectElgatoStreamDeckSocket(
             if (context in actions) {
                 actions[context].setSettings(settings);
             }
-
-            // Refresh the cache
-            cache.update();
-        } else if (event == "propertyInspectorDidAppear") {
-            logStreamDeckEvent(inEvent.data);
-            // Send cache to PI
-            sendToPropertyInspector(action, context, cache.data);
         } else if (event == "sendToPlugin") {
             logStreamDeckEvent(inEvent.data);
             clearTimeout(reconnectTimeout);

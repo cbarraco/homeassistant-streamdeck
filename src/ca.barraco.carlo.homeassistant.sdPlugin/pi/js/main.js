@@ -7,9 +7,6 @@ var globalSettings = {};
 // Global settings
 var settings = {};
 
-// Global cache
-var cache = {};
-
 var knownEntityIds = [];
 
 // Setup the websocket and handle communication
