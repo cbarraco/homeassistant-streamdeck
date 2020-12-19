@@ -17,6 +17,8 @@ var mainCanvas = null;
 
 var mainCanvasContext = null;
 
+var reconnectTimeout = null;
+
 const ConnectionState = {
     NOT_CONNECTED: "not_connected",
     INVALID_ADDRESS: "invalid_address",
@@ -239,6 +241,7 @@ function connectElgatoStreamDeckSocket(
                     // everything is good to go
                     logHomeAssistantEvent(data);
                     homeAssistantConnectionState = ConnectionState.CONNECTED;
+                    reconnectTimeout = null;
                 } else if (eventType === "result") {
                     logHomeAssistantEvent(data);
                     const results = data.result;
@@ -306,9 +309,11 @@ function connectElgatoStreamDeckSocket(
                     );
                     homeAssistantConnectionState =
                         ConnectionState.NEED_RECONNECT;
-                    setTimeout(function () {
-                        requestGlobalSettings(inPluginUUID);
-                    }, 30000);
+                    if (reconnectTimeout != null) {
+                        reconnectTimeout = setTimeout(function () {
+                            requestGlobalSettings(inPluginUUID);
+                        }, 30000);
+                    }
                 } else if (
                     homeAssistantConnectionState ==
                     ConnectionState.NEED_RECONNECT
@@ -316,9 +321,11 @@ function connectElgatoStreamDeckSocket(
                     logMessage(
                         "Still not connected, need to retry in 30 seconds"
                     );
-                    setTimeout(function () {
-                        requestGlobalSettings(inPluginUUID);
-                    }, 30000);
+                    if (reconnectTimeout != null) {
+                        reconnectTimeout = setTimeout(function () {
+                            requestGlobalSettings(inPluginUUID);
+                        }, 30000);
+                    }
                 } else if (
                     homeAssistantConnectionState ==
                     ConnectionState.NOT_CONNECTED
@@ -326,9 +333,11 @@ function connectElgatoStreamDeckSocket(
                     logMessage(
                         "First connection failed, need to retry in 15 seconds"
                     );
-                    setTimeout(function () {
-                        requestGlobalSettings(inPluginUUID);
-                    }, 15000);
+                    if (reconnectTimeout != null) {
+                        reconnectTimeout = setTimeout(function () {
+                            requestGlobalSettings(inPluginUUID);
+                        }, 15000);
+                    }
                 }
             };
 
@@ -352,6 +361,10 @@ function connectElgatoStreamDeckSocket(
             logStreamDeckEvent(inEvent.data);
             // Send cache to PI
             sendToPropertyInspector(action, context, cache.data);
+        } else if (event == "sendToPlugin"){
+            logStreamDeckEvent(inEvent.data);
+            clearTimeout(reconnectTimeout);
+            requestGlobalSettings(inPluginUUID);
         }
     };
 }
