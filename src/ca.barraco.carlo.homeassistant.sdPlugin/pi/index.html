@@ -20,6 +20,17 @@
                     value=""
                 />
             </div>
+            <div class="wrap">
+                <p>Don't include http:// or https:// just the address and port of the server. For example: <b>example.duckdns.org:8123</b> or <b>192.168.0.10:8123</b></p>
+            </div>
+            <div type="checkbox" class="sdpi-item">
+                <div class="sdpi-item-label">Encryption</div>
+                <input class="sdpi-item-value" id="ssl" type="checkbox" value="encrypted">
+                <label for="ssl"><span></span>My Home Assistant is encrypted</label>
+            </div>
+            <div class="wrap">
+                <p>If you aren't sure then you can probably leave it unchecked.</p>
+            </div>
             <div class="sdpi-item">
                 <div class="sdpi-item-label">Long Access Token</div>
                 <input
@@ -29,7 +40,7 @@
                     value=""
                 />
             </div>
-
+            <div class="sdpi-heading">Parameters</div>
             <div class="sdpi-item">
                 <div class="sdpi-item-label">Entity ID</div>
                 <input

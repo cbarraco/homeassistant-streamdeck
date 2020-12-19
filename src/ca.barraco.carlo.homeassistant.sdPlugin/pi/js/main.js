@@ -56,6 +56,10 @@ function connectElgatoStreamDeckSocket(
     homeAssistantAddress.value = globalSettings.homeAssistantAddress;
     homeAssistantAddress.addEventListener("change", onHomeAssistantAddress);
 
+    var ssl = document.getElementById("ssl");
+    ssl.checked = globalSettings.ssl;
+    ssl.addEventListener("click", onSsl);
+
     var accessToken = document.getElementById("accessToken");
     accessToken.value = globalSettings.accessToken;
     accessToken.addEventListener("change", onAccessToken);
@@ -74,6 +78,14 @@ function connectElgatoStreamDeckSocket(
     function onHomeAssistantAddress(inEvent) {
         var value = inEvent.target.value;
         globalSettings.homeAssistantAddress = value;
+        saveGlobalSettings(inUUID);
+        // TODO supply some data to be explicit
+        sendToPlugin(action, inUUID, {});
+    }
+
+    function onSsl(inEvent) {
+        var checked = inEvent.target.checked;
+        globalSettings.ssl = checked;
         saveGlobalSettings(inUUID);
         // TODO supply some data to be explicit
         sendToPlugin(action, inUUID, {});

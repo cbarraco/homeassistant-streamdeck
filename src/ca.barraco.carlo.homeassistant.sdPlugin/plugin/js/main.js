@@ -83,7 +83,6 @@ function connectElgatoStreamDeckSocket(
 
     // Web socket received a message
     websocket.onmessage = function (inEvent) {
-        logStreamDeckEvent(inEvent.data);
 
         // Parse parameter from string to object
         var jsonObj = JSON.parse(inEvent.data);
@@ -96,6 +95,7 @@ function connectElgatoStreamDeckSocket(
 
         // Key up event
         if (event == "keyUp") {
+            logStreamDeckEvent(inEvent.data);
             var data = {};
             data.context = context;
             data.settings = jsonPayload["settings"];
@@ -111,6 +111,7 @@ function connectElgatoStreamDeckSocket(
                 });
             }
         } else if (event == "willAppear") {
+            logStreamDeckEvent(inEvent.data);
             var settings = jsonPayload["settings"];
 
             // If this is the first visible action
@@ -140,6 +141,7 @@ function connectElgatoStreamDeckSocket(
                   }`;
             homeAssistantWebsocket.send(fetchMessage);
         } else if (event == "willDisappear") {
+            logStreamDeckEvent(inEvent.data);
             // Remove current instance from array
             if (context in actions) {
                 delete actions[context];
@@ -149,9 +151,14 @@ function connectElgatoStreamDeckSocket(
             globalSettings = jsonPayload["settings"];
 
             logMessage("Creating websocket");
-            homeAssistantWebsocket = new WebSocket(
-                `wss://${globalSettings.homeAssistantAddress}/api/websocket`
-            );
+            var webSocketAddress = "";
+            if (globalSettings.ssl == true) {
+                webSocketAddress = `wss://${globalSettings.homeAssistantAddress}/api/websocket`;
+            } else {
+                webSocketAddress = `ws://${globalSettings.homeAssistantAddress}/api/websocket`;
+            }
+
+            homeAssistantWebsocket = new WebSocket(webSocketAddress);
 
             if (homeAssistantWebsocket == null) {
                 logMessage("Couldn't connect to HA, probably invalid address");
@@ -331,6 +338,7 @@ function connectElgatoStreamDeckSocket(
                 cache.update();
             }
         } else if (event == "didReceiveSettings") {
+            logStreamDeckEvent(inEvent.data);
             var settings = jsonPayload["settings"];
 
             // Set settings
@@ -341,6 +349,7 @@ function connectElgatoStreamDeckSocket(
             // Refresh the cache
             cache.update();
         } else if (event == "propertyInspectorDidAppear") {
+            logStreamDeckEvent(inEvent.data);
             // Send cache to PI
             sendToPropertyInspector(action, context, cache.data);
         }
