@@ -241,6 +241,7 @@ function connectElgatoStreamDeckSocket(
                         );
                         return;
                     } else {
+                        logHomeAssistantEvent(data);
                         logMessage(
                             "Updating button states based on fetched state results"
                         );
@@ -257,27 +258,20 @@ function connectElgatoStreamDeckSocket(
                                     logMessage(
                                         "Updating state for " + result.entity_id
                                     );
-                                    logHomeAssistantEvent(data);
 
                                     if (result.state === "on") {
                                         // on, make it blue
                                         mainCanvasContext.fillStyle = "#1976D2";
-                                        mainCanvasContext.fillRect(
-                                            0,
-                                            0,
-                                            mainCanvas.width,
-                                            mainCanvas.height
-                                        );
                                     } else {
                                         // off, make it red
                                         mainCanvasContext.fillStyle = "#FF5252";
-                                        mainCanvasContext.fillRect(
-                                            0,
-                                            0,
-                                            mainCanvas.width,
-                                            mainCanvas.height
-                                        );
                                     }
+                                    mainCanvasContext.fillRect(
+                                        0,
+                                        0,
+                                        mainCanvas.width,
+                                        mainCanvas.height
+                                    );
                                     setImage(context, mainCanvas.toDataURL());
                                 }
                             }
@@ -318,6 +312,16 @@ function connectElgatoStreamDeckSocket(
                     setTimeout(function () {
                         requestGlobalSettings(inPluginUUID);
                     }, 30000);
+                } else if (
+                    homeAssistantConnectionState ==
+                    ConnectionState.NOT_CONNECTED
+                ) {
+                    logMessage(
+                        "First connection failed, need to retry in 15 seconds"
+                    );
+                    setTimeout(function () {
+                        requestGlobalSettings(inPluginUUID);
+                    }, 15000);
                 }
             };
 
