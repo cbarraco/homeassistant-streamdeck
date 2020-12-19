@@ -1,15 +1,10 @@
-// Global web socket
 var streamDeckWebSocket = null;
-
-// Global plugin settings
 var globalSettings = {};
-
-// Global settings
 var settings = {};
 
 var knownEntityIds = [];
 
-// Setup the websocket and handle communication
+// Property inspector entry point
 function connectElgatoStreamDeckSocket(
     inPort,
     inUUID,
@@ -17,17 +12,11 @@ function connectElgatoStreamDeckSocket(
     inInfo,
     inActionInfo
 ) {
-    // Parse parameter from string to object
-    var actionInfo = JSON.parse(inActionInfo);
     var info = JSON.parse(inInfo);
-
-    // Save global settings
-    settings = actionInfo["payload"]["settings"];
-
-    // Retrieve language
     var language = info["application"]["language"];
 
-    // Retrieve action identifier
+    var actionInfo = JSON.parse(inActionInfo);
+    settings = actionInfo["payload"]["settings"];
     var action = actionInfo["action"];
 
     // Open the web socket to Stream Deck
@@ -35,28 +24,25 @@ function connectElgatoStreamDeckSocket(
 
     // WebSocket is connected, send message
     streamDeckWebSocket.onopen = function () {
-        // Register property inspector to Stream Deck
         registerPluginOrPI(inRegisterEvent, inUUID);
-
-        // Request the global settings of the plugin
         requestGlobalSettings(inUUID);
     };
 
-    var homeAssistantAddress = document.getElementById("homeAssistantAddress");
-    homeAssistantAddress.value = globalSettings.homeAssistantAddress;
-    homeAssistantAddress.addEventListener("change", onHomeAssistantAddress);
-
+    var homeAssistantAddress = document.getElementById(
+        "homeAssistantAddress"
+    );
     var ssl = document.getElementById("ssl");
-    ssl.checked = globalSettings.ssl;
-    ssl.addEventListener("click", onSsl);
-
     var accessToken = document.getElementById("accessToken");
-    accessToken.value = globalSettings.accessToken;
-    accessToken.addEventListener("change", onAccessToken);
+    setUpGlobalSettingsElements(homeAssistantAddress, ssl, accessToken);
+    updateElementsFromGlobalSettings(homeAssistantAddress, ssl, accessToken)
 
     var entityIdInput = document.getElementById("entityIdInput");
     entityIdInput.value = settings.entityIdInput;
-    entityIdInput.addEventListener("input", onEntityIdInput);
+    entityIdInput.addEventListener("input", function (inEvent) {
+        var value = inEvent.target.value;
+        settings.entityIdInput = value;
+        saveSettings(action, inUUID, settings);
+    });
 
     // Create actions
     // if (action == "com.elgato.twitch.chatmessage") {
@@ -65,55 +51,22 @@ function connectElgatoStreamDeckSocket(
     //     var pi = new SubChatPI(inUUID, language);
     // }
 
-    function onHomeAssistantAddress(inEvent) {
-        var value = inEvent.target.value;
-        globalSettings.homeAssistantAddress = value;
-        saveGlobalSettings(inUUID);
-        // TODO supply some data to be explicit
-        sendToPlugin(action, inUUID, {});
-    }
-
-    function onSsl(inEvent) {
-        var checked = inEvent.target.checked;
-        globalSettings.ssl = checked;
-        saveGlobalSettings(inUUID);
-        // TODO supply some data to be explicit
-        sendToPlugin(action, inUUID, {});
-    }
-
-    function onAccessToken(inEvent) {
-        var value = inEvent.target.value;
-        globalSettings.accessToken = value;
-        saveGlobalSettings(inUUID);
-        // TODO supply some data to be explicit
-        sendToPlugin(action, inUUID, {});
-    }
-
-    function onEntityIdInput(inEvent) {
-        var value = inEvent.target.value;
-        settings.entityIdInput = value;
-        saveSettings(action, inUUID, settings);
-    }
-
     streamDeckWebSocket.onmessage = function (evt) {
-        // Received message from Stream Deck
         var jsonObj = JSON.parse(evt.data);
         var event = jsonObj["event"];
         var jsonPayload = jsonObj["payload"];
 
         if (event == "didReceiveGlobalSettings") {
-            // Set global plugin settings
             globalSettings = jsonPayload["settings"];
 
             var homeAssistantAddress = document.getElementById(
                 "homeAssistantAddress"
             );
-            homeAssistantAddress.value = globalSettings.homeAssistantAddress;
-            ssl.checked = globalSettings.ssl;
+            var ssl = document.getElementById("ssl");
             var accessToken = document.getElementById("accessToken");
-            accessToken.value = globalSettings.accessToken;
+
+            updateElementsFromGlobalSettings(homeAssistantAddress, ssl, accessToken);
         } else if (event == "didReceiveSettings") {
-            // Save global settings after default was set
             settings = jsonPayload["settings"];
 
             var entityIdInput = document.getElementById("entityIdInput");
@@ -123,4 +76,33 @@ function connectElgatoStreamDeckSocket(
             knownEntityIds = jsonPayload["entityUpdate"];
         }
     };
+
+    function updateElementsFromGlobalSettings(homeAssistantAddress, ssl, accessToken) {
+        homeAssistantAddress.value = globalSettings.homeAssistantAddress;
+        ssl.checked = globalSettings.ssl;
+        accessToken.value = globalSettings.accessToken;
+    }
+
+    function setUpGlobalSettingsElements(homeAssistantAddress, ssl, accessToken) {
+        homeAssistantAddress.addEventListener("change", function (inEvent) {
+            var value = inEvent.target.value;
+            globalSettings.homeAssistantAddress = value;
+            saveGlobalSettings(inUUID);
+            sendToPlugin(action, inUUID, {});
+        });
+
+        ssl.addEventListener("click", function (inEvent) {
+            var checked = inEvent.target.checked;
+            globalSettings.ssl = checked;
+            saveGlobalSettings(inUUID);
+            sendToPlugin(action, inUUID, {});
+        });
+
+        accessToken.addEventListener("change", function (inEvent) {
+            var value = inEvent.target.value;
+            globalSettings.accessToken = value;
+            saveGlobalSettings(inUUID);
+            sendToPlugin(action, inUUID, {});
+        });
+    }
 }

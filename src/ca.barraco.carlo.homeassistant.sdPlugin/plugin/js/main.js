@@ -1,33 +1,17 @@
-// Global web socket
 var streamDeckWebSocket = null;
 
-// Global settings
 var globalSettings = {};
 
-// Global Home Assistant socket
 var homeAssistantWebsocket = null;
-
-var currentMessageId = 0;
-
-// TODO: since it's just simple colours try constructing image data without canvas
-var mainCanvas = null;
-
-var mainCanvasContext = null;
-
+var homeAssistantConnectionState = ConnectionState.DONT_KNOW;
+var homeAssistantMessageId = 0;
 var reconnectTimeout = null;
-
 var knownEntityIds = [];
 
-const ConnectionState = {
-    NOT_CONNECTED: "not_connected",
-    INVALID_ADDRESS: "invalid_address",
-    INVALID_TOKEN: "invalid_token",
-    NEED_RECONNECT: "need_reconnect",
-    CONNECTED: "connected",
-};
-var homeAssistantConnectionState = ConnectionState.DONT_KNOW;
+var mainCanvas = null;
+var mainCanvasContext = null;
 
-// Setup the websocket and handle communication
+// Plugin entry point
 function connectElgatoStreamDeckSocket(
     inPort,
     inPluginUUID,
@@ -39,7 +23,6 @@ function connectElgatoStreamDeckSocket(
     logStreamDeckEvent(inRegisterEvent);
     logStreamDeckEvent(inInfo);
 
-    // Create array of currently used actions
     var actions = {};
 
     mainCanvas = document.getElementById("mainCanvas");
@@ -49,27 +32,19 @@ function connectElgatoStreamDeckSocket(
     // Use 127.0.0.1 because Windows needs 300ms to resolve localhost
     streamDeckWebSocket = new WebSocket("ws://127.0.0.1:" + inPort);
 
-    // Web socket is connected
     streamDeckWebSocket.onopen = function () {
-        // Register plugin to Stream Deck
         registerPluginOrPI(inRegisterEvent, inPluginUUID);
-
-        // Request the global settings of the plugin
         requestGlobalSettings(inPluginUUID);
     };
 
-    // Web socket received a message
     streamDeckWebSocket.onmessage = function (inEvent) {
-        // Parse parameter from string to object
         var jsonObj = JSON.parse(inEvent.data);
 
-        // Extract payload information
         var event = jsonObj["event"];
         var action = jsonObj["action"];
         var context = jsonObj["context"];
         var jsonPayload = jsonObj["payload"];
 
-        // Key up event
         if (event == "keyUp") {
             logStreamDeckEvent(inEvent.data);
             var data = {};
@@ -87,7 +62,6 @@ function connectElgatoStreamDeckSocket(
             logStreamDeckEvent(inEvent.data);
             var settings = jsonPayload["settings"];
 
-            // Current instance is not in actions array
             if (!(context in actions)) {
                 // Add current instance to array
                 if (action == ActionType.TOGGLE_SWITCH) {
@@ -97,7 +71,6 @@ function connectElgatoStreamDeckSocket(
                     );
                 }
             }
-
             fetchStates();
         } else if (event == "willDisappear") {
             logStreamDeckEvent(inEvent.data);
@@ -106,7 +79,6 @@ function connectElgatoStreamDeckSocket(
                 delete actions[context];
             }
         } else if (event == "didReceiveGlobalSettings") {
-            // Set global settings
             globalSettings = jsonPayload["settings"];
 
             logMessage("Creating websocket");
@@ -118,7 +90,6 @@ function connectElgatoStreamDeckSocket(
             }
 
             homeAssistantWebsocket = new WebSocket(webSocketAddress);
-
             if (homeAssistantWebsocket == null) {
                 logMessage("Couldn't connect to HA, probably invalid address");
                 homeAssistantConnectionState = ConnectionState.INVALID_ADDRESS;
@@ -174,7 +145,7 @@ function connectElgatoStreamDeckSocket(
                         });
                     }
                 } else {
-                    // other HA message, log it
+                    // other HA message, just log it
                     logHomeAssistantEvent(data);
                 }
             };
@@ -220,8 +191,6 @@ function connectElgatoStreamDeckSocket(
         } else if (event == "didReceiveSettings") {
             logStreamDeckEvent(inEvent.data);
             var settings = jsonPayload["settings"];
-
-            // Set settings
             if (context in actions) {
                 actions[context].setSettings(settings);
             }
@@ -268,7 +237,7 @@ function connectElgatoStreamDeckSocket(
     function subscribeToStateChanges() {
         logMessage("Subscribing to state changes");
         const subscribeMessage = `{
-                        "id": ${++currentMessageId},
+                        "id": ${++homeAssistantMessageId},
                         "type": "subscribe_events",
                         "event_type": "state_changed"
                     }`;
@@ -278,7 +247,7 @@ function connectElgatoStreamDeckSocket(
     function fetchStates() {
         logMessage("Fetching all states");
         const fetchMessage = `{
-                    "id": ${++currentMessageId},
+                    "id": ${++homeAssistantMessageId},
                     "type": "get_states"
                   }`;
         homeAssistantWebsocket.send(fetchMessage);
