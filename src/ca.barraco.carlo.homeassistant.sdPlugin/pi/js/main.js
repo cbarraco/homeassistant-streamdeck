@@ -119,7 +119,7 @@ function connectElgatoStreamDeckSocket(
                 "homeAssistantAddress"
             );
             homeAssistantAddress.value = globalSettings.homeAssistantAddress;
-
+            ssl.checked = globalSettings.ssl;
             var accessToken = document.getElementById("accessToken");
             accessToken.value = globalSettings.accessToken;
         } else if (event == "didReceiveSettings") {
