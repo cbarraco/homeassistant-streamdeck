@@ -1,14 +1,5 @@
-//==============================================================================
-/**
-@file       main.js
-@brief      Twitch Plugin
-@copyright  (c) 2020, Corsair Memory, Inc.
-            This source code is licensed under the MIT-style license found in the LICENSE file.
-**/
-//==============================================================================
-
 // Global web socket
-var websocket = null;
+var streamDeckWebSocket = null;
 
 // Global plugin settings
 var globalSettings = {};
@@ -18,6 +9,8 @@ var settings = {};
 
 // Global cache
 var cache = {};
+
+var knownEntityIds = [];
 
 // Setup the websocket and handle communication
 function connectElgatoStreamDeckSocket(
@@ -41,10 +34,10 @@ function connectElgatoStreamDeckSocket(
     var action = actionInfo["action"];
 
     // Open the web socket to Stream Deck
-    websocket = new WebSocket("ws://127.0.0.1:" + inPort);
+    streamDeckWebSocket = new WebSocket("ws://127.0.0.1:" + inPort);
 
     // WebSocket is connected, send message
-    websocket.onopen = function () {
+    streamDeckWebSocket.onopen = function () {
         // Register property inspector to Stream Deck
         registerPluginOrPI(inRegisterEvent, inUUID);
 
@@ -105,7 +98,7 @@ function connectElgatoStreamDeckSocket(
         saveSettings(action, inUUID, settings);
     }
 
-    websocket.onmessage = function (evt) {
+    streamDeckWebSocket.onmessage = function (evt) {
         // Received message from Stream Deck
         var jsonObj = JSON.parse(evt.data);
         var event = jsonObj["event"];
@@ -129,10 +122,8 @@ function connectElgatoStreamDeckSocket(
             var entityIdInput = document.getElementById("entityIdInput");
             entityIdInput.value = settings.entityIdInput;
         } else if (event == "sendToPropertyInspector") {
-            // Save global cache
-            cache = jsonPayload;
-
-            // Load accounts
+            logStreamDeckEvent(evt);
+            knownEntityIds = jsonPayload["entityUpdate"];
         }
     };
 }

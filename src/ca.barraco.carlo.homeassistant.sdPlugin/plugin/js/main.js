@@ -1,5 +1,5 @@
 // Global web socket
-var websocket = null;
+var streamDeckWebSocket = null;
 
 // Global cache
 var cache = {};
@@ -18,6 +18,8 @@ var mainCanvas = null;
 var mainCanvasContext = null;
 
 var reconnectTimeout = null;
+
+var knownEntityIds = [];
 
 const ConnectionState = {
     NOT_CONNECTED: "not_connected",
@@ -51,10 +53,10 @@ function connectElgatoStreamDeckSocket(
 
     // Open the web socket to Stream Deck
     // Use 127.0.0.1 because Windows needs 300ms to resolve localhost
-    websocket = new WebSocket("ws://127.0.0.1:" + inPort);
+    streamDeckWebSocket = new WebSocket("ws://127.0.0.1:" + inPort);
 
     // Web socket is connected
-    websocket.onopen = function () {
+    streamDeckWebSocket.onopen = function () {
         // Register plugin to Stream Deck
         registerPluginOrPI(inRegisterEvent, inPluginUUID);
 
@@ -72,8 +74,7 @@ function connectElgatoStreamDeckSocket(
                 actions[inContext].newCacheAvailable(function () {
                     // Find out type of action
                     if (actions[inContext] instanceof ToggleSwitchAction) {
-                        var action =
-                            "ca.barraco.carlo.homeassistant.action.toggleswitch";
+                        var action = ActionType.TOGGLE_SWITCH;
                     }
                     // Inform PI of new cache
                     sendToPropertyInspector(action, inContext, cache.data);
@@ -84,8 +85,7 @@ function connectElgatoStreamDeckSocket(
     );
 
     // Web socket received a message
-    websocket.onmessage = function (inEvent) {
-
+    streamDeckWebSocket.onmessage = function (inEvent) {
         // Parse parameter from string to object
         var jsonObj = JSON.parse(inEvent.data);
 
@@ -125,10 +125,7 @@ function connectElgatoStreamDeckSocket(
             // Current instance is not in actions array
             if (!(context in actions)) {
                 // Add current instance to array
-                if (
-                    action ===
-                    "ca.barraco.carlo.homeassistant.action.toggleswitch"
-                ) {
+                if (action == ActionType.TOGGLE_SWITCH) {
                     actions[context] = new ToggleSwitchAction(
                         context,
                         settings
@@ -136,12 +133,7 @@ function connectElgatoStreamDeckSocket(
                 }
             }
 
-            logMessage("Fetching all states");
-            const fetchMessage = `{
-                    "id": ${++currentMessageId},
-                    "type": "get_states"
-                  }`;
-            homeAssistantWebsocket.send(fetchMessage);
+            fetchStates();
         } else if (event == "willDisappear") {
             logStreamDeckEvent(inEvent.data);
             // Remove current instance from array
@@ -170,26 +162,9 @@ function connectElgatoStreamDeckSocket(
 
             homeAssistantWebsocket.onopen = function () {
                 logMessage("Opened connection to HA");
-                // authenticate with access token
-                logMessage("Sending access token");
-                const authMessage = `{"type": "auth", "access_token": "${globalSettings.accessToken}"}`;
-                homeAssistantWebsocket.send(authMessage);
-
-                // subscribe to all state change events
-                logMessage("Subscribing to state changes");
-                const subscribeMessage = `{
-                        "id": ${++currentMessageId},
-                        "type": "subscribe_events",
-                        "event_type": "state_changed"
-                    }`;
-                homeAssistantWebsocket.send(subscribeMessage);
-
-                logMessage("Fetching all states");
-                const fetchMessage = `{
-                    "id": ${++currentMessageId},
-                    "type": "get_states"
-                  }`;
-                homeAssistantWebsocket.send(fetchMessage);
+                sendAccessToken();
+                subscribeToStateChanges();
+                fetchStates();
             };
 
             homeAssistantWebsocket.onmessage = function (e) {
@@ -197,46 +172,11 @@ function connectElgatoStreamDeckSocket(
                 const eventType = data.type;
 
                 if (eventType === "event") {
-                    // got a new state update
                     const newState = data.event.data.new_state.state;
-
-                    // check if the state update is relevant to our buttons
-                    for (context in actions) {
-                        var actionSettings = actions[context].getSettings();
-                        if (
-                            data.event.data.entity_id ===
-                            actionSettings["entityIdInput"]
-                        ) {
-                            logHomeAssistantEvent(data);
-
-                            if (newState === "on") {
-                                // on, make it blue
-                                mainCanvasContext.fillStyle = "#1976D2";
-                                mainCanvasContext.fillRect(
-                                    0,
-                                    0,
-                                    mainCanvas.width,
-                                    mainCanvas.height
-                                );
-                            } else {
-                                // off, make it red
-                                mainCanvasContext.fillStyle = "#FF5252";
-                                mainCanvasContext.fillRect(
-                                    0,
-                                    0,
-                                    mainCanvas.width,
-                                    mainCanvas.height
-                                );
-                            }
-                            setImage(context, mainCanvas.toDataURL());
-                        }
-                    }
+                    const entityId = data.event.data.entity_id;
+                    handleStateChange(entityId, newState, context);
                 } else if (eventType === "auth_invalid") {
-                    // we connected but the access token is invalid
-                    logHomeAssistantEvent(data);
-                    homeAssistantConnectionState =
-                        ConnectionState.INVALID_TOKEN;
-                    homeAssistantWebsocket.close();
+                    handleInvalidAccessToken(data);
                 } else if (eventType === "auth_ok") {
                     // everything is good to go
                     logHomeAssistantEvent(data);
@@ -244,48 +184,29 @@ function connectElgatoStreamDeckSocket(
                     reconnectTimeout = null;
                 } else if (eventType === "result") {
                     logHomeAssistantEvent(data);
-                    const results = data.result;
-                    if (results == null) {
+                    const entityStateResults = data.result;
+                    if (entityStateResults == null) {
                         logMessage(
                             "Results message that doesn't contain results"
                         );
                         return;
                     } else {
-                        logHomeAssistantEvent(data);
-                        logMessage(
-                            "Updating button states based on fetched state results"
-                        );
-                        for (var i = 0; i < results.length; i++) {
-                            const result = results[i];
-                            for (context in actions) {
-                                var actionSettings = actions[
-                                    context
-                                ].getSettings();
-                                if (
-                                    result.entity_id ===
-                                    actionSettings["entityIdInput"]
-                                ) {
-                                    logMessage(
-                                        "Updating state for " + result.entity_id
-                                    );
-
-                                    if (result.state === "on") {
-                                        // on, make it blue
-                                        mainCanvasContext.fillStyle = "#1976D2";
-                                    } else {
-                                        // off, make it red
-                                        mainCanvasContext.fillStyle = "#FF5252";
-                                    }
-                                    mainCanvasContext.fillRect(
-                                        0,
-                                        0,
-                                        mainCanvas.width,
-                                        mainCanvas.height
-                                    );
-                                    setImage(context, mainCanvas.toDataURL());
-                                }
+                        for (var i = 0; i < entityStateResults.length; i++) {
+                            const entityState = entityStateResults[i];
+                            if (
+                                !knownEntityIds.includes(entityState.entity_id)
+                            ) {
+                                knownEntityIds.push(entityState.entity_id);
                             }
+                            handleStateChange(
+                                entityState.entity_id,
+                                entityState.state,
+                                context
+                            );
                         }
+                        sendToPropertyInspector(action, context, {
+                            entityUpdate: knownEntityIds,
+                        });
                     }
                 } else {
                     // other HA message, log it
@@ -302,42 +223,33 @@ function connectElgatoStreamDeckSocket(
             homeAssistantWebsocket.onclose = function (e) {
                 logMessage("WebSocket closed");
                 logHomeAssistantEvent(e);
-                // wait 10 seconds and try to reconnect
+
+                var tryAgain = false;
                 if (homeAssistantConnectionState == ConnectionState.CONNECTED) {
                     logMessage(
-                        "We were connected and all of a sudden disconnected, need to retry in 30 seconds"
+                        "We were connected and suddenly disconnected, retry in 30 seconds"
                     );
                     homeAssistantConnectionState =
                         ConnectionState.NEED_RECONNECT;
-                    if (reconnectTimeout != null) {
-                        reconnectTimeout = setTimeout(function () {
-                            requestGlobalSettings(inPluginUUID);
-                        }, 30000);
-                    }
+                    tryAgain = true;
                 } else if (
                     homeAssistantConnectionState ==
                     ConnectionState.NEED_RECONNECT
                 ) {
-                    logMessage(
-                        "Still not connected, need to retry in 30 seconds"
-                    );
-                    if (reconnectTimeout != null) {
-                        reconnectTimeout = setTimeout(function () {
-                            requestGlobalSettings(inPluginUUID);
-                        }, 30000);
-                    }
+                    logMessage("Still not connected, retry in 30 seconds");
+                    tryAgain = true;
                 } else if (
                     homeAssistantConnectionState ==
                     ConnectionState.NOT_CONNECTED
                 ) {
-                    logMessage(
-                        "First connection failed, need to retry in 15 seconds"
-                    );
-                    if (reconnectTimeout != null) {
-                        reconnectTimeout = setTimeout(function () {
-                            requestGlobalSettings(inPluginUUID);
-                        }, 15000);
-                    }
+                    logMessage("First connection failed, retry in 30 seconds");
+                    tryAgain = true;
+                }
+
+                if (tryAgain && reconnectTimeout != null) {
+                    reconnectTimeout = setTimeout(function () {
+                        requestGlobalSettings(inPluginUUID);
+                    }, 30000);
                 }
             };
 
@@ -361,10 +273,62 @@ function connectElgatoStreamDeckSocket(
             logStreamDeckEvent(inEvent.data);
             // Send cache to PI
             sendToPropertyInspector(action, context, cache.data);
-        } else if (event == "sendToPlugin"){
+        } else if (event == "sendToPlugin") {
             logStreamDeckEvent(inEvent.data);
             clearTimeout(reconnectTimeout);
             requestGlobalSettings(inPluginUUID);
         }
     };
+
+    function handleInvalidAccessToken(data) {
+        logHomeAssistantEvent(data);
+        homeAssistantConnectionState = ConnectionState.INVALID_TOKEN;
+        homeAssistantWebsocket.close();
+    }
+
+    function handleStateChange(entityId, newState, context) {
+        for (context in actions) {
+            var actionSettings = actions[context].getSettings();
+            if (entityId === actionSettings["entityIdInput"]) {
+                logMessage(`Updating state of ${entityId} to ${newState}`);
+                if (newState === "on") {
+                    mainCanvasContext.fillStyle = "#1976D2";
+                } else {
+                    mainCanvasContext.fillStyle = "#FF5252";
+                }
+                mainCanvasContext.fillRect(
+                    0,
+                    0,
+                    mainCanvas.width,
+                    mainCanvas.height
+                );
+                setImage(context, mainCanvas.toDataURL());
+            }
+        }
+    }
+
+    function sendAccessToken() {
+        logMessage("Sending access token");
+        const authMessage = `{"type": "auth", "access_token": "${globalSettings.accessToken}"}`;
+        homeAssistantWebsocket.send(authMessage);
+    }
+
+    function subscribeToStateChanges() {
+        logMessage("Subscribing to state changes");
+        const subscribeMessage = `{
+                        "id": ${++currentMessageId},
+                        "type": "subscribe_events",
+                        "event_type": "state_changed"
+                    }`;
+        homeAssistantWebsocket.send(subscribeMessage);
+    }
+
+    function fetchStates() {
+        logMessage("Fetching all states");
+        const fetchMessage = `{
+                    "id": ${++currentMessageId},
+                    "type": "get_states"
+                  }`;
+        homeAssistantWebsocket.send(fetchMessage);
+    }
 }

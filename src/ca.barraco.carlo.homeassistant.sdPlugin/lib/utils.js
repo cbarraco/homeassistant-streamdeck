@@ -9,73 +9,73 @@
 
 // Register the plugin or PI
 function registerPluginOrPI(inEvent, inUUID) {
-    if (websocket) {
+    if (streamDeckWebSocket) {
         var json = {
             event: inEvent,
             uuid: inUUID,
         };
 
-        websocket.send(JSON.stringify(json));
+        streamDeckWebSocket.send(JSON.stringify(json));
     }
 }
 
 function saveSettings(inAction, inUUID, inSettings) {
-    if (websocket) {
+    if (streamDeckWebSocket) {
         const json = {
             action: inAction,
             event: "setSettings",
             context: inUUID,
             payload: inSettings,
         };
-        websocket.send(JSON.stringify(json));
+        streamDeckWebSocket.send(JSON.stringify(json));
     }
 }
 
 // Save global settings
 function saveGlobalSettings(inUUID) {
-    if (websocket) {
+    if (streamDeckWebSocket) {
         const json = {
             event: "setGlobalSettings",
             context: inUUID,
             payload: globalSettings,
         };
-        websocket.send(JSON.stringify(json));
+        streamDeckWebSocket.send(JSON.stringify(json));
     }
 }
 
 // Request global settings for the plugin
 function requestGlobalSettings(inUUID) {
-    if (websocket) {
+    if (streamDeckWebSocket) {
         var json = {
             event: "getGlobalSettings",
             context: inUUID,
         };
 
-        websocket.send(JSON.stringify(json));
+        streamDeckWebSocket.send(JSON.stringify(json));
     }
 }
 
 // Add a Twitch account to the configured accounts
 function addAccount(inUUID) {
-    if (websocket) {
+    if (streamDeckWebSocket) {
         var json = {
             event: "addAccount",
             context: inUUID,
         };
-        websocket.send(JSON.stringify(json));
+        streamDeckWebSocket.send(JSON.stringify(json));
     }
 }
 
 // Open a web page
 function openUrl(inUrl) {
-    if (websocket) {
+    if (streamDeckWebSocket) {
         var json = {
             event: "openUrl",
             payload: {
                 url: inUrl,
             },
         };
-        websocket.send(JSON.stringify(json));
+        streamDeckWebSocket.send(JSON.stringify(json));
     }
 }
 
@@ -89,14 +89,14 @@ function log(inMessage) {
 
     try {
         // Log to the Stream Deck log file
-        if (websocket) {
+        if (streamDeckWebSocket) {
             var json = {
                 event: "logMessage",
                 payload: {
                     message: inMessage,
                 },
             };
-            websocket.send(JSON.stringify(json));
+            streamDeckWebSocket.send(JSON.stringify(json));
         }
     } catch (e) {
         console.log("Websocket not defined");
@@ -105,31 +105,31 @@ function log(inMessage) {
 
 // Show ok icon on the key
 function showOk(inUUID) {
-    if (websocket) {
+    if (streamDeckWebSocket) {
         var json = {
             event: "showOk",
             context: inUUID,
         };
 
-        websocket.send(JSON.stringify(json));
+        streamDeckWebSocket.send(JSON.stringify(json));
     }
 }
 
 // Show alert icon on the key
 function showAlert(inUUID) {
-    if (websocket) {
+    if (streamDeckWebSocket) {
         var json = {
             event: "showAlert",
             context: inUUID,
         };
 
-        websocket.send(JSON.stringify(json));
+        streamDeckWebSocket.send(JSON.stringify(json));
     }
 }
 
 // Set the title of a key
 function setTitle(inUUID, inTitle, inTarget, inState) {
-    if (websocket) {
+    if (streamDeckWebSocket) {
         var json = {
             event: "setTitle",
             context: inUUID,
@@ -140,13 +140,13 @@ function setTitle(inUUID, inTitle, inTarget, inState) {
             },
         };
 
-        websocket.send(JSON.stringify(json));
+        streamDeckWebSocket.send(JSON.stringify(json));
     }
 }
 
 // Set the image of a key
 function setImage(inUUID, inImage, inTarget, inState) {
-    if (websocket) {
+    if (streamDeckWebSocket) {
         var json = {
             event: "setImage",
             context: inUUID,
@@ -157,13 +157,13 @@ function setImage(inUUID, inImage, inTarget, inState) {
             },
         };
 
-        websocket.send(JSON.stringify(json));
+        streamDeckWebSocket.send(JSON.stringify(json));
     }
 }
 
 // Set the state of a key
 function setState(inUUID, inState) {
-    if (websocket) {
+    if (streamDeckWebSocket) {
         var json = {
             event: "setState",
             context: inUUID,
@@ -172,13 +172,13 @@ function setState(inUUID, inState) {
             },
         };
 
-        websocket.send(JSON.stringify(json));
+        streamDeckWebSocket.send(JSON.stringify(json));
     }
 }
 
 // Set data to PI
 function sendToPropertyInspector(inAction, inContext, inData) {
-    if (websocket) {
+    if (streamDeckWebSocket) {
         var json = {
             action: inAction,
             event: "sendToPropertyInspector",
@@ -186,13 +186,13 @@ function sendToPropertyInspector(inAction, inContext, inData) {
             payload: inData,
         };
 
-        websocket.send(JSON.stringify(json));
+        streamDeckWebSocket.send(JSON.stringify(json));
     }
 }
 
 // Set data to plugin
 function sendToPlugin(inAction, inContext, inData) {
-    if (websocket) {
+    if (streamDeckWebSocket) {
         var json = {
             action: inAction,
             event: "sendToPlugin",
@@ -200,7 +200,7 @@ function sendToPlugin(inAction, inContext, inData) {
             payload: inData,
         };
 
-        websocket.send(JSON.stringify(json));
+        streamDeckWebSocket.send(JSON.stringify(json));
     }
 }
 

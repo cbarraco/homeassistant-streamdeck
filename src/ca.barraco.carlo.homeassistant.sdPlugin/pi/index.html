@@ -4,6 +4,7 @@
         <title>ca.barraco.carlo.homeassistant Property Inspector</title>
         <meta charset="utf-8" />
         <link rel="stylesheet" href="css/sdpi.css" />
+        <script src="../lib/enums.js"></script>
         <script src="../lib/utils.js"></script>
         <script src="../lib/logging.js"></script>
         <script src="js/main.js"></script>
@@ -24,9 +25,8 @@
                 <p>Don't include http:// or https:// just the address and port of the server. For example: <b>example.duckdns.org:8123</b> or <b>192.168.0.10:8123</b></p>
             </div>
             <div type="checkbox" class="sdpi-item">
-                <div class="sdpi-item-label">Encryption</div>
                 <input class="sdpi-item-value" id="ssl" type="checkbox">
-                <label for="ssl"><span></span>My Home Assistant is encrypted</label>
+                <label for="ssl"><span></span>This Home Assistant server is encrypted</label>
             </div>
             <div class="wrap">
                 <p>If you aren't sure then you can probably leave it unchecked.</p>
