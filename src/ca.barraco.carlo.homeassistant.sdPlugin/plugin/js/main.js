@@ -11,6 +11,7 @@ var homeAssistantCache = {
     services: {},
 };
 
+// TODO: organize these in a dictionary
 var fetchStatesMessageId = -1;
 var fetchServicesMessageId = -1;
 
@@ -52,7 +53,7 @@ function connectElgatoStreamDeckSocket(inPort, inPluginUUID, inRegisterEvent, in
             data.userDesiredState = jsonPayload["userDesiredState"];
             data.state = jsonPayload["state"];
 
-            // Send onKeyDown event to actions
+            // Send onKeyDown event to action
             if (context in actions) {
                 actions[context].onKeyDown(data);
             }
@@ -61,7 +62,7 @@ function connectElgatoStreamDeckSocket(inPort, inPluginUUID, inRegisterEvent, in
             var settings = jsonPayload["settings"];
 
             if (!(context in actions)) {
-                // Add current instance to array
+                // Add current instance
                 if (action == ActionType.TOGGLE_SWITCH) {
                     actions[context] = new ToggleSwitchAction(context, settings);
                 } else if (action == ActionType.CALL_SERVICE) {
@@ -74,7 +75,7 @@ function connectElgatoStreamDeckSocket(inPort, inPluginUUID, inRegisterEvent, in
             }
         } else if (event == "willDisappear") {
             logStreamDeckEvent(inEvent.data);
-            // Remove current instance from array
+            // Remove current instance
             if (context in actions) {
                 delete actions[context];
             }
@@ -118,9 +119,9 @@ function connectElgatoStreamDeckSocket(inPort, inPluginUUID, inRegisterEvent, in
                         logHomeAssistantEvent(data);
                         homeAssistantConnectionState = ConnectionState.CONNECTED;
                         reconnectTimeout = null;
-                        subscribeToStateChanges();
                         fetchStates();
                         fetchServices();
+                        subscribeToStateChanges();
                     } else if (eventType === "result") {
                         logHomeAssistantEvent(data);
                         const results = data.result;
@@ -130,37 +131,9 @@ function connectElgatoStreamDeckSocket(inPort, inPluginUUID, inRegisterEvent, in
                         } else {
                             // we got results, but which ones?
                             if (data.id == fetchStatesMessageId) {
-                                for (var i = 0; i < results.length; i++) {
-                                    const entityState = results[i];
-                                    if (!homeAssistantCache.entities.includes(entityState.entity_id)) {
-                                        homeAssistantCache.entities.push(entityState.entity_id);
-                                    }
-                                    handleStateChange(entityState.entity_id, entityState.state, context);
-                                }
-                                for (context in actions) {
-                                    sendToPropertyInspector(action, context, {
-                                        eventType: "entitiesUpdate",
-                                        data: homeAssistantCache.entities,
-                                    });
-                                }
+                                updateEntitiesCache(results, context, action);
                             } else if (data.id == fetchServicesMessageId) {
-                                logMessage("Got fetch services result, parsing response");
-                                const resultKeys = Object.getOwnPropertyNames(results);
-                                for (var i = 0; i < resultKeys.length; i++) {
-                                    const domain = resultKeys[i];
-                                    homeAssistantCache.services[domain] = [];
-                                    const serviceKeys = Object.getOwnPropertyNames(results[domain]);
-                                    for (var j = 0; j < serviceKeys.length; j++) {
-                                        homeAssistantCache.services[domain].push(serviceKeys[j]);
-                                    }
-                                }
-                                for (context in actions) {
-                                    sendToPropertyInspector(action, context, {
-                                        eventType: "servicesUpdate",
-                                        data: homeAssistantCache.services,
-                                    });
-                                }
-                                logMessage(homeAssistantCache.services);
+                                updateServicesCache(results, context, action);
                             }
                         }
                     } else {
@@ -208,10 +181,10 @@ function connectElgatoStreamDeckSocket(inPort, inPluginUUID, inRegisterEvent, in
         } else if (event == "sendToPlugin") {
             logStreamDeckEvent(inEvent.data);
             const eventType = inEvent.data.eventType;
-            if (eventType == "requestReconnect"){
+            if (eventType == "requestReconnect") {
                 clearTimeout(reconnectTimeout);
                 requestGlobalSettings(inPluginUUID);
-            } else if (eventType == "requestCacheUpdate"){
+            } else if (eventType == "requestCacheUpdate") {
                 sendToPropertyInspector(action, context, {
                     eventType: "entitiesUpdate",
                     data: homeAssistantCache.entities,
@@ -223,16 +196,48 @@ function connectElgatoStreamDeckSocket(inPort, inPluginUUID, inRegisterEvent, in
             }
         } else if (event == "propertyInspectorDidAppear") {
             logStreamDeckEvent(inEvent.data);
-            sendToPropertyInspector(action, context, {
-                eventType: "entitiesUpdate",
-                data: homeAssistantCache.entities,
-            });
-            sendToPropertyInspector(action, context, {
-                eventType: "servicesUpdate",
-                data: homeAssistantCache.services,
-            });
+
+            // make sure the parameter dropdowns are up to date
+            fetchStates();
+            fetchServices();
         }
     };
+
+    function updateEntitiesCache(results, context, action) {
+        // TODO: organize entities by type like how services are organized by domain
+        logMessage("Got fetch states result, parsing response");
+        homeAssistantCache.entities.splice(0, homeAssistantCache.entities.length);
+        for (var i = 0; i < results.length; i++) {
+            const entityState = results[i];
+            if (!homeAssistantCache.entities.includes(entityState.entity_id)) {
+                homeAssistantCache.entities.push(entityState.entity_id);
+            }
+            handleStateChange(entityState.entity_id, entityState.state, context);
+        }
+        sendToPropertyInspector(action, context, {
+            eventType: "entitiesUpdate",
+            data: homeAssistantCache.entities,
+        });
+    }
+
+    function updateServicesCache(results, context, action) {
+        logMessage("Got fetch services result, parsing response");
+        delete homeAssistantCache.services;
+        const resultKeys = Object.getOwnPropertyNames(results);
+        for (var i = 0; i < resultKeys.length; i++) {
+            const domain = resultKeys[i];
+            homeAssistantCache.services[domain] = [];
+            const serviceKeys = Object.getOwnPropertyNames(results[domain]);
+            for (var j = 0; j < serviceKeys.length; j++) {
+                homeAssistantCache.services[domain].push(serviceKeys[j]);
+            }
+        }
+        sendToPropertyInspector(action, context, {
+            eventType: "servicesUpdate",
+            data: homeAssistantCache.services,
+        });
+        logMessage(homeAssistantCache.services);
+    }
 
     function handleInvalidAccessToken(data) {
         logHomeAssistantEvent(data);
