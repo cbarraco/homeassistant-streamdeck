@@ -69,6 +69,8 @@ function connectElgatoStreamDeckSocket(inPort, inPluginUUID, inRegisterEvent, in
                     actions[context] = new ToggleSwitchAction(context, settings);
                 } else if (action == ActionType.CALL_SERVICE) {
                     actions[context] = new CallServiceAction(context, settings);
+                } else if (action == ActionType.TOGGLE_LIGHT) {
+                    actions[context] = new ToggleLightAction(context, settings);
                 }
             }
             // buttons need to be visually updated by fetching current state
@@ -111,9 +113,7 @@ function connectElgatoStreamDeckSocket(inPort, inPluginUUID, inRegisterEvent, in
                     const eventType = data.type;
 
                     if (eventType === "event") {
-                        const newState = data.event.data.new_state.state;
-                        const entityId = data.event.data.entity_id;
-                        handleStateChange(entityId, newState, context);
+                        handleStateChange(data.event.data.entity_id, data.event.data.new_state);
                     } else if (eventType === "auth_invalid") {
                         handleInvalidAccessToken(data);
                     } else if (eventType === "auth_ok") {
@@ -221,7 +221,7 @@ function connectElgatoStreamDeckSocket(inPort, inPluginUUID, inRegisterEvent, in
                 homeAssistantCache.entities[entityType] = [];
             }
             homeAssistantCache.entities[entityType].push(entityState.entity_id);
-            handleStateChange(entityState.entity_id, entityState.state, context);
+            handleStateChange(entityState.entity_id, entityState);
         }
         for (context in actions) {
             sendCacheUpdateToPropertyInspector(action, context);
@@ -254,18 +254,44 @@ function connectElgatoStreamDeckSocket(inPort, inPluginUUID, inRegisterEvent, in
         homeAssistantWebsocket.close();
     }
 
-    function handleStateChange(entityId, newState, context) {
+    function componentToHex(c) {
+        var hex = c.toString(16);
+        return hex.length == 1 ? "0" + hex : hex;
+    }
+
+    function rgbToHex(r, g, b) {
+        return "#" + componentToHex(r) + componentToHex(g) + componentToHex(b);
+    }
+
+    function handleStateChange(entityId, newState) {
         for (context in actions) {
-            var actionSettings = actions[context].getSettings();
-            if (entityId === actionSettings["entityId"]) {
-                logMessage(`Updating state of ${entityId} to ${newState}`);
-                if (newState === "on") {
-                    mainCanvasContext.fillStyle = "#1976D2";
-                } else {
-                    mainCanvasContext.fillStyle = "#FF5252";
+            if (actions[context] instanceof ToggleSwitchAction) {
+                var actionSettings = actions[context].getSettings();
+                if (entityId === actionSettings["entityId"]) {
+                    logMessage(`Updating state of switch ${entityId} to ${newState.state}`);
+                    if (newState.state === "on") {
+                        mainCanvasContext.fillStyle = "#1976D2";
+                    } else {
+                        mainCanvasContext.fillStyle = "#FF5252";
+                    }
+                    mainCanvasContext.fillRect(0, 0, mainCanvas.width, mainCanvas.height);
+                    setImage(context, mainCanvas.toDataURL());
                 }
-                mainCanvasContext.fillRect(0, 0, mainCanvas.width, mainCanvas.height);
-                setImage(context, mainCanvas.toDataURL());
+            } else if (actions[context] instanceof ToggleLightAction) {
+                var actionSettings = actions[context].getSettings();
+                if (entityId === actionSettings["entityId"]) {
+                    logMessage(`Updating state of light ${entityId}`);
+
+                    if (newState.state === "on") {
+                        const color_components = newState.attributes.rgb_color;
+                        const hexColor = rgbToHex(color_components[0], color_components[1], color_components[2]);
+                        mainCanvasContext.fillStyle = hexColor;
+                    } else {
+                        mainCanvasContext.fillStyle = "#000000";
+                    }
+                    mainCanvasContext.fillRect(0, 0, mainCanvas.width, mainCanvas.height);
+                    setImage(context, mainCanvas.toDataURL());
+                }
             }
         }
     }

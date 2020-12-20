@@ -39,6 +39,8 @@ function connectElgatoStreamDeckSocket(inPort, inUUID, inRegisterEvent, inInfo, 
         setUpToggleSwitchElements();
     } else if (action == ActionType.CALL_SERVICE) {
         setUpCallServiceElements();
+    } else if (action == ActionType.TOGGLE_LIGHT) {
+        setUpToggleLightElements();
     }
 
     const enterCredentials = document.getElementById("enterCredentials");
@@ -71,9 +73,11 @@ function connectElgatoStreamDeckSocket(inPort, inUUID, inRegisterEvent, inInfo, 
         } else if (event == "didReceiveSettings") {
             settings = payload["settings"];
             if (action == ActionType.TOGGLE_SWITCH) {
-                handleNewSettingsForToggleSwitchAction();
+                handleCacheUpdateForToggleSwitchAction();
             } else if (action == ActionType.CALL_SERVICE) {
-                handleNewSettingsForCallServiceAction();
+                handleCacheUpdateForCallServiceAction();
+            } else if (action == ActionType.TOGGLE_LIGHT){
+                handleCacheUpdateForToggleLightAction();
             }
         } else if (event == "sendToPropertyInspector") {
             logStreamDeckEvent(streamDeckMessage);
@@ -84,6 +88,8 @@ function connectElgatoStreamDeckSocket(inPort, inUUID, inRegisterEvent, inInfo, 
                     handleCacheUpdateForToggleSwitchAction();
                 } else if (action == ActionType.CALL_SERVICE) {
                     handleCacheUpdateForCallServiceAction();
+                } else if (action == ActionType.TOGGLE_LIGHT) {
+                    handleCacheUpdateForToggleLightAction();
                 }
             }
         }
@@ -91,10 +97,11 @@ function connectElgatoStreamDeckSocket(inPort, inUUID, inRegisterEvent, inInfo, 
 
     function setUpToggleSwitchElements() {
         logMessage("Injecting toggle switch parameters");
-        wrapper.innerHTML += `<div class="sdpi-item">
-        <div class="sdpi-item-label">Entity</div>
-        <select class="sdpi-item-value select" id="entityId">
-        </select>
+        wrapper.innerHTML += `
+        <div class="sdpi-item">
+            <div class="sdpi-item-label">Entity</div>
+            <select class="sdpi-item-value select" id="entityId">
+            </select>
         </div>`;
 
         var entityIdElement = document.getElementById("entityId");
@@ -104,14 +111,6 @@ function connectElgatoStreamDeckSocket(inPort, inUUID, inRegisterEvent, inInfo, 
             settings.entityId = value;
             saveSettings(action, inUUID, settings);
         });
-    }
-
-    function handleNewSettingsForToggleSwitchAction() {
-        var entityIdElement = document.getElementById("entityId");
-        populateEntityOptions(entityIdElement, "switch");
-        if (settings.entityId != undefined) {
-            entityIdElement.value = settings.entityId;
-        }
     }
 
     function handleCacheUpdateForToggleSwitchAction() {
@@ -156,20 +155,6 @@ function connectElgatoStreamDeckSocket(inPort, inUUID, inRegisterEvent, inInfo, 
         });
     }
 
-    function handleNewSettingsForCallServiceAction() {
-        var serviceIdElement = document.getElementById("serviceId");
-        populateServiceOptions(serviceIdElement);
-        if (settings.serviceId != undefined) {
-            serviceIdElement.value = settings.serviceId;
-        }
-
-        var payloadElement = document.getElementById("payload");
-        populateServiceOptions(payloadElement);
-        if (settings.payload != undefined) {
-            payloadElement.value = settings.payload;
-        }
-    }
-
     function handleCacheUpdateForCallServiceAction() {
         var serviceIdElement = document.getElementById("serviceId");
         populateServiceOptions(serviceIdElement);
@@ -180,6 +165,49 @@ function connectElgatoStreamDeckSocket(inPort, inUUID, inRegisterEvent, inInfo, 
         var payloadElement = document.getElementById("payload");
         if (settings.payload != undefined) {
             payloadElement.value = settings.payload;
+        }
+    }
+
+    function setUpToggleLightElements() {
+        logMessage("Injecting toggle switch parameters");
+        wrapper.innerHTML += `
+        <div class="sdpi-item">
+            <div class="sdpi-item-label">Entity</div>
+            <select class="sdpi-item-value select" id="entityId">
+            </select>
+        </div>
+        <div type="color" class="sdpi-item">
+            <div class="sdpi-item-label">Color</div>
+            <input type="color" class="sdpi-item-value" id="color" value="#00ff00">
+        </div>`;
+
+        var entityIdElement = document.getElementById("entityId");
+        entityIdElement.value = settings.entityId;
+        entityIdElement.addEventListener("input", function (inEvent) {
+            var value = inEvent.target.value;
+            settings.entityId = value;
+            saveSettings(action, inUUID, settings);
+        });
+
+        var colorElement = document.getElementById("color");
+        colorElement.value = settings.color || "#00ff00";
+        colorElement.addEventListener("input", function (inEvent) {
+            var value = inEvent.target.value;
+            settings.color = value;
+            saveSettings(action, inUUID, settings);
+        });
+    }
+
+    function handleCacheUpdateForToggleLightAction() {
+        var entityIdElement = document.getElementById("entityId");
+        populateEntityOptions(entityIdElement, "light");
+        if (settings.entityId != undefined) {
+            entityIdElement.value = settings.entityId;
+        }
+
+        var colorElement = document.getElementById("color");
+        if (settings.color != undefined) {
+            colorElement.value = settings.color;
         }
     }
 

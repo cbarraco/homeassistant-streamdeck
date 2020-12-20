@@ -2,7 +2,8 @@
 // SD makes them lower case when returned via events
 const ActionType = {
     TOGGLE_SWITCH: "ca.barraco.carlo.homeassistant.action.toggleswitch",
-    CALL_SERVICE: "ca.barraco.carlo.homeassistant.action.callservice"
+    CALL_SERVICE: "ca.barraco.carlo.homeassistant.action.callservice",
+    TOGGLE_LIGHT: "ca.barraco.carlo.homeassistant.action.togglelight"
 };
 
 const ConnectionState = {

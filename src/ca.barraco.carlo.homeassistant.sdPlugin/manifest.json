@@ -21,6 +21,17 @@
       ],
       "Tooltip": "Calls a service in Home Assistant",
       "UUID": "ca.barraco.carlo.homeassistant.action.callservice"
+    },
+    {
+      "Icon": "plugin/images/actions/toggleLight",
+      "Name": "Toggle a light",
+      "States": [
+        {
+          "Image": "plugin/images/actions/toggleLight"
+        }
+      ],
+      "Tooltip": "Toggles a light entity in Home Assistant",
+      "UUID": "ca.barraco.carlo.homeassistant.action.togglelight"
     }
   ],
   "SDKVersion": 2,
