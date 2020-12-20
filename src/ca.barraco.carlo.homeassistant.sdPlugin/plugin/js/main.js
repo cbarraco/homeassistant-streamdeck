@@ -13,7 +13,7 @@ var homeAssistantCache = {
 
 var lastMessageId = {
     fetchStates: -1,
-    fetchServices: -1
+    fetchServices: -1,
 };
 
 var mainCanvas = null;
@@ -194,7 +194,9 @@ function connectElgatoStreamDeckSocket(inPort, inPluginUUID, inRegisterEvent, in
             // make sure the parameter dropdowns are up to date
             fetchStates();
             fetchServices();
-            sendCacheUpdateToPropertyInspector(action, context);
+            for (context in actions) {
+                sendCacheUpdateToPropertyInspector(action, context);
+            }
         }
     };
 

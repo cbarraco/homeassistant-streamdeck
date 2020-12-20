@@ -17,6 +17,11 @@ function connectElgatoStreamDeckSocket(inPort, inUUID, inRegisterEvent, inInfo, 
     settings = actionInfo["payload"]["settings"];
     var action = actionInfo["action"];
 
+    window.addEventListener("beforeunload", function (e) {
+        e.preventDefault();
+        sendValueToPlugin("propertyInspectorWillDisappear", "property_inspector");
+    });
+
     // Open the web socket to Stream Deck
     streamDeckWebSocket = new WebSocket("ws://127.0.0.1:" + inPort);
 
@@ -31,6 +36,52 @@ function connectElgatoStreamDeckSocket(inPort, inUUID, inRegisterEvent, inInfo, 
 
     const wrapper = document.getElementById("wrapper");
     if (action == ActionType.TOGGLE_SWITCH) {
+        setUpToggleSwitchElements();
+    } else if (action == ActionType.CALL_SERVICE) {
+        setUpCallServiceElements();
+    }
+
+    var homeAssistantAddress = document.getElementById("homeAssistantAddress");
+    var ssl = document.getElementById("ssl");
+    var accessToken = document.getElementById("accessToken");
+    setUpGlobalSettingsElements(homeAssistantAddress, ssl, accessToken);
+    updateElementsFromGlobalSettings(homeAssistantAddress, ssl, accessToken);
+
+    streamDeckWebSocket.onmessage = function (evt) {
+        var jsonObj = JSON.parse(evt.data);
+        var event = jsonObj["event"];
+        var jsonPayload = jsonObj["payload"];
+
+        logStreamDeckEvent(jsonObj);
+
+        if (event == "didReceiveGlobalSettings") {
+            globalSettings = jsonPayload["settings"];
+            var homeAssistantAddress = document.getElementById("homeAssistantAddress");
+            var ssl = document.getElementById("ssl");
+            var accessToken = document.getElementById("accessToken");
+            updateElementsFromGlobalSettings(homeAssistantAddress, ssl, accessToken);
+        } else if (event == "didReceiveSettings") {
+            settings = jsonPayload["settings"];
+            if (action == ActionType.TOGGLE_SWITCH) {
+                handleNewSettingsForToggleSwitchAction();
+            } else if (action == ActionType.CALL_SERVICE) {
+                handleNewSettingsForCallServiceAction();
+            }
+        } else if (event == "sendToPropertyInspector") {
+            logStreamDeckEvent(evt);
+            const command = jsonPayload["command"];
+            if (command == PropertyInspectorCommands.UPDATE_CACHE) {
+                homeAssistantCache = jsonPayload["data"];
+                if (action == ActionType.TOGGLE_SWITCH) {
+                    handleCacheUpdateForToggleSwitchAction();
+                } else if (action == ActionType.CALL_SERVICE) {
+                    handleCacheUpdateForCallServiceAction();
+                }
+            }
+        }
+    };
+
+    function setUpToggleSwitchElements() {
         logMessage("Injecting toggle switch parameters");
         wrapper.innerHTML += `<div class="sdpi-item">
         <div class="sdpi-item-label">Entity</div>
@@ -45,7 +96,25 @@ function connectElgatoStreamDeckSocket(inPort, inUUID, inRegisterEvent, inInfo, 
             settings.entityId = value;
             saveSettings(action, inUUID, settings);
         });
-    } else if (action == ActionType.CALL_SERVICE) {
+    }
+
+    function handleNewSettingsForToggleSwitchAction() {
+        var entityIdElement = document.getElementById("entityId");
+        populateEntityOptions(entityIdElement, "switch");
+        if (settings.entityId != undefined) {
+            entityIdElement.value = settings.entityId;
+        }
+    }
+
+    function handleCacheUpdateForToggleSwitchAction() {
+        var entityIdElement = document.getElementById("entityId");
+        populateEntityOptions(entityIdElement, "switch");
+        if (settings.entityId != undefined) {
+            entityIdElement.value = settings.entityId;
+        }
+    }
+
+    function setUpCallServiceElements() {
         logMessage("Injecting call service parameters");
         wrapper.innerHTML += `
         <div class="sdpi-item">
@@ -77,72 +146,32 @@ function connectElgatoStreamDeckSocket(inPort, inUUID, inRegisterEvent, inInfo, 
         });
     }
 
-    var homeAssistantAddress = document.getElementById("homeAssistantAddress");
-    var ssl = document.getElementById("ssl");
-    var accessToken = document.getElementById("accessToken");
-    setUpGlobalSettingsElements(homeAssistantAddress, ssl, accessToken);
-    updateElementsFromGlobalSettings(homeAssistantAddress, ssl, accessToken);
-
-    streamDeckWebSocket.onmessage = function (evt) {
-        var jsonObj = JSON.parse(evt.data);
-        var event = jsonObj["event"];
-        var jsonPayload = jsonObj["payload"];
-
-        logStreamDeckEvent(jsonObj);
-
-        if (event == "didReceiveGlobalSettings") {
-            globalSettings = jsonPayload["settings"];
-            var homeAssistantAddress = document.getElementById("homeAssistantAddress");
-            var ssl = document.getElementById("ssl");
-            var accessToken = document.getElementById("accessToken");
-            updateElementsFromGlobalSettings(homeAssistantAddress, ssl, accessToken);
-        } else if (event == "didReceiveSettings") {
-            settings = jsonPayload["settings"];
-            if (action == ActionType.TOGGLE_SWITCH) {
-                var entityIdElement = document.getElementById("entityId");
-                populateEntityOptions(entityIdElement, "switch");
-                if (settings.entityId != undefined) {
-                    entityIdElement.value = settings.entityId;
-                }
-            } else if (action == ActionType.CALL_SERVICE) {
-                var serviceIdElement = document.getElementById("serviceId");
-                populateServiceOptions(serviceIdElement);
-                if (settings.serviceId != undefined) {
-                    serviceIdElement.value = settings.serviceId;
-                }
-
-                var payloadElement = document.getElementById("payload");
-                populateServiceOptions(payloadElement);
-                if (settings.payload != undefined) {
-                    payloadElement.value = settings.payload;
-                }
-            }
-        } else if (event == "sendToPropertyInspector") {
-            logStreamDeckEvent(evt);
-            const command = jsonPayload["command"];
-            if (command == PropertyInspectorCommands.UPDATE_CACHE) {
-                homeAssistantCache = jsonPayload["data"];
-                if (action == ActionType.TOGGLE_SWITCH) {
-                    var entityIdElement = document.getElementById("entityId");
-                    populateEntityOptions(entityIdElement, "switch");
-                    if (settings.entityId != undefined) {
-                        entityIdElement.value = settings.entityId;
-                    }
-                } else if (action == ActionType.CALL_SERVICE) {
-                    var serviceIdElement = document.getElementById("serviceId");
-                    populateServiceOptions(serviceIdElement);
-                    if (settings.serviceId != undefined) {
-                        serviceIdElement.value = settings.serviceId;
-                    }
-
-                    var payloadElement = document.getElementById("payload");
-                    if (settings.payload != undefined) {
-                        payloadElement.value = settings.payload;
-                    }
-                }
-            }
+    function handleNewSettingsForCallServiceAction() {
+        var serviceIdElement = document.getElementById("serviceId");
+        populateServiceOptions(serviceIdElement);
+        if (settings.serviceId != undefined) {
+            serviceIdElement.value = settings.serviceId;
         }
-    };
+
+        var payloadElement = document.getElementById("payload");
+        populateServiceOptions(payloadElement);
+        if (settings.payload != undefined) {
+            payloadElement.value = settings.payload;
+        }
+    }
+
+    function handleCacheUpdateForCallServiceAction() {
+        var serviceIdElement = document.getElementById("serviceId");
+        populateServiceOptions(serviceIdElement);
+        if (settings.serviceId != undefined) {
+            serviceIdElement.value = settings.serviceId;
+        }
+
+        var payloadElement = document.getElementById("payload");
+        if (settings.payload != undefined) {
+            payloadElement.value = settings.payload;
+        }
+    }
 
     function populateEntityOptions(entityIdElement, type) {
         logMessage("Populating entities parameter options");
