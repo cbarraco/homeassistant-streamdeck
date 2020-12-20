@@ -18,7 +18,7 @@ function logMessage(message) {
     console.log(
         "%c%s",
         'color: white; background: magenta;',
-        message
+        JSON.stringify(message)
     );
 }
 

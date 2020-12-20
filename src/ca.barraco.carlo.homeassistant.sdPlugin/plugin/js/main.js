@@ -180,17 +180,17 @@ function connectElgatoStreamDeckSocket(inPort, inPluginUUID, inRegisterEvent, in
             }
         } else if (event == "sendToPlugin") {
             logStreamDeckEvent(inEvent.data);
-            const eventType = inEvent.data.eventType;
-            if (eventType == "requestReconnect") {
+            const command = inEvent.data.command;
+            if (command == PluginCommands.REQUEST_RECONNECT) {
                 clearTimeout(reconnectTimeout);
                 requestGlobalSettings(inPluginUUID);
-            } else if (eventType == "requestCacheUpdate") {
+            } else if (command == PluginCommands.REQUEST_CACHE_UPDATE) {
                 sendToPropertyInspector(action, context, {
-                    eventType: "entitiesUpdate",
+                    command: PropertyInspectorCommands.UPDATE_ENTITIES_CACHE,
                     data: homeAssistantCache.entities,
                 });
                 sendToPropertyInspector(action, context, {
-                    eventType: "servicesUpdate",
+                    command: PropertyInspectorCommands.UPDATE_SERVICE_CACHE,
                     data: homeAssistantCache.services,
                 });
             }
@@ -200,6 +200,14 @@ function connectElgatoStreamDeckSocket(inPort, inPluginUUID, inRegisterEvent, in
             // make sure the parameter dropdowns are up to date
             fetchStates();
             fetchServices();
+            sendToPropertyInspector(action, context, {
+                command: PropertyInspectorCommands.UPDATE_ENTITIES_CACHE,
+                data: homeAssistantCache.entities,
+            });
+            sendToPropertyInspector(action, context, {
+                command: PropertyInspectorCommands.UPDATE_SERVICE_CACHE,
+                data: homeAssistantCache.services,
+            });
         }
     };
 
@@ -210,16 +218,19 @@ function connectElgatoStreamDeckSocket(inPort, inPluginUUID, inRegisterEvent, in
         for (var i = 0; i < results.length; i++) {
             const entityState = results[i];
             const entityType = entityState.entity_id.split(".")[0];
-            if (homeAssistantCache.entities[entityType] == undefined){
+            if (homeAssistantCache.entities[entityType] == undefined) {
                 homeAssistantCache.entities[entityType] = [];
             }
             homeAssistantCache.entities[entityType].push(entityState.entity_id);
             handleStateChange(entityState.entity_id, entityState.state, context);
         }
-        sendToPropertyInspector(action, context, {
-            eventType: "entitiesUpdate",
-            data: homeAssistantCache.entities,
-        });
+        for (context in actions) {
+            sendToPropertyInspector(action, context, {
+                command: PropertyInspectorCommands.UPDATE_ENTITIES_CACHE,
+                data: homeAssistantCache.entities,
+            });
+        }
+        logMessage(homeAssistantCache.entities);
     }
 
     function updateServicesCache(results, context, action) {
@@ -235,10 +246,12 @@ function connectElgatoStreamDeckSocket(inPort, inPluginUUID, inRegisterEvent, in
                 homeAssistantCache.services[domain].push(serviceKeys[j]);
             }
         }
-        sendToPropertyInspector(action, context, {
-            eventType: "servicesUpdate",
-            data: homeAssistantCache.services,
-        });
+        for (context in actions) {
+            sendToPropertyInspector(action, context, {
+                command: PropertyInspectorCommands.UPDATE_SERVICE_CACHE,
+                data: homeAssistantCache.services,
+            });
+        }
         logMessage(homeAssistantCache.services);
     }
 

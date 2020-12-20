@@ -12,3 +12,13 @@ const ConnectionState = {
     NEED_RECONNECT: "need_reconnect",
     CONNECTED: "connected",
 };
+
+const PluginCommands = {
+    REQUEST_CACHE_UPDATE: "requestCacheUpdate",
+    REQUEST_RECONNECT: "requestReconnect",
+};
+
+const PropertyInspectorCommands = {
+    UPDATE_SERVICE_CACHE: "updateServiceCache",
+    UPDATE_ENTITIES_CACHE: "updateEntitiesCache",
+};

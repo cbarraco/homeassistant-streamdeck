@@ -3,7 +3,7 @@ var globalSettings = {};
 var settings = {};
 
 var homeAssistantCache = {
-    entities: [],
+    entities: {},
     services: {},
 };
 
@@ -25,7 +25,7 @@ function connectElgatoStreamDeckSocket(inPort, inUUID, inRegisterEvent, inInfo, 
         registerPluginOrPI(inRegisterEvent, inUUID);
         requestGlobalSettings(inUUID);
         sendToPlugin(action, inUUID, {
-            eventType: "requestCacheUpdate",
+            command: PluginCommands.REQUEST_CACHE_UPDATE,
         });
     };
 
@@ -119,15 +119,15 @@ function connectElgatoStreamDeckSocket(inPort, inUUID, inRegisterEvent, inInfo, 
             }
         } else if (event == "sendToPropertyInspector") {
             logStreamDeckEvent(evt);
-            const updateType = jsonPayload["eventType"];
-            if (action == ActionType.TOGGLE_SWITCH && updateType == "entitiesUpdate") {
+            const command = jsonPayload["command"];
+            if (action == ActionType.TOGGLE_SWITCH && command == PropertyInspectorCommands.UPDATE_ENTITIES_CACHE) {
                 homeAssistantCache.entities = jsonPayload["data"];
                 var entityId = document.getElementById("entityId");
                 populateEntityOptions(entityId, "switch");
                 if (settings.entityId != undefined) {
                     entityId.value = settings.entityId;
                 }
-            } else if (action == ActionType.CALL_SERVICE && updateType == "servicesUpdate") {
+            } else if (action == ActionType.CALL_SERVICE && command == PropertyInspectorCommands.UPDATE_SERVICE_CACHE) {
                 homeAssistantCache.services = jsonPayload["data"];
 
                 var serviceId = document.getElementById("serviceId");
@@ -145,6 +145,8 @@ function connectElgatoStreamDeckSocket(inPort, inUUID, inRegisterEvent, inInfo, 
     };
 
     function populateEntityOptions(entityIdElement, type) {
+        logMessage("Populating entities parameter options");
+        logMessage(homeAssistantCache.entities);
         entityIdElement.innerHTML = "";
 
         var domainKeys = [];
@@ -167,7 +169,7 @@ function connectElgatoStreamDeckSocket(inPort, inUUID, inRegisterEvent, inInfo, 
                 const entityOption = document.createElement("option");
                 entityOption.value = entityId;
                 entityOption.innerHTML = entityId;
-                domainOptGroup.appendChild(serviceOption);
+                domainOptGroup.appendChild(entityOption);
             }
 
             entityIdElement.appendChild(domainOptGroup);
@@ -175,6 +177,8 @@ function connectElgatoStreamDeckSocket(inPort, inUUID, inRegisterEvent, inInfo, 
     }
 
     function populateServiceOptions(serviceIdElement) {
+        logMessage("Populating services parameter options");
+        logMessage(homeAssistantCache.services);
         serviceIdElement.innerHTML = "";
 
         const domainKeys = Object.getOwnPropertyNames(homeAssistantCache.services);
@@ -197,6 +201,7 @@ function connectElgatoStreamDeckSocket(inPort, inUUID, inRegisterEvent, inInfo, 
     }
 
     function updateElementsFromGlobalSettings(homeAssistantAddress, ssl, accessToken) {
+        logMessage("Updating UI using global settings");
         if (globalSettings.homeAssistantAddress != undefined) {
             homeAssistantAddress.value = globalSettings.homeAssistantAddress;
         }
@@ -209,30 +214,34 @@ function connectElgatoStreamDeckSocket(inPort, inUUID, inRegisterEvent, inInfo, 
     }
 
     function setUpGlobalSettingsElements(homeAssistantAddress, ssl, accessToken) {
+        logMessage("Setting up event listeners for global settings parameters");
         homeAssistantAddress.addEventListener("change", function (inEvent) {
+            logMessage(inEvent);
             var value = inEvent.target.value;
             globalSettings.homeAssistantAddress = value;
             saveGlobalSettings(inUUID);
             sendToPlugin(action, inUUID, {
-                eventType: "requestReconnect",
+                command: PluginCommands.REQUEST_RECONNECT,
             });
         });
 
         ssl.addEventListener("click", function (inEvent) {
+            logMessage(inEvent);
             var checked = inEvent.target.checked;
             globalSettings.ssl = checked;
             saveGlobalSettings(inUUID);
             sendToPlugin(action, inUUID, {
-                eventType: "requestReconnect",
+                command: PluginCommands.REQUEST_RECONNECT,
             });
         });
 
         accessToken.addEventListener("change", function (inEvent) {
+            logMessage(inEvent);
             var value = inEvent.target.value;
             globalSettings.accessToken = value;
             saveGlobalSettings(inUUID);
             sendToPlugin(action, inUUID, {
-                eventType: "requestReconnect",
+                command: PluginCommands.REQUEST_RECONNECT,
             });
         });
     }
