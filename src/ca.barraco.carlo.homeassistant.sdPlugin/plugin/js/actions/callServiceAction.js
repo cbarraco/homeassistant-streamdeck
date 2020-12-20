@@ -10,19 +10,17 @@ function CallServiceAction(inContext, inSettings) {
     // Public function called on key up event
     this.onKeyUp = function (inData) {
         actionOnKeyUp.call(this, inData);
-        const entityIdInput = inData.settings.entityIdInput;
-        sendServiceCommand(entityIdInput);
+        const entityId = inData.settings.entityId;
+        sendServiceCommand(entityId);
     };
 
     function sendServiceCommand(service, payload) {
-        logMessage(`Calling ${service}`);
-        const domain = service.split(".")[0];
-        const domainService = service.split(".")[1];
+        logMessage(`Calling ${domain}.${service}`);
         const testMessage = `{
           "id": ${++homeAssistantMessageId},
           "type": "call_service",
           "domain": "${domain}",
-          "service": "${domainService}",
+          "service": "${service}",
           "service_data": ${payload}
         }`;
         homeAssistantWebsocket.send(testMessage);

@@ -37,11 +37,11 @@ function connectElgatoStreamDeckSocket(
     setUpGlobalSettingsElements(homeAssistantAddress, ssl, accessToken);
     updateElementsFromGlobalSettings(homeAssistantAddress, ssl, accessToken);
 
-    var entityIdInput = document.getElementById("entityIdInput");
-    entityIdInput.value = settings.entityIdInput;
-    entityIdInput.addEventListener("input", function (inEvent) {
+    var entityId = document.getElementById("entityId");
+    entityId.value = settings.entityId;
+    entityId.addEventListener("input", function (inEvent) {
         var value = inEvent.target.value;
-        settings.entityIdInput = value;
+        settings.entityId = value;
         saveSettings(action, inUUID, settings);
     });
 
@@ -75,26 +75,26 @@ function connectElgatoStreamDeckSocket(
             );
         } else if (event == "didReceiveSettings") {
             settings = jsonPayload["settings"];
-            var entityIdInput = document.getElementById("entityIdInput");
-            populateEntityOptions(entityIdInput);
-            entityIdInput.value = settings.entityIdInput;
+            var entityId = document.getElementById("entityId");
+            populateEntityOptions(entityId);
+            entityId.value = settings.entityId;
         } else if (event == "sendToPropertyInspector") {
             logStreamDeckEvent(evt);
             homeAssistantCache.entities = jsonPayload["entityUpdate"];
-            var entityIdInput = document.getElementById("entityIdInput");
-            populateEntityOptions(entityIdInput);
-            entityIdInput.value = settings.entityIdInput;
+            var entityId = document.getElementById("entityId");
+            populateEntityOptions(entityId);
+            entityId.value = settings.entityId;
         }
     };
 
-    function populateEntityOptions(entityIdInput) {
-        entityIdInput.innerHTML = "";
+    function populateEntityOptions(entityId) {
+        entityId.innerHTML = "";
         homeAssistantCache.entities.forEach((element) => {
             if (element.startsWith("switch.")) {
                 const entityOption = document.createElement("option");
                 entityOption.value = element;
                 entityOption.innerHTML = element;
-                entityIdInput.appendChild(entityOption);
+                entityId.appendChild(entityOption);
             }
         });
     }

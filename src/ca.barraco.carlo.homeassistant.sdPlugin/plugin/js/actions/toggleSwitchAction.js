@@ -10,8 +10,8 @@ function ToggleSwitchAction(inContext, inSettings) {
     // Public function called on key up event
     this.onKeyUp = function (inData) {
         actionOnKeyUp.call(this, inData);
-        const entityIdInput = inData.settings.entityIdInput;
-        sendToggleCommand(entityIdInput);
+        const entityId = inData.settings.entityId;
+        sendToggleCommand(entityId);
     };
 
     function sendToggleCommand(entityId) {

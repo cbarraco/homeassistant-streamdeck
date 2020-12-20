@@ -220,7 +220,7 @@ function connectElgatoStreamDeckSocket(inPort, inPluginUUID, inRegisterEvent, in
     function handleStateChange(entityId, newState, context) {
         for (context in actions) {
             var actionSettings = actions[context].getSettings();
-            if (entityId === actionSettings["entityIdInput"]) {
+            if (entityId === actionSettings["entityId"]) {
                 logMessage(`Updating state of ${entityId} to ${newState}`);
                 if (newState === "on") {
                     mainCanvasContext.fillStyle = "#1976D2";
