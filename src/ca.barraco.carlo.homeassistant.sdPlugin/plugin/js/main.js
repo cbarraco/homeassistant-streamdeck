@@ -7,7 +7,7 @@ var homeAssistantConnectionState = ConnectionState.DONT_KNOW;
 var homeAssistantMessageId = 0;
 var reconnectTimeout = null;
 var homeAssistantCache = {
-    entities: [],
+    entities: {},
     services: {},
 };
 
@@ -204,14 +204,16 @@ function connectElgatoStreamDeckSocket(inPort, inPluginUUID, inRegisterEvent, in
     };
 
     function updateEntitiesCache(results, context, action) {
-        // TODO: organize entities by type like how services are organized by domain
         logMessage("Got fetch states result, parsing response");
-        homeAssistantCache.entities.splice(0, homeAssistantCache.entities.length);
+        delete homeAssistantCache.entities;
+        homeAssistantCache.entities = {};
         for (var i = 0; i < results.length; i++) {
             const entityState = results[i];
-            if (!homeAssistantCache.entities.includes(entityState.entity_id)) {
-                homeAssistantCache.entities.push(entityState.entity_id);
+            const entityType = entityState.entity_id.split(".")[0];
+            if (homeAssistantCache.entities[entityType] == undefined){
+                homeAssistantCache.entities[entityType] = [];
             }
+            homeAssistantCache.entities[entityType].push(entityState.entity_id);
             handleStateChange(entityState.entity_id, entityState.state, context);
         }
         sendToPropertyInspector(action, context, {
@@ -223,6 +225,7 @@ function connectElgatoStreamDeckSocket(inPort, inPluginUUID, inRegisterEvent, in
     function updateServicesCache(results, context, action) {
         logMessage("Got fetch services result, parsing response");
         delete homeAssistantCache.services;
+        homeAssistantCache.services = {};
         const resultKeys = Object.getOwnPropertyNames(results);
         for (var i = 0; i < resultKeys.length; i++) {
             const domain = resultKeys[i];

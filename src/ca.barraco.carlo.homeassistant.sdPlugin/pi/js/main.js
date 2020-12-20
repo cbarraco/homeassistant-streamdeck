@@ -100,7 +100,7 @@ function connectElgatoStreamDeckSocket(inPort, inUUID, inRegisterEvent, inInfo, 
             settings = jsonPayload["settings"];
             if (action == ActionType.TOGGLE_SWITCH) {
                 var entityId = document.getElementById("entityId");
-                populateSwitchEntityOptions(entityId);
+                populateEntityOptions(entityId, "switch");
                 if (settings.entityId != undefined) {
                     entityId.value = settings.entityId;
                 }
@@ -123,7 +123,7 @@ function connectElgatoStreamDeckSocket(inPort, inUUID, inRegisterEvent, inInfo, 
             if (action == ActionType.TOGGLE_SWITCH && updateType == "entitiesUpdate") {
                 homeAssistantCache.entities = jsonPayload["data"];
                 var entityId = document.getElementById("entityId");
-                populateSwitchEntityOptions(entityId);
+                populateEntityOptions(entityId, "switch");
                 if (settings.entityId != undefined) {
                     entityId.value = settings.entityId;
                 }
@@ -144,16 +144,34 @@ function connectElgatoStreamDeckSocket(inPort, inUUID, inRegisterEvent, inInfo, 
         }
     };
 
-    function populateSwitchEntityOptions(entityId) {
-        entityId.innerHTML = "";
-        homeAssistantCache.entities.forEach((element) => {
-            if (element.startsWith("switch.")) {
+    function populateEntityOptions(entityIdElement, type) {
+        entityIdElement.innerHTML = "";
+
+        var domainKeys = [];
+        if (type != undefined) {
+            // populate entities with specific type
+            domainKeys = [type];
+        } else {
+            // populate entities with all entity types
+            domainKeys = Object.getOwnPropertyNames(homeAssistantCache.entities);
+        }
+
+        for (var i = 0; i < domainKeys.length; i++) {
+            const typeKey = domainKeys[i];
+            const domainOptGroup = document.createElement("optgroup");
+            domainOptGroup.label = typeKey;
+
+            const entities = homeAssistantCache.entities[typeKey];
+            for (var j = 0; j < entities.length; j++) {
+                const entityId = entities[j];
                 const entityOption = document.createElement("option");
-                entityOption.value = element;
-                entityOption.innerHTML = element;
-                entityId.appendChild(entityOption);
+                entityOption.value = entityId;
+                entityOption.innerHTML = entityId;
+                domainOptGroup.appendChild(serviceOption);
             }
-        });
+
+            entityIdElement.appendChild(domainOptGroup);
+        }
     }
 
     function populateServiceOptions(serviceIdElement) {
