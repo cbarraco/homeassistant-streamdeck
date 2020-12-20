@@ -99,46 +99,46 @@ function connectElgatoStreamDeckSocket(inPort, inUUID, inRegisterEvent, inInfo, 
         } else if (event == "didReceiveSettings") {
             settings = jsonPayload["settings"];
             if (action == ActionType.TOGGLE_SWITCH) {
-                var entityId = document.getElementById("entityId");
-                populateEntityOptions(entityId, "switch");
+                var entityIdElement = document.getElementById("entityId");
+                populateEntityOptions(entityIdElement, "switch");
                 if (settings.entityId != undefined) {
-                    entityId.value = settings.entityId;
+                    entityIdElement.value = settings.entityId;
                 }
             } else if (action == ActionType.CALL_SERVICE) {
-                var serviceId = document.getElementById("serviceId");
-                populateServiceOptions(serviceId);
+                var serviceIdElement = document.getElementById("serviceId");
+                populateServiceOptions(serviceIdElement);
                 if (settings.serviceId != undefined) {
-                    serviceId.value = settings.serviceId;
+                    serviceIdElement.value = settings.serviceId;
                 }
 
-                var payload = document.getElementById("payload");
-                populateServiceOptions(payload);
+                var payloadElement = document.getElementById("payload");
+                populateServiceOptions(payloadElement);
                 if (settings.payload != undefined) {
-                    payload.value = settings.payload;
+                    payloadElement.value = settings.payload;
                 }
             }
         } else if (event == "sendToPropertyInspector") {
             logStreamDeckEvent(evt);
             const command = jsonPayload["command"];
-            if (action == ActionType.TOGGLE_SWITCH && command == PropertyInspectorCommands.UPDATE_ENTITIES_CACHE) {
-                homeAssistantCache.entities = jsonPayload["data"];
-                var entityId = document.getElementById("entityId");
-                populateEntityOptions(entityId, "switch");
-                if (settings.entityId != undefined) {
-                    entityId.value = settings.entityId;
-                }
-            } else if (action == ActionType.CALL_SERVICE && command == PropertyInspectorCommands.UPDATE_SERVICE_CACHE) {
-                homeAssistantCache.services = jsonPayload["data"];
+            if (command == PropertyInspectorCommands.UPDATE_CACHE) {
+                homeAssistantCache = jsonPayload["data"];
+                if (action == ActionType.TOGGLE_SWITCH) {
+                    var entityIdElement = document.getElementById("entityId");
+                    populateEntityOptions(entityIdElement, "switch");
+                    if (settings.entityId != undefined) {
+                        entityIdElement.value = settings.entityId;
+                    }
+                } else if (action == ActionType.CALL_SERVICE) {
+                    var serviceIdElement = document.getElementById("serviceId");
+                    populateServiceOptions(serviceIdElement);
+                    if (settings.serviceId != undefined) {
+                        serviceIdElement.value = settings.serviceId;
+                    }
 
-                var serviceId = document.getElementById("serviceId");
-                populateServiceOptions(serviceId);
-                if (settings.serviceId != undefined) {
-                    serviceId.value = settings.serviceId;
-                }
-
-                var payload = document.getElementById("payload");
-                if (settings.payload != undefined) {
-                    payload.value = settings.payload;
+                    var payloadElement = document.getElementById("payload");
+                    if (settings.payload != undefined) {
+                        payloadElement.value = settings.payload;
+                    }
                 }
             }
         }

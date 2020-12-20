@@ -19,6 +19,5 @@ const PluginCommands = {
 };
 
 const PropertyInspectorCommands = {
-    UPDATE_SERVICE_CACHE: "updateServiceCache",
-    UPDATE_ENTITIES_CACHE: "updateEntitiesCache",
+    UPDATE_CACHE: "updateCache",
 };

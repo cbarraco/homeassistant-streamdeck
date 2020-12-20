@@ -185,14 +185,7 @@ function connectElgatoStreamDeckSocket(inPort, inPluginUUID, inRegisterEvent, in
                 clearTimeout(reconnectTimeout);
                 requestGlobalSettings(inPluginUUID);
             } else if (command == PluginCommands.REQUEST_CACHE_UPDATE) {
-                sendToPropertyInspector(action, context, {
-                    command: PropertyInspectorCommands.UPDATE_ENTITIES_CACHE,
-                    data: homeAssistantCache.entities,
-                });
-                sendToPropertyInspector(action, context, {
-                    command: PropertyInspectorCommands.UPDATE_SERVICE_CACHE,
-                    data: homeAssistantCache.services,
-                });
+                sendCacheUpdateToPropertyInspector(action, context);
             }
         } else if (event == "propertyInspectorDidAppear") {
             logStreamDeckEvent(inEvent.data);
@@ -200,16 +193,16 @@ function connectElgatoStreamDeckSocket(inPort, inPluginUUID, inRegisterEvent, in
             // make sure the parameter dropdowns are up to date
             fetchStates();
             fetchServices();
-            sendToPropertyInspector(action, context, {
-                command: PropertyInspectorCommands.UPDATE_ENTITIES_CACHE,
-                data: homeAssistantCache.entities,
-            });
-            sendToPropertyInspector(action, context, {
-                command: PropertyInspectorCommands.UPDATE_SERVICE_CACHE,
-                data: homeAssistantCache.services,
-            });
+            sendCacheUpdateToPropertyInspector(action, context);
         }
     };
+
+    function sendCacheUpdateToPropertyInspector(action, context) {
+        sendToPropertyInspector(action, context, {
+            command: PropertyInspectorCommands.UPDATE_CACHE,
+            data: homeAssistantCache,
+        });
+    }
 
     function updateEntitiesCache(results, context, action) {
         logMessage("Got fetch states result, parsing response");
@@ -225,10 +218,7 @@ function connectElgatoStreamDeckSocket(inPort, inPluginUUID, inRegisterEvent, in
             handleStateChange(entityState.entity_id, entityState.state, context);
         }
         for (context in actions) {
-            sendToPropertyInspector(action, context, {
-                command: PropertyInspectorCommands.UPDATE_ENTITIES_CACHE,
-                data: homeAssistantCache.entities,
-            });
+            sendCacheUpdateToPropertyInspector(action, context);
         }
         logMessage(homeAssistantCache.entities);
     }
@@ -247,10 +237,7 @@ function connectElgatoStreamDeckSocket(inPort, inPluginUUID, inRegisterEvent, in
             }
         }
         for (context in actions) {
-            sendToPropertyInspector(action, context, {
-                command: PropertyInspectorCommands.UPDATE_SERVICE_CACHE,
-                data: homeAssistantCache.services,
-            });
+            sendCacheUpdateToPropertyInspector(action, context);
         }
         logMessage(homeAssistantCache.services);
     }
