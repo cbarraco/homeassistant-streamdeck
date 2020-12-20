@@ -1,15 +1,26 @@
 {
   "Actions": [
     {
-      "Icon": "plugin/images/actions/actionToggleSwitch",
+      "Icon": "plugin/images/actions/toggleSwitch",
       "Name": "Toggle a switch",
       "States": [
         {
-          "Image": "plugin/images/actions/actionToggleSwitch"
+          "Image": "plugin/images/actions/toggleSwitch"
         }
       ],
       "Tooltip": "Toggles a switch entity in Home Assistant",
       "UUID": "ca.barraco.carlo.homeassistant.action.toggleswitch"
+    },
+    {
+      "Icon": "plugin/images/actions/callService",
+      "Name": "Call a service",
+      "States": [
+        {
+          "Image": "plugin/images/actions/callService"
+        }
+      ],
+      "Tooltip": "Calls a service in Home Assistant",
+      "UUID": "ca.barraco.carlo.homeassistant.action.callservice"
     }
   ],
   "SDKVersion": 2,

@@ -10,11 +10,17 @@ function CallServiceAction(inContext, inSettings) {
     // Public function called on key up event
     this.onKeyUp = function (inData) {
         actionOnKeyUp.call(this, inData);
-        const entityId = inData.settings.entityId;
-        sendServiceCommand(entityId);
+        const serviceId = inData.settings.serviceId;
+        var payload = inData.settings.payload;
+        if (payload == "" || payload == undefined){
+            payload = "{}";
+        }
+        sendServiceCommand(serviceId, payload);
     };
 
-    function sendServiceCommand(service, payload) {
+    function sendServiceCommand(serviceId, payload) {
+        const domain = serviceId.split(".")[0];
+        const service = serviceId.split(".")[1];
         logMessage(`Calling ${domain}.${service}`);
         const testMessage = `{
           "id": ${++homeAssistantMessageId},

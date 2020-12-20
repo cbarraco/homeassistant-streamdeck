@@ -10,7 +10,7 @@
         <script src="js/main.js"></script>
     </head>
     <body>
-        <div class="sdpi-wrapper">
+        <div id="wrapper" class="sdpi-wrapper">
             <div class="sdpi-heading">Credentials</div>
             <div class="sdpi-item">
                 <div class="sdpi-item-label">Home Assistant Address</div>
@@ -32,7 +32,7 @@
                 <p>If you aren't sure then you can probably leave it unchecked.</p>
             </div>
             <div class="sdpi-item">
-                <div class="sdpi-item-label">Long Access Token</div>
+                <div class="sdpi-item-label">Long-Lived Access Token</div>
                 <input
                     id="accessToken"
                     class="sdpi-item-value"
@@ -41,11 +41,6 @@
                 />
             </div>
             <div class="sdpi-heading">Parameters</div>
-            <div class="sdpi-item" id="select_single">
-                <div class="sdpi-item-label">Entity</div>
-                <select class="sdpi-item-value select" id="entityId">
-                </select>
-            </div>
         </div>
 
         <div class="sdpi-info-label hidden" style="top: -1000" value=""></div>
