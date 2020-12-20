@@ -5,7 +5,8 @@
       "Name": "Toggle a switch",
       "States": [
         {
-          "Image": "plugin/images/actions/toggleSwitch"
+          "Image": "plugin/images/actions/toggleSwitch",
+          "Title": "Switch"
         }
       ],
       "Tooltip": "Toggles a switch entity in Home Assistant",
@@ -16,7 +17,8 @@
       "Name": "Call a service",
       "States": [
         {
-          "Image": "plugin/images/actions/callService"
+          "Image": "plugin/images/actions/callService",
+          "Title": "Service"
         }
       ],
       "Tooltip": "Calls a service in Home Assistant",
@@ -27,7 +29,8 @@
       "Name": "Toggle a light",
       "States": [
         {
-          "Image": "plugin/images/actions/toggleLight"
+          "Image": "plugin/images/actions/toggleLight",
+          "Title": "Light"
         }
       ],
       "Tooltip": "Toggles a light entity in Home Assistant",
