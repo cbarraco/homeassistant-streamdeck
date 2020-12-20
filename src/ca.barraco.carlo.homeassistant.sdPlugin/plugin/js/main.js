@@ -11,9 +11,10 @@ var homeAssistantCache = {
     services: {},
 };
 
-// TODO: organize these in a dictionary
-var fetchStatesMessageId = -1;
-var fetchServicesMessageId = -1;
+var lastMessageId = {
+    fetchStates: -1,
+    fetchServices: -1
+};
 
 var mainCanvas = null;
 var mainCanvasContext = null;
@@ -130,9 +131,9 @@ function connectElgatoStreamDeckSocket(inPort, inPluginUUID, inRegisterEvent, in
                             return;
                         } else {
                             // we got results, but which ones?
-                            if (data.id == fetchStatesMessageId) {
+                            if (data.id == lastMessageId.fetchStates) {
                                 updateEntitiesCache(results, context, action);
-                            } else if (data.id == fetchServicesMessageId) {
+                            } else if (data.id == lastMessageId.fetchServices) {
                                 updateServicesCache(results, context, action);
                             }
                         }
@@ -282,9 +283,9 @@ function connectElgatoStreamDeckSocket(inPort, inPluginUUID, inRegisterEvent, in
 
     function fetchStates() {
         logMessage("Fetching all states");
-        fetchStatesMessageId = ++homeAssistantMessageId;
+        lastMessageId.fetchStates = ++homeAssistantMessageId;
         const fetchMessage = `{
-                    "id": ${fetchStatesMessageId},
+                    "id": ${lastMessageId.fetchStates},
                     "type": "get_states"
                   }`;
         homeAssistantWebsocket.send(fetchMessage);
@@ -292,9 +293,9 @@ function connectElgatoStreamDeckSocket(inPort, inPluginUUID, inRegisterEvent, in
 
     function fetchServices() {
         logMessage("Fetching all services");
-        fetchServicesMessageId = ++homeAssistantMessageId;
+        lastMessageId.fetchServices = ++homeAssistantMessageId;
         const fetchMessage = `{
-                    "id": ${fetchServicesMessageId},
+                    "id": ${lastMessageId.fetchServices},
                     "type": "get_services"
                   }`;
         homeAssistantWebsocket.send(fetchMessage);
