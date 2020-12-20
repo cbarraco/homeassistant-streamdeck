@@ -21,6 +21,6 @@ function Action(inContext, inSettings) {
         settings = inSettings;
     };
 
-    // Public function called on key up event
+    // Public function called on keyDown event
     this.onKeyDown = function (inData) {};
 }

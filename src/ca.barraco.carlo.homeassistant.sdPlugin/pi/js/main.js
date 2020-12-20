@@ -204,14 +204,14 @@ function connectElgatoStreamDeckSocket(inPort, inUUID, inRegisterEvent, inInfo, 
     function updateElementsFromGlobalSettings() {
         logMessage("Updating UI using global settings");
         var homeAssistantAddress = document.getElementById("homeAssistantAddress");
-        var ssl = document.getElementById("ssl");
+        var encrypted = document.getElementById("encrypted");
         var accessToken = document.getElementById("accessToken");
 
         if (globalSettings.homeAssistantAddress != undefined) {
             homeAssistantAddress.value = globalSettings.homeAssistantAddress;
         }
-        if (globalSettings.ssl != undefined) {
-            ssl.checked = globalSettings.ssl;
+        if (globalSettings.encrypted != undefined) {
+            encrypted.checked = globalSettings.encrypted;
         }
         if (globalSettings.accessToken != undefined) {
             accessToken.value = globalSettings.accessToken;
@@ -221,7 +221,7 @@ function connectElgatoStreamDeckSocket(inPort, inUUID, inRegisterEvent, inInfo, 
     function setUpGlobalSettingsElements() {
         logMessage("Setting up event listeners for global settings parameters");
         var homeAssistantAddress = document.getElementById("homeAssistantAddress");
-        var ssl = document.getElementById("ssl");
+        var encrypted = document.getElementById("encrypted");
         var accessToken = document.getElementById("accessToken");
         homeAssistantAddress.addEventListener("change", function (inEvent) {
             logMessage(inEvent);
@@ -233,10 +233,10 @@ function connectElgatoStreamDeckSocket(inPort, inUUID, inRegisterEvent, inInfo, 
             });
         });
 
-        ssl.addEventListener("click", function (inEvent) {
+        encrypted.addEventListener("click", function (inEvent) {
             logMessage(inEvent);
             var checked = inEvent.target.checked;
-            globalSettings.ssl = checked;
+            globalSettings.encrypted = checked;
             saveGlobalSettings(inUUID);
             sendToPlugin(action, inUUID, {
                 command: PluginCommands.REQUEST_RECONNECT,

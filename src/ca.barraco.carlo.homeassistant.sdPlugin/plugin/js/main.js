@@ -47,6 +47,7 @@ function connectElgatoStreamDeckSocket(inPort, inPluginUUID, inRegisterEvent, in
 
         if (event == "keyDown") {
             logStreamDeckEvent(inEvent.data);
+            // TODO clean this up
             var data = {};
             data.context = context;
             data.settings = jsonPayload["settings"];
@@ -87,7 +88,7 @@ function connectElgatoStreamDeckSocket(inPort, inPluginUUID, inRegisterEvent, in
             if (globalSettings.homeAssistantAddress !== undefined && globalSettings.accessToken !== undefined) {
                 logMessage("Creating HA websocket");
                 var webSocketAddress = "";
-                if (globalSettings.hasOwnProperty("ssl") && globalSettings.ssl == true) {
+                if (globalSettings.hasOwnProperty("encrypted") && globalSettings.encrypted == true) {
                     webSocketAddress = `wss://${globalSettings.homeAssistantAddress}/api/websocket`;
                 } else {
                     webSocketAddress = `ws://${globalSettings.homeAssistantAddress}/api/websocket`;
@@ -192,10 +193,12 @@ function connectElgatoStreamDeckSocket(inPort, inPluginUUID, inRegisterEvent, in
             logStreamDeckEvent(inEvent.data);
 
             // make sure the parameter dropdowns are up to date
-            fetchStates();
-            fetchServices();
-            for (context in actions) {
-                sendCacheUpdateToPropertyInspector(action, context);
+            if (homeAssistantConnectionState == ConnectionState.CONNECTED) {
+                fetchStates();
+                fetchServices();
+                for (context in actions) {
+                    sendCacheUpdateToPropertyInspector(action, context);
+                }
             }
         }
     };
