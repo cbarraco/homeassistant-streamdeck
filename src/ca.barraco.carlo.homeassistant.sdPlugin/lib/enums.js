@@ -20,4 +20,9 @@ const PluginCommands = {
 
 const PropertyInspectorCommands = {
     UPDATE_CACHE: "updateCache",
+    UPDATE_GLOBAL_SETTINGS: "updateGlobalSettings"
 };
+
+const CredentialsCommands = {
+    UPDATE_ELEMENTS: "updateElements"
+}

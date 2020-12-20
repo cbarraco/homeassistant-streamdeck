@@ -7,10 +7,15 @@ var homeAssistantCache = {
     services: {},
 };
 
+var credentialsWindow = null;
+var pluginUUID = null;
+
 // Property inspector entry point
 function connectElgatoStreamDeckSocket(inPort, inUUID, inRegisterEvent, inInfo, inActionInfo) {
     var info = JSON.parse(inInfo);
     var language = info["application"]["language"];
+
+    pluginUUID = inUUID;
 
     var actionInfo = JSON.parse(inActionInfo);
     logStreamDeckEvent(actionInfo);
@@ -36,8 +41,17 @@ function connectElgatoStreamDeckSocket(inPort, inUUID, inRegisterEvent, inInfo, 
         setUpCallServiceElements();
     }
 
-    setUpGlobalSettingsElements();
-    updateElementsFromGlobalSettings();
+    const enterCredentials = document.getElementById("enterCredentials");
+    enterCredentials.addEventListener("click", function () {
+        credentialsWindow = window.open("credentials.html", "Enter Credentials");
+        logMessage("Sending global settings to credentials window");
+        credentialsWindow.addEventListener("DOMContentLoaded", function(e){
+            credentialsWindow.postMessage({
+                command: CredentialsCommands.UPDATE_ELEMENTS,
+                data: globalSettings,
+            });
+        });
+    });
 
     streamDeckWebSocket.onmessage = function (streamDeckMessage) {
         logStreamDeckEvent(streamDeckMessage);
@@ -47,7 +61,13 @@ function connectElgatoStreamDeckSocket(inPort, inUUID, inRegisterEvent, inInfo, 
 
         if (event == "didReceiveGlobalSettings") {
             globalSettings = payload["settings"];
-            updateElementsFromGlobalSettings();
+            if (credentialsWindow != null) {
+                logMessage("Sending global settings to credentials window");
+                credentialsWindow.postMessage({
+                    command: CredentialsCommands.UPDATE_ELEMENTS,
+                    data: globalSettings,
+                });
+            }
         } else if (event == "didReceiveSettings") {
             settings = payload["settings"];
             if (action == ActionType.TOGGLE_SWITCH) {
@@ -200,57 +220,16 @@ function connectElgatoStreamDeckSocket(inPort, inUUID, inRegisterEvent, inInfo, 
             element.appendChild(optGroup);
         }
     }
+}
 
-    function updateElementsFromGlobalSettings() {
-        logMessage("Updating UI using global settings");
-        var homeAssistantAddress = document.getElementById("homeAssistantAddress");
-        var encrypted = document.getElementById("encrypted");
-        var accessToken = document.getElementById("accessToken");
-
-        if (globalSettings.homeAssistantAddress != undefined) {
-            homeAssistantAddress.value = globalSettings.homeAssistantAddress;
-        }
-        if (globalSettings.encrypted != undefined) {
-            encrypted.checked = globalSettings.encrypted;
-        }
-        if (globalSettings.accessToken != undefined) {
-            accessToken.value = globalSettings.accessToken;
-        }
-    }
-
-    function setUpGlobalSettingsElements() {
-        logMessage("Setting up event listeners for global settings parameters");
-        var homeAssistantAddress = document.getElementById("homeAssistantAddress");
-        var encrypted = document.getElementById("encrypted");
-        var accessToken = document.getElementById("accessToken");
-        homeAssistantAddress.addEventListener("change", function (inEvent) {
-            logMessage(inEvent);
-            var value = inEvent.target.value;
-            globalSettings.homeAssistantAddress = value;
-            saveGlobalSettings(inUUID);
-            sendToPlugin(action, inUUID, {
-                command: PluginCommands.REQUEST_RECONNECT,
-            });
-        });
-
-        encrypted.addEventListener("click", function (inEvent) {
-            logMessage(inEvent);
-            var checked = inEvent.target.checked;
-            globalSettings.encrypted = checked;
-            saveGlobalSettings(inUUID);
-            sendToPlugin(action, inUUID, {
-                command: PluginCommands.REQUEST_RECONNECT,
-            });
-        });
-
-        accessToken.addEventListener("change", function (inEvent) {
-            logMessage(inEvent);
-            var value = inEvent.target.value;
-            globalSettings.accessToken = value;
-            saveGlobalSettings(inUUID);
-            sendToPlugin(action, inUUID, {
-                command: PluginCommands.REQUEST_RECONNECT,
-            });
-        });
+function sendCredentialsToPropertyInspector(message) {
+    logMessage("Received message from credentials window");
+    logMessage(message);
+    const command = message["command"];
+    const data = message["data"];
+    if (command == PropertyInspectorCommands.UPDATE_GLOBAL_SETTINGS) {
+        logMessage("Updating global settings");
+        globalSettings = data;
+        saveGlobalSettings(pluginUUID);
     }
 }
