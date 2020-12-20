@@ -2,7 +2,10 @@ var streamDeckWebSocket = null;
 var globalSettings = {};
 var settings = {};
 
-var knownEntityIds = [];
+var homeAssistantCache = {
+    entities: [],
+    services: null
+};
 
 // Property inspector entry point
 function connectElgatoStreamDeckSocket(
@@ -77,7 +80,7 @@ function connectElgatoStreamDeckSocket(
             entityIdInput.value = settings.entityIdInput;
         } else if (event == "sendToPropertyInspector") {
             logStreamDeckEvent(evt);
-            knownEntityIds = jsonPayload["entityUpdate"];
+            homeAssistantCache.entities = jsonPayload["entityUpdate"];
             var entityIdInput = document.getElementById("entityIdInput");
             populateEntityOptions(entityIdInput);
             entityIdInput.value = settings.entityIdInput;
@@ -86,7 +89,7 @@ function connectElgatoStreamDeckSocket(
 
     function populateEntityOptions(entityIdInput) {
         entityIdInput.innerHTML = "";
-        knownEntityIds.forEach((element) => {
+        homeAssistantCache.entities.forEach((element) => {
             if (element.startsWith("switch.")) {
                 const entityOption = document.createElement("option");
                 entityOption.value = element;
