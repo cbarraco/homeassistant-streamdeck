@@ -5,10 +5,10 @@ function ToggleSwitchAction(inContext, inSettings) {
     // Inherit from Action
     Action.call(this, inContext, inSettings);
 
-    var actionOnKeyUp = this.onKeyUp;
+    var actionOnKeyUp = this.onKeyDown;
 
     // Public function called on key up event
-    this.onKeyUp = function (inData) {
+    this.onKeyDown = function (inData) {
         actionOnKeyUp.call(this, inData);
         const entityId = inData.settings.entityId;
         sendToggleCommand(entityId);

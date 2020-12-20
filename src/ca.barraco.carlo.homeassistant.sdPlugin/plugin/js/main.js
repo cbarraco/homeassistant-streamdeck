@@ -43,7 +43,7 @@ function connectElgatoStreamDeckSocket(inPort, inPluginUUID, inRegisterEvent, in
         var context = jsonObj["context"];
         var jsonPayload = jsonObj["payload"];
 
-        if (event == "keyUp") {
+        if (event == "keyDown") {
             logStreamDeckEvent(inEvent.data);
             var data = {};
             data.context = context;
@@ -52,9 +52,9 @@ function connectElgatoStreamDeckSocket(inPort, inPluginUUID, inRegisterEvent, in
             data.userDesiredState = jsonPayload["userDesiredState"];
             data.state = jsonPayload["state"];
 
-            // Send onKeyUp event to actions
+            // Send onKeyDown event to actions
             if (context in actions) {
-                actions[context].onKeyUp(data);
+                actions[context].onKeyDown(data);
             }
         } else if (event == "willAppear") {
             logStreamDeckEvent(inEvent.data);
