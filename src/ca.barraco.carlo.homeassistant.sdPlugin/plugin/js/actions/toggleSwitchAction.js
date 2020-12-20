@@ -7,7 +7,7 @@ function ToggleSwitchAction(inContext, inSettings) {
 
     var actionOnKeyUp = this.onKeyDown;
 
-    // Public function called on key up event
+    // Public function called on keyDown event
     this.onKeyDown = function (inData) {
         actionOnKeyUp.call(this, inData);
         const entityId = inData.settings.entityId;
