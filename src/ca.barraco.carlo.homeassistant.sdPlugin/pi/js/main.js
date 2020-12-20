@@ -45,7 +45,7 @@ function connectElgatoStreamDeckSocket(inPort, inUUID, inRegisterEvent, inInfo, 
     enterCredentials.addEventListener("click", function () {
         credentialsWindow = window.open("credentials.html", "Enter Credentials");
         logMessage("Sending global settings to credentials window");
-        credentialsWindow.addEventListener("DOMContentLoaded", function(e){
+        credentialsWindow.addEventListener("DOMContentLoaded", function (e) {
             credentialsWindow.postMessage({
                 command: CredentialsCommands.UPDATE_ELEMENTS,
                 data: globalSettings,
@@ -146,7 +146,9 @@ function connectElgatoStreamDeckSocket(inPort, inUUID, inRegisterEvent, inInfo, 
         });
 
         var payloadElement = document.getElementById("payload");
-        payloadElement.value = settings.serviceId;
+        if (settings.payload != undefined) {
+            payloadElement.value = settings.payload;
+        }
         payloadElement.addEventListener("input", function (inEvent) {
             var value = inEvent.target.value;
             settings.payload = value;
