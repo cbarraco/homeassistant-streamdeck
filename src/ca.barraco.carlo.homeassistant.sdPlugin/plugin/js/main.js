@@ -236,7 +236,7 @@ function connectElgatoStreamDeckSocket(inPort, inPluginUUID, inRegisterEvent, in
             homeAssistantCache.services[domain] = [];
             const serviceKeys = Object.getOwnPropertyNames(results[domain]);
             for (var j = 0; j < serviceKeys.length; j++) {
-                homeAssistantCache.services[domain].push(serviceKeys[j]);
+                homeAssistantCache.services[domain].push(domain + "." + serviceKeys[j]);
             }
         }
         for (context in actions) {

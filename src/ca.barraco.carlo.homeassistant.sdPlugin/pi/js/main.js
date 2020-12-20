@@ -17,11 +17,6 @@ function connectElgatoStreamDeckSocket(inPort, inUUID, inRegisterEvent, inInfo, 
     settings = actionInfo["payload"]["settings"];
     var action = actionInfo["action"];
 
-    window.addEventListener("beforeunload", function (e) {
-        e.preventDefault();
-        sendValueToPlugin("propertyInspectorWillDisappear", "property_inspector");
-    });
-
     // Open the web socket to Stream Deck
     streamDeckWebSocket = new WebSocket("ws://127.0.0.1:" + inPort);
 
@@ -41,37 +36,30 @@ function connectElgatoStreamDeckSocket(inPort, inUUID, inRegisterEvent, inInfo, 
         setUpCallServiceElements();
     }
 
-    var homeAssistantAddress = document.getElementById("homeAssistantAddress");
-    var ssl = document.getElementById("ssl");
-    var accessToken = document.getElementById("accessToken");
-    setUpGlobalSettingsElements(homeAssistantAddress, ssl, accessToken);
-    updateElementsFromGlobalSettings(homeAssistantAddress, ssl, accessToken);
+    setUpGlobalSettingsElements();
+    updateElementsFromGlobalSettings();
 
-    streamDeckWebSocket.onmessage = function (evt) {
-        var jsonObj = JSON.parse(evt.data);
-        var event = jsonObj["event"];
-        var jsonPayload = jsonObj["payload"];
-
-        logStreamDeckEvent(jsonObj);
+    streamDeckWebSocket.onmessage = function (streamDeckMessage) {
+        logStreamDeckEvent(streamDeckMessage);
+        var streamDeckMessageData = JSON.parse(streamDeckMessage.data);
+        var event = streamDeckMessageData["event"];
+        var payload = streamDeckMessageData["payload"];
 
         if (event == "didReceiveGlobalSettings") {
-            globalSettings = jsonPayload["settings"];
-            var homeAssistantAddress = document.getElementById("homeAssistantAddress");
-            var ssl = document.getElementById("ssl");
-            var accessToken = document.getElementById("accessToken");
-            updateElementsFromGlobalSettings(homeAssistantAddress, ssl, accessToken);
+            globalSettings = payload["settings"];
+            updateElementsFromGlobalSettings();
         } else if (event == "didReceiveSettings") {
-            settings = jsonPayload["settings"];
+            settings = payload["settings"];
             if (action == ActionType.TOGGLE_SWITCH) {
                 handleNewSettingsForToggleSwitchAction();
             } else if (action == ActionType.CALL_SERVICE) {
                 handleNewSettingsForCallServiceAction();
             }
         } else if (event == "sendToPropertyInspector") {
-            logStreamDeckEvent(evt);
-            const command = jsonPayload["command"];
+            logStreamDeckEvent(streamDeckMessage);
+            const command = payload["command"];
             if (command == PropertyInspectorCommands.UPDATE_CACHE) {
-                homeAssistantCache = jsonPayload["data"];
+                homeAssistantCache = payload["data"];
                 if (action == ActionType.TOGGLE_SWITCH) {
                     handleCacheUpdateForToggleSwitchAction();
                 } else if (action == ActionType.CALL_SERVICE) {
@@ -89,9 +77,9 @@ function connectElgatoStreamDeckSocket(inPort, inUUID, inRegisterEvent, inInfo, 
         </select>
         </div>`;
 
-        var entityId = document.getElementById("entityId");
-        entityId.value = settings.entityId;
-        entityId.addEventListener("input", function (inEvent) {
+        var entityIdElement = document.getElementById("entityId");
+        entityIdElement.value = settings.entityId;
+        entityIdElement.addEventListener("input", function (inEvent) {
             var value = inEvent.target.value;
             settings.entityId = value;
             saveSettings(action, inUUID, settings);
@@ -129,17 +117,17 @@ function connectElgatoStreamDeckSocket(inPort, inUUID, inRegisterEvent, inInfo, 
             </span>
         </div>`;
 
-        var serviceId = document.getElementById("serviceId");
-        serviceId.value = settings.serviceId;
-        serviceId.addEventListener("input", function (inEvent) {
+        var serviceIdElement = document.getElementById("serviceId");
+        serviceIdElement.value = settings.serviceId;
+        serviceIdElement.addEventListener("input", function (inEvent) {
             var value = inEvent.target.value;
             settings.serviceId = value;
             saveSettings(action, inUUID, settings);
         });
 
-        var payload = document.getElementById("payload");
-        payload.value = settings.serviceId;
-        payload.addEventListener("input", function (inEvent) {
+        var payloadElement = document.getElementById("payload");
+        payloadElement.value = settings.serviceId;
+        payloadElement.addEventListener("input", function (inEvent) {
             var value = inEvent.target.value;
             settings.payload = value;
             saveSettings(action, inUUID, settings);
@@ -176,61 +164,49 @@ function connectElgatoStreamDeckSocket(inPort, inUUID, inRegisterEvent, inInfo, 
     function populateEntityOptions(entityIdElement, type) {
         logMessage("Populating entities parameter options");
         logMessage(homeAssistantCache.entities);
-        entityIdElement.innerHTML = "";
-
-        var domainKeys = [];
-        if (type != undefined) {
-            // populate entities with specific type
-            domainKeys = [type];
-        } else {
-            // populate entities with all entity types
-            domainKeys = Object.getOwnPropertyNames(homeAssistantCache.entities);
-        }
-
-        for (var i = 0; i < domainKeys.length; i++) {
-            const typeKey = domainKeys[i];
-            const domainOptGroup = document.createElement("optgroup");
-            domainOptGroup.label = typeKey;
-
-            const entities = homeAssistantCache.entities[typeKey];
-            for (var j = 0; j < entities.length; j++) {
-                const entityId = entities[j];
-                const entityOption = document.createElement("option");
-                entityOption.value = entityId;
-                entityOption.innerHTML = entityId;
-                domainOptGroup.appendChild(entityOption);
-            }
-
-            entityIdElement.appendChild(domainOptGroup);
-        }
+        populateOptionsFromCacheProperty(entityIdElement, homeAssistantCache.entities, type);
     }
 
-    function populateServiceOptions(serviceIdElement) {
+    function populateServiceOptions(serviceIdElement, type) {
         logMessage("Populating services parameter options");
         logMessage(homeAssistantCache.services);
-        serviceIdElement.innerHTML = "";
+        populateOptionsFromCacheProperty(serviceIdElement, homeAssistantCache.services, type);
+    }
 
-        const domainKeys = Object.getOwnPropertyNames(homeAssistantCache.services);
-        for (var i = 0; i < domainKeys.length; i++) {
-            const domainKey = domainKeys[i];
-            const domainOptGroup = document.createElement("optgroup");
-            domainOptGroup.label = domainKey;
+    function populateOptionsFromCacheProperty(element, cacheProperty, type) {
+        element.innerHTML = "";
 
-            const services = homeAssistantCache.services[domainKey];
-            for (var j = 0; j < services.length; j++) {
-                const serviceKey = services[j];
-                const serviceOption = document.createElement("option");
-                serviceOption.value = domainKey + "." + serviceKey;
-                serviceOption.innerHTML = domainKey + "." + serviceKey;
-                domainOptGroup.appendChild(serviceOption);
+        var keys = [];
+        if (type != undefined) {
+            // populate with specific key
+            keys = [type];
+        } else {
+            // populate with all keys
+            keys = Object.getOwnPropertyNames(cacheProperty);
+        }
+
+        for (var i = 0; i < keys.length; i++) {
+            const typeKey = keys[i];
+            const optGroup = document.createElement("optgroup");
+            optGroup.label = typeKey;
+            const optionValues = cacheProperty[typeKey];
+            for (var j = 0; j < optionValues.length; j++) {
+                const optionValue = optionValues[j];
+                const option = document.createElement("option");
+                option.value = optionValue;
+                option.innerHTML = optionValue;
+                optGroup.appendChild(option);
             }
-
-            serviceIdElement.appendChild(domainOptGroup);
+            element.appendChild(optGroup);
         }
     }
 
-    function updateElementsFromGlobalSettings(homeAssistantAddress, ssl, accessToken) {
+    function updateElementsFromGlobalSettings() {
         logMessage("Updating UI using global settings");
+        var homeAssistantAddress = document.getElementById("homeAssistantAddress");
+        var ssl = document.getElementById("ssl");
+        var accessToken = document.getElementById("accessToken");
+
         if (globalSettings.homeAssistantAddress != undefined) {
             homeAssistantAddress.value = globalSettings.homeAssistantAddress;
         }
@@ -242,8 +218,11 @@ function connectElgatoStreamDeckSocket(inPort, inUUID, inRegisterEvent, inInfo, 
         }
     }
 
-    function setUpGlobalSettingsElements(homeAssistantAddress, ssl, accessToken) {
+    function setUpGlobalSettingsElements() {
         logMessage("Setting up event listeners for global settings parameters");
+        var homeAssistantAddress = document.getElementById("homeAssistantAddress");
+        var ssl = document.getElementById("ssl");
+        var accessToken = document.getElementById("accessToken");
         homeAssistantAddress.addEventListener("change", function (inEvent) {
             logMessage(inEvent);
             var value = inEvent.target.value;
