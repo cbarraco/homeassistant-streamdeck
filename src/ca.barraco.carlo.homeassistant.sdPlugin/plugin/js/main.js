@@ -214,15 +214,18 @@ function connectElgatoStreamDeckSocket(inPort, inPluginUUID, inRegisterEvent, in
         logMessage("Got fetch states result, parsing response");
         delete homeAssistantCache.entities;
         homeAssistantCache.entities = {};
+
         for (var i = 0; i < results.length; i++) {
-            const entityState = results[i];
-            const entityType = entityState.entity_id.split(".")[0];
-            if (homeAssistantCache.entities[entityType] == undefined) {
-                homeAssistantCache.entities[entityType] = [];
+            const result = results[i];
+            const entityId = result.entity_id;
+            const type = entityId.split(".")[0];
+            if (homeAssistantCache.entities[type] == undefined) {
+                homeAssistantCache.entities[type] = [];
             }
-            homeAssistantCache.entities[entityType].push(entityState.entity_id);
-            handleStateChange(entityState.entity_id, entityState);
+            homeAssistantCache.entities[type].push(result);
+            handleStateChange(result.entity_id, result);
         }
+
         for (context in actions) {
             sendCacheUpdateToPropertyInspector(action, context);
         }
