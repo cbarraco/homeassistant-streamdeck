@@ -22,13 +22,13 @@ function CallServiceAction(inContext, inSettings) {
         const domain = serviceId.split(".")[0];
         const service = serviceId.split(".")[1];
         logMessage(`Calling ${domain}.${service}`);
-        const testMessage = `{
+        const callServiceMessage = `{
           "id": ${++homeAssistantMessageId},
           "type": "call_service",
           "domain": "${domain}",
           "service": "${service}",
           "service_data": ${payload}
         }`;
-        homeAssistantWebsocket.send(testMessage);
+        homeAssistantWebsocket.send(callServiceMessage);
     }
 }

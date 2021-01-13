@@ -1,18 +1,16 @@
 // Prototype which represents a toggle light action
-function ToggleLightAction(inContext, inSettings) {
+function ToggleLightAction(context, settings) {
     var instance = this;
 
     // Inherit from Action
-    Action.call(this, inContext, inSettings);
+    Action.call(this, context, settings);
 
     var actionOnKeyUp = this.onKeyDown;
 
     // Public function called on keyDown event
     this.onKeyDown = function (inData) {
         actionOnKeyUp.call(this, inData);
-        const entityId = inData.settings.entityId;
-        const color = inData.settings.color;
-        sendToggleCommand(entityId, color);
+        sendToggleCommand(inData.settings);
     };
 
     function hexToRgb(hex) {
@@ -26,23 +24,38 @@ function ToggleLightAction(inContext, inSettings) {
             : null;
     }
 
-    function sendToggleCommand(entityId, color) {
-        logMessage(`Sending toggle command to HA for entity ${entityId}`);
+    function sendToggleCommand(settings) {
+        logMessage(`Sending toggle command to HA for entity ${settings.entityId}`);
 
-        const components = hexToRgb(color);
-        const red = components.r;
-        const green = components.g;
-        const blue = components.b;
-        const testMessage = `{
+        brightnessPayload = "";
+        if (settings.brightness != undefined) {
+            brightnessPayload = `,"brightness_pct": ${settings.brightness}`;
+        }
+
+        colorPayload = "";
+        if (settings.colorType == "RGB") {
+            const components = hexToRgb(settings.color);
+            const red = components.r;
+            const green = components.g;
+            const blue = components.b;
+            colorPayload = `,"rgb_color": [${red}, ${green}, ${blue}]`;
+        } else if (settings.colorType == "Temperature") {
+            colorPayload = `,"kelvin": ${settings.temperature}`;
+        }
+
+        const toggleLightMessage = `{
           "id": ${++homeAssistantMessageId},
           "type": "call_service",
           "domain": "light",
           "service": "toggle",
           "service_data": {
-            "entity_id": "${entityId}",
-            "rgb_color": [${red}, ${green}, ${blue}]
+            "entity_id": "${settings.entityId}"
+            ${brightnessPayload}
+            ${colorPayload}
           }
         }`;
-        homeAssistantWebsocket.send(testMessage);
+
+        logMessage(toggleLightMessage);
+        homeAssistantWebsocket.send(toggleLightMessage);
     }
 }

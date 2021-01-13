@@ -178,7 +178,14 @@ function connectElgatoStreamDeckSocket(inPort, inUUID, inRegisterEvent, inInfo, 
             <select class="sdpi-item-value select" id="entityId">
             </select>
         </div>
-        <div id="lightParameters"></div>
+        <div id="brightnessWrapper"></div>
+        <div class="sdpi-item">
+            <div class="sdpi-item-label">Color Type</div>
+            <select class="sdpi-item-value select" id="colorType">
+                <option value="none">None</option>
+            </select>
+        </div>
+        <div id="lightWrapper"></div>
         `;
 
         var entityIdElement = document.getElementById("entityId");
@@ -192,11 +199,12 @@ function connectElgatoStreamDeckSocket(inPort, inUUID, inRegisterEvent, inInfo, 
             const entity = homeAssistantCache.entities["light"].find((e) => e.entity_id == settings.entityId);
             const supportedFeatures = entity.attributes.supported_features;
 
-            const lightParameters = document.getElementById("lightParameters");
-            while (lightParameters.firstChild) lightParameters.removeChild(lightParameters.firstChild);
+            logMessage("Adding settings for " + settings.entityId + " with supported features " + supportedFeatures);
 
             if (supportedFeatures & LightSupportedFeaturesBitmask.SUPPORT_BRIGHTNESS) {
-                const brightnessParameter = `
+                logMessage(settings.entityId + " supports brightness mode");
+                const brightnessWrapper = document.getElementById("brightnessWrapper");
+                const brightnessHtml = `
                 <div type="range" class="sdpi-item">
                     <div class="sdpi-item-label">Brightness</div>
                     <div class="sdpi-item-value">
@@ -205,88 +213,96 @@ function connectElgatoStreamDeckSocket(inPort, inUUID, inRegisterEvent, inInfo, 
                         <span class="clickable" value="100">100%</span>
                     </div>
                 </div>`;
-                lightParameters.innerHTML += brightnessParameter;
+                brightnessWrapper.innerHTML = brightnessHtml;
 
                 const brightness = document.getElementById("brightness");
                 brightness.addEventListener("change", function (e) {
-                    var value = inEvent.target.value;
+                    logMessage("Saving brightness for " + settings.entityId);
+                    var value = e.target.value;
                     settings.brightness = value;
                     saveSettings(action, inUUID, settings);
                 });
             }
-            if (
-                supportedFeatures & LightSupportedFeaturesBitmask.SUPPORT_COLOR ||
-                supportedFeatures & LightSupportedFeaturesBitmask.SUPPORT_COLOR_TEMP
-            ) {
-                const colorTypeParameter = `
-                <div class="sdpi-item">
-                    <div class="sdpi-item-label">Color Type</div>
-                    <select class="sdpi-item-value select" id="colorType">
-                        <option value="none">None</option>
-                    </select>
-                </div>`;
-                lightParameters.innerHTML += colorTypeParameter;
 
-                var colorType = document.getElementById("colorType");
-                colorType.value = settings.color || "#00ff00";
-                colorType.addEventListener("change", function (inEvent) {
-                    var value = inEvent.target.value;
-                    settings.colorType = value;
-                    saveSettings(action, inUUID, settings);
-                });
-            }
+            const colorType = document.getElementById("colorType");
+            colorType.innerHTML = `<option value="none">None</option>`;
 
             if (supportedFeatures & LightSupportedFeaturesBitmask.SUPPORT_COLOR) {
-                const rgbColorParameter = `
-                <div type="color" class="sdpi-item">
-                    <div class="sdpi-item-label">Color</div>
-                    <input type="color" class="sdpi-item-value" id="color" value="#ff0000">
-                </div>`;
-                wrapper.innerHTML += rgbColorParameter;
-
-                var colorElement = document.getElementById("color");
-                colorElement.value = settings.color || "#00ff00";
-                colorElement.addEventListener("input", function (inEvent) {
-                    var value = inEvent.target.value;
-                    settings.color = value;
-                    saveSettings(action, inUUID, settings);
-                });
-
-                const colorType = document.getElementById("colorType");
                 const colorOption = document.createElement("option");
                 colorOption.value = "RGB";
                 colorOption.innerHTML = "RGB";
                 colorType.appendChild(colorOption);
+                logMessage(settings.entityId + " supports RGB mode");
             }
 
             if (supportedFeatures & LightSupportedFeaturesBitmask.SUPPORT_COLOR_TEMP) {
-                // TODO use min mired and max mired to generate real min and max range
-                // TODO convert min mired and max mired to hex value for the slider gradient
-                const colorTemperatureParameter = `
-                <div type="range" class="sdpi-item">
-                    <div class="sdpi-item-label">Range (with label)</div>
-                    <div class="sdpi-item-value">
-                        <span class="clickable" value="2700" id="min">2700K</span>
-                        <input id="temperature" style="background-image: linear-gradient(to right, #ffa957, #ffffff);-webkit-transition: .2s;transition: opacity .2s;" type="range" min="2700" max="5600" value=2700>
-                        <span class="clickable" value="5600" id="max">5600K</span>
-                    </div>
-                </div>`;
-                lightParameters.innerHTML += colorTemperatureParameter;
-
-                const temperature = document.getElementById("temperature");
-                temperature.addEventListener("change", function (e) {
-                    var value = inEvent.target.value;
-                    settings.temperature = value;
-                    saveSettings(action, inUUID, settings);
-                });
-
-                const colorType = document.getElementById("colorType");
                 const colorTempOption = document.createElement("option");
                 colorTempOption.value = "Temperature";
                 colorTempOption.innerHTML = "Temperature";
                 colorType.appendChild(colorTempOption);
+                logMessage(settings.entityId + " supports temperature mode");
             }
         });
+
+        var colorType = document.getElementById("colorType");
+        colorType.addEventListener("change", function (inEvent) {
+            var value = inEvent.target.value;
+            settings.colorType = value;
+            saveSettings(action, inUUID, settings);
+
+            const lightWrapper = document.getElementById("lightWrapper");
+            while (lightWrapper.firstChild) lightWrapper.removeChild(lightWrapper.firstChild);
+            if (settings.colorType == "RGB") {
+                const rgbHtml = `
+                <div type="color" class="sdpi-item">
+                    <div class="sdpi-item-label">Color</div>
+                    <input type="color" class="sdpi-item-value" id="color" value="#ff0000">
+                </div>`;
+                lightWrapper.innerHTML += rgbHtml;
+
+                var colorElement = document.getElementById("color");
+                colorElement.value = settings.color || "#ff0000";
+                settings.color = colorElement.value;
+                colorElement.addEventListener("input", function (e) {
+                    var value = e.target.value;
+                    settings.color = value;
+                    saveSettings(action, inUUID, settings);
+                });
+            } else if (settings.colorType == "Temperature") {
+                const entity = homeAssistantCache.entities["light"].find((e) => e.entity_id == settings.entityId);
+                const minMired = entity.attributes.min_mireds;
+                const maxMired = entity.attributes.max_mireds;
+
+                const minTemperature = Math.round(miredToTemperature(maxMired)); // these are flipped intentionally
+                const maxTemperature = Math.round(miredToTemperature(minMired)); // these are flipped intentionally
+
+                logMessage({"minTemp":minTemperature, "maxTemp": maxTemperature});
+
+                const colorTemperatureHtml = `
+                <div type="range" class="sdpi-item">
+                    <div class="sdpi-item-label">Temperature</div>
+                    <div class="sdpi-item-value">
+                        <span class="clickable" value="`+minTemperature+`" id="min">`+minTemperature+`K</span>
+                        <input id="temperature" type="range" min="`+minTemperature+`" max="`+maxTemperature+`" value=`+minTemperature+`>
+                        <span class="clickable" value="`+maxTemperature+`" id="max">`+maxTemperature+`K</span>
+                    </div>
+                </div>`;
+                lightWrapper.innerHTML += colorTemperatureHtml;
+
+                const temperature = document.getElementById("temperature");
+                temperature.value = settings.temperature || 2700;
+                settings.temperature = temperature.value;
+                temperature.addEventListener("change", function (e) {
+                    var value = e.target.value;
+                    settings.temperature = value;
+                    saveSettings(action, inUUID, settings);
+                });
+            }
+        });
+    }
+
+    function miredToTemperature(mired) {
+        return 1000000 / mired;
     }
 
     function handleCacheUpdateForToggleLightAction() {
@@ -297,7 +313,7 @@ function connectElgatoStreamDeckSocket(inPort, inUUID, inRegisterEvent, inInfo, 
         }
 
         var colorElement = document.getElementById("color");
-        if (settings.color != undefined) {
+        if (colorElement != null && settings.color != undefined) {
             colorElement.value = settings.color;
         }
     }

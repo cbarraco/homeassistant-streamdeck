@@ -16,7 +16,7 @@ function ToggleSwitchAction(inContext, inSettings) {
 
     function sendToggleCommand(entityId) {
         logMessage(`Sending toggle command to HA for entity ${entityId}`);
-        const testMessage = `{
+        const toggleSwitchMessage = `{
           "id": ${++homeAssistantMessageId},
           "type": "call_service",
           "domain": "switch",
@@ -25,6 +25,6 @@ function ToggleSwitchAction(inContext, inSettings) {
             "entity_id": "${entityId}"
           }
         }`;
-        homeAssistantWebsocket.send(testMessage);
+        homeAssistantWebsocket.send(toggleSwitchMessage);
     }
 }
