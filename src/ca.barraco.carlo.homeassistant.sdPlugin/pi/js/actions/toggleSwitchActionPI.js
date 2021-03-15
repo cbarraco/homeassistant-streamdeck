@@ -1,4 +1,4 @@
-// Prototype which represents a toggle light action property inspector
+// Prototype which represents a toggle switch action property inspector
 function ToggleSwitchActionPI(inUUID, inActionInfo) {
     var instance = this;
 

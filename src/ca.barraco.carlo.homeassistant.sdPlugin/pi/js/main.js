@@ -78,8 +78,8 @@ function connectElgatoStreamDeckSocket(inPort, inUUID, inRegisterEvent, inInfo, 
                 handleCacheUpdateForToggleSwitchAction();
             } else if (action == ActionType.CALL_SERVICE) {
                 handleCacheUpdateForCallServiceAction();
-            } else if (action == ActionType.TOGGLE_LIGHT) {
-                handleCacheUpdateForToggleLightAction();
+            } else if (action == ActionType.SET_LIGHT_COLOR) {
+                handleCacheUpdateForSetLightColorAction();
             }
         } else if (event == "sendToPropertyInspector") {
             logStreamDeckEvent(streamDeckMessage);
@@ -90,8 +90,8 @@ function connectElgatoStreamDeckSocket(inPort, inUUID, inRegisterEvent, inInfo, 
                     handleCacheUpdateForToggleSwitchAction();
                 } else if (action == ActionType.CALL_SERVICE) {
                     handleCacheUpdateForCallServiceAction();
-                } else if (action == ActionType.TOGGLE_LIGHT) {
-                    handleCacheUpdateForToggleLightAction();
+                } else if (action == ActionType.SET_LIGHT_COLOR) {
+                    handleCacheUpdateForSetLightColorAction();
                 }
             }
         }
@@ -118,7 +118,7 @@ function connectElgatoStreamDeckSocket(inPort, inUUID, inRegisterEvent, inInfo, 
         }
     }
 
-    function handleCacheUpdateForToggleLightAction() {
+    function handleCacheUpdateForSetLightColorAction() {
         var entityIdElement = document.getElementById("entityId");
         populateEntityOptions(entityIdElement, "light");
         if (settings.entityId != undefined) {

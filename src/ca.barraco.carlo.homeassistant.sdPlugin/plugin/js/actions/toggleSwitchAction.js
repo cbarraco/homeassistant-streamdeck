@@ -11,12 +11,12 @@ function ToggleSwitchAction(inContext, inSettings) {
     this.onKeyDown = function (inData) {
         actionOnKeyUp.call(this, inData);
         const entityId = inData.settings.entityId;
-        sendToggleCommand(entityId);
+        sendCommand(entityId);
     };
 
-    function sendToggleCommand(entityId) {
+    function sendCommand(entityId) {
         logMessage(`Sending toggle command to HA for entity ${entityId}`);
-        const toggleSwitchMessage = `{
+        const message = `{
           "id": ${++homeAssistantMessageId},
           "type": "call_service",
           "domain": "switch",
@@ -25,6 +25,6 @@ function ToggleSwitchAction(inContext, inSettings) {
             "entity_id": "${entityId}"
           }
         }`;
-        homeAssistantWebsocket.send(toggleSwitchMessage);
+        homeAssistantWebsocket.send(message);
     }
 }

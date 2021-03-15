@@ -35,6 +35,18 @@
       ],
       "Tooltip": "Toggles a light entity in Home Assistant",
       "UUID": "ca.barraco.carlo.homeassistant.action.togglelight"
+    },
+    {
+      "Icon": "plugin/images/actions/setLightColor",
+      "Name": "Sets a light to a color",
+      "States": [
+        {
+          "Image": "plugin/images/actions/setLightColor",
+          "Title": "Light"
+        }
+      ],
+      "Tooltip": "Sets a light entity to specific color in Home Assistant",
+      "UUID": "ca.barraco.carlo.homeassistant.action.setlightcolor"
     }
   ],
   "SDKVersion": 2,
