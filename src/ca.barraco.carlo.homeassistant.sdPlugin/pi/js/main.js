@@ -42,6 +42,8 @@ function connectElgatoStreamDeckSocket(inPort, inUUID, inRegisterEvent, inInfo, 
         actionPI = new CallServiceActionPI(inUUID, actionInfo);
     } else if (action == ActionType.TOGGLE_LIGHT) {
         actionPI = new ToggleLightActionPI(inUUID, actionInfo);
+    } else if (action == ActionType.SET_LIGHT_COLOR){
+        actionPI = new SetLightColorActionPI(inUUID, actionInfo);
     }
     actionPI.setUp();
 
@@ -74,28 +76,28 @@ function connectElgatoStreamDeckSocket(inPort, inUUID, inRegisterEvent, inInfo, 
             }
         } else if (event == "didReceiveSettings") {
             settings = payload["settings"];
-            if (action == ActionType.TOGGLE_SWITCH) {
-                handleCacheUpdateForToggleSwitchAction();
-            } else if (action == ActionType.CALL_SERVICE) {
-                handleCacheUpdateForCallServiceAction();
-            } else if (action == ActionType.SET_LIGHT_COLOR) {
-                handleCacheUpdateForSetLightColorAction();
-            }
+            updateCache(action);
         } else if (event == "sendToPropertyInspector") {
             logStreamDeckEvent(streamDeckMessage);
             const command = payload["command"];
             if (command == PropertyInspectorCommands.UPDATE_CACHE) {
                 homeAssistantCache = payload["data"];
-                if (action == ActionType.TOGGLE_SWITCH) {
-                    handleCacheUpdateForToggleSwitchAction();
-                } else if (action == ActionType.CALL_SERVICE) {
-                    handleCacheUpdateForCallServiceAction();
-                } else if (action == ActionType.SET_LIGHT_COLOR) {
-                    handleCacheUpdateForSetLightColorAction();
-                }
+                updateCache(action);
             }
         }
     };
+
+    function updateCache(action){
+        if (action == ActionType.TOGGLE_SWITCH) {
+            handleCacheUpdateForToggleSwitchAction();
+        } else if (action == ActionType.CALL_SERVICE) {
+            handleCacheUpdateForCallServiceAction();
+        } else if (action = ActionType.TOGGLE_LIGHT){
+            handleCacheUpdateForToggleLightAction();
+        } else if (action == ActionType.SET_LIGHT_COLOR) {
+            handleCacheUpdateForSetLightColorAction();
+        }
+    }
 
     function handleCacheUpdateForToggleSwitchAction() {
         var entityIdElement = document.getElementById("entityId");

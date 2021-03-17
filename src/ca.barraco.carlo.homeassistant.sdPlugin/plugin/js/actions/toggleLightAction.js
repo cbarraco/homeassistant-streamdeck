@@ -1,5 +1,5 @@
 // Prototype which represents a toggle light action
-function ToggleLightAction(context, settings) {
+function ToggleLightAction(inContext, inSettings) {
     var instance = this;
 
     // Inherit from Action

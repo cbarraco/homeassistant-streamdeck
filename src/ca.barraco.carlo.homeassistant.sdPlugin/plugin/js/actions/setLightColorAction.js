@@ -1,9 +1,9 @@
 // Prototype which represents a set light color action
-function SetLightColorAction(context, settings) {
+function SetLightColorAction(inContext, inSettings) {
     var instance = this;
 
     // Inherit from Action
-    Action.call(this, context, settings);
+    Action.call(this, inContext, inSettings);
 
     var actionOnKeyUp = this.onKeyDown;
 

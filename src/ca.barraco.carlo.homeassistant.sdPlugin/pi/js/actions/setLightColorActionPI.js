@@ -1,5 +1,5 @@
 // Prototype which represents a set light color action property inspector
-function ToggleLightActionPI(inUUID, inActionInfo) {
+function SetLightColorActionPI(inUUID, inActionInfo) {
     var instance = this;
 
     var settings = inActionInfo["payload"]["settings"];
