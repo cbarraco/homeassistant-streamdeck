@@ -10,17 +10,18 @@ function ToggleLightActionPI(uuid, actionInfo) {
     ActionPI.call(this, uuid, actionInfo);
 
     var actionSetUp = this.setUp;
+    
     // Public function called on initial setup
     this.setUp = function () {
         actionSetUp.call(this);
         logMessage("Injecting toggle light parameters");
         const wrapper = document.getElementById("wrapper");
         wrapper.innerHTML += `
-        <div class="sdpi-item">
-            <div class="sdpi-item-label">Entity</div>
-            <select class="sdpi-item-value select" id="entityId">
-            </select>
-        </div>`;
+            <div class="sdpi-item">
+                <div class="sdpi-item-label">Entity</div>
+                <select class="sdpi-item-value select" id="entityId">
+                </select>
+            </div>`;
 
         var entityIdElement = document.getElementById("entityId");
         entityIdElement.value = settings.entityId;

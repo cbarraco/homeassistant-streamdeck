@@ -11,64 +11,6 @@ function SetLightColorActionPI(uuid, actionInfo) {
 
     var actionSetUp = this.setUp;
 
-    function addColorChoices() {
-        var lights = homeAssistantCache.entities["light"];
-        logMessage(homeAssistantCache);
-        if (lights === undefined) {
-            logMessage("There aren't any lights in the cache yet");
-            return;
-        }
-
-        // figure out what features this light supports
-        const entity = lights.find((e) => e.entity_id == settings.entityId);
-        const supportedFeatures = entity.attributes.supported_features;
-        var lightSupportsBrightness = supportedFeatures & LightSupportedFeaturesBitmask.SUPPORT_BRIGHTNESS;
-        var lightSupportsRgb = supportedFeatures & LightSupportedFeaturesBitmask.SUPPORT_COLOR;
-        var lightSupportsTemperature = supportedFeatures & LightSupportedFeaturesBitmask.SUPPORT_COLOR_TEMP;
-
-        if (lightSupportsBrightness) {
-            logMessage(settings.entityId + " supports brightness");
-            const brightnessWrapper = document.getElementById("brightnessWrapper");
-            const brightnessHtml = `
-                    <div type="range" class="sdpi-item">
-                        <div class="sdpi-item-label">Brightness</div>
-                        <div class="sdpi-item-value">
-                            <span class="clickable" value="0">0%</span>
-                            <input id="brightness" type="range" min="0" max="100" value=50>
-                            <span class="clickable" value="100">100%</span>
-                        </div>
-                    </div>`;
-            brightnessWrapper.innerHTML = brightnessHtml;
-
-            const brightness = document.getElementById("brightness");
-            brightness.addEventListener("change", function (e) {
-                logMessage("Saving brightness for " + settings.entityId);
-                var value = e.target.value;
-                settings.brightness = value;
-                saveSettings(action, uuid, settings);
-            });
-        }
-
-        const colorType = document.getElementById("colorType");
-        colorType.innerHTML = `<option value="none">None</option>`;
-
-        if (lightSupportsRgb) {
-            const colorOption = document.createElement("option");
-            colorOption.value = "RGB";
-            colorOption.innerHTML = "RGB";
-            colorType.appendChild(colorOption);
-            logMessage(settings.entityId + " supports RGB mode");
-        }
-
-        if (lightSupportsTemperature) {
-            const colorTempOption = document.createElement("option");
-            colorTempOption.value = "Temperature";
-            colorTempOption.innerHTML = "Temperature";
-            colorType.appendChild(colorTempOption);
-            logMessage(settings.entityId + " supports temperature mode");
-        }
-    }
-
     // Public function called on initial setup
     this.setUp = function () {
         actionSetUp.call(this);
@@ -92,7 +34,7 @@ function SetLightColorActionPI(uuid, actionInfo) {
 
         var entityIdElement = document.getElementById("entityId");
         entityIdElement.value = settings.entityId;
-        entityIdElement.addEventListener("change", function (inEvent) {
+        entityIdElement.addEventListener("input", function (inEvent) {
             var value = inEvent.target.value;
             settings.entityId = value;
             saveSettings(action, uuid, settings);
@@ -178,8 +120,62 @@ function SetLightColorActionPI(uuid, actionInfo) {
         if (colorElement != null && settings.color != undefined) {
             colorElement.value = settings.color;
         }
-        
-        addColorChoices();
+
+        var lights = homeAssistantCache.entities["light"];
+        logMessage(homeAssistantCache);
+        if (lights === undefined) {
+            logMessage("There aren't any lights in the cache yet");
+            return;
+        }
+
+        // figure out what features this light supports
+        const entity = lights.find((e) => e.entity_id == settings.entityId);
+        const supportedFeatures = entity.attributes.supported_features;
+        var lightSupportsBrightness = supportedFeatures & LightSupportedFeaturesBitmask.SUPPORT_BRIGHTNESS;
+        var lightSupportsRgb = supportedFeatures & LightSupportedFeaturesBitmask.SUPPORT_COLOR;
+        var lightSupportsTemperature = supportedFeatures & LightSupportedFeaturesBitmask.SUPPORT_COLOR_TEMP;
+
+        if (lightSupportsBrightness) {
+            logMessage(settings.entityId + " supports brightness");
+            const brightnessWrapper = document.getElementById("brightnessWrapper");
+            const brightnessHtml = `
+                        <div type="range" class="sdpi-item">
+                            <div class="sdpi-item-label">Brightness</div>
+                            <div class="sdpi-item-value">
+                                <span class="clickable" value="0">0%</span>
+                                <input id="brightness" type="range" min="0" max="100" value=50>
+                                <span class="clickable" value="100">100%</span>
+                            </div>
+                        </div>`;
+            brightnessWrapper.innerHTML = brightnessHtml;
+
+            const brightness = document.getElementById("brightness");
+            brightness.addEventListener("change", function (e) {
+                logMessage("Saving brightness for " + settings.entityId);
+                var value = e.target.value;
+                settings.brightness = value;
+                saveSettings(action, uuid, settings);
+            });
+        }
+
+        const colorType = document.getElementById("colorType");
+        colorType.innerHTML = `<option value="none">None</option>`;
+
+        if (lightSupportsRgb) {
+            const colorOption = document.createElement("option");
+            colorOption.value = "RGB";
+            colorOption.innerHTML = "RGB";
+            colorType.appendChild(colorOption);
+            logMessage(settings.entityId + " supports RGB mode");
+        }
+
+        if (lightSupportsTemperature) {
+            const colorTempOption = document.createElement("option");
+            colorTempOption.value = "Temperature";
+            colorTempOption.innerHTML = "Temperature";
+            colorType.appendChild(colorTempOption);
+            logMessage(settings.entityId + " supports temperature mode");
+        }
     };
 
     function miredToTemperature(mired) {

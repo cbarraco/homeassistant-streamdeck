@@ -16,17 +16,17 @@ function CallServiceActionPI(uuid, actionInfo) {
         logMessage("Injecting call service parameters");
         const wrapper = document.getElementById("wrapper");
         wrapper.innerHTML += `
-        <div class="sdpi-item">
-            <div class="sdpi-item-label">Service</div>
-            <select class="sdpi-item-value select" id="serviceId">
-            </select>
-        </div>
-        <div type="textarea" class="sdpi-item"">
-            <div class="sdpi-item-label">Payload</div>
-            <span class="sdpi-item-value textarea">
-                <textarea type="textarea" id="payload"></textarea>
-            </span>
-        </div>`;
+            <div class="sdpi-item">
+                <div class="sdpi-item-label">Service</div>
+                <select class="sdpi-item-value select" id="serviceId">
+                </select>
+            </div>
+            <div type="textarea" class="sdpi-item"">
+                <div class="sdpi-item-label">Payload</div>
+                <span class="sdpi-item-value textarea">
+                    <textarea type="textarea" id="payload"></textarea>
+                </span>
+            </div>`;
 
         var serviceIdElement = document.getElementById("serviceId");
         serviceIdElement.value = settings.serviceId;

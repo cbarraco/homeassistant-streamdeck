@@ -36,6 +36,7 @@ function connectElgatoStreamDeckSocket(inPort, inUUID, inRegisterEvent, inInfo, 
     };
 
     var actionPI = null;
+    logMessage("Creating actionPI of type " + action);
     if (action == ActionType.TOGGLE_SWITCH) {
         actionPI = new ToggleSwitchActionPI(inUUID, actionInfo);
     } else if (action == ActionType.CALL_SERVICE) {
@@ -60,12 +61,12 @@ function connectElgatoStreamDeckSocket(inPort, inUUID, inRegisterEvent, inInfo, 
     });
 
     streamDeckWebSocket.onmessage = function (streamDeckMessage) {
-        logStreamDeckEvent(streamDeckMessage);
         var streamDeckMessageData = JSON.parse(streamDeckMessage.data);
         var event = streamDeckMessageData["event"];
         var payload = streamDeckMessageData["payload"];
 
         if (event == "didReceiveGlobalSettings") {
+            logStreamDeckEvent(streamDeckMessage);
             globalSettings = payload["settings"];
             if (credentialsWindow != null) {
                 logMessage("Sending global settings to credentials window");
@@ -75,12 +76,15 @@ function connectElgatoStreamDeckSocket(inPort, inUUID, inRegisterEvent, inInfo, 
                 });
             }
         } else if (event == "didReceiveSettings") {
+            logStreamDeckEvent(streamDeckMessage);
             settings = payload["settings"];
+            logMessage("Updating based on new settings")
             actionPI.update(homeAssistantCache);
         } else if (event == "sendToPropertyInspector") {
             logStreamDeckEvent(streamDeckMessage);
             const command = payload["command"];
             if (command == PropertyInspectorCommands.UPDATE_CACHE) {
+                logMessage("Updating based on update cache command");
                 homeAssistantCache = payload["data"];
                 actionPI.update(homeAssistantCache);
             }

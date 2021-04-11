@@ -71,7 +71,9 @@ function connectElgatoStreamDeckSocket(inPort, inPluginUUID, inRegisterEvent, in
                     actions[context] = new CallServiceAction(context, settings);
                 } else if (action == ActionType.TOGGLE_LIGHT) {
                     actions[context] = new ToggleLightAction(context, settings);
-                }
+                } else if (action == ActionType.SET_LIGHT_COLOR) {
+                    actions[context] = new SetLightColorAction(context, settings);
+                } 
             }
             // buttons need to be visually updated by fetching current state
             if (homeAssistantConnectionState == ConnectionState.CONNECTED) {
