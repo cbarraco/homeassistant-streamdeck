@@ -76,129 +76,19 @@ function connectElgatoStreamDeckSocket(inPort, inUUID, inRegisterEvent, inInfo, 
             }
         } else if (event == "didReceiveSettings") {
             settings = payload["settings"];
-            updateCache(action);
+            actionPI.update(homeAssistantCache);
         } else if (event == "sendToPropertyInspector") {
             logStreamDeckEvent(streamDeckMessage);
             const command = payload["command"];
             if (command == PropertyInspectorCommands.UPDATE_CACHE) {
                 homeAssistantCache = payload["data"];
-                updateCache(action);
+                actionPI.update(homeAssistantCache);
             }
         }
     };
-
-    function updateCache(action){
-        if (action == ActionType.TOGGLE_SWITCH) {
-            handleCacheUpdateForToggleSwitchAction();
-        } else if (action == ActionType.CALL_SERVICE) {
-            handleCacheUpdateForCallServiceAction();
-        } else if (action = ActionType.TOGGLE_LIGHT){
-            handleCacheUpdateForToggleLightAction();
-        } else if (action == ActionType.SET_LIGHT_COLOR) {
-            handleCacheUpdateForSetLightColorAction();
-        }
-    }
-
-    function handleCacheUpdateForToggleSwitchAction() {
-        var entityIdElement = document.getElementById("entityId");
-        populateEntityOptions(entityIdElement, "switch");
-        if (settings.entityId != undefined) {
-            entityIdElement.value = settings.entityId;
-        }
-    }
-
-    function handleCacheUpdateForCallServiceAction() {
-        var serviceIdElement = document.getElementById("serviceId");
-        populateServiceOptions(serviceIdElement);
-        if (settings.serviceId != undefined) {
-            serviceIdElement.value = settings.serviceId;
-        }
-
-        var payloadElement = document.getElementById("payload");
-        if (settings.payload != undefined) {
-            payloadElement.value = settings.payload;
-        }
-    }
-
-    function handleCacheUpdateForSetLightColorAction() {
-        var entityIdElement = document.getElementById("entityId");
-        populateEntityOptions(entityIdElement, "light");
-        if (settings.entityId != undefined) {
-            entityIdElement.value = settings.entityId;
-        }
-
-        var colorElement = document.getElementById("color");
-        if (colorElement != null && settings.color != undefined) {
-            colorElement.value = settings.color;
-        }
-    }
-
-    function populateEntityOptions(element, type) {
-        logMessage("Populating entities parameter options");
-        logMessage(homeAssistantCache.entities);
-
-        element.innerHTML = "";
-
-        var keys = [];
-        if (type != undefined) {
-            // populate with specific key
-            keys = [type];
-        } else {
-            // populate with all keys
-            keys = Object.getOwnPropertyNames(homeAssistantCache.entities);
-        }
-
-        for (var i = 0; i < keys.length; i++) {
-            const typeKey = keys[i];
-            const optGroup = document.createElement("optgroup");
-            optGroup.label = typeKey;
-            const optionValues = homeAssistantCache.entities[typeKey];
-            for (var j = 0; j < optionValues.length; j++) {
-                const optionValue = optionValues[j].entity_id;
-                const option = document.createElement("option");
-                option.value = optionValue;
-                option.innerHTML = optionValue;
-                optGroup.appendChild(option);
-            }
-            element.appendChild(optGroup);
-        }
-    }
-
-    function populateServiceOptions(serviceIdElement, type) {
-        logMessage("Populating services parameter options");
-        logMessage(homeAssistantCache.services);
-        populateOptionsFromCacheProperty(serviceIdElement, homeAssistantCache.services, type);
-    }
-
-    function populateOptionsFromCacheProperty(element, cacheProperty, type) {
-        element.innerHTML = "";
-
-        var keys = [];
-        if (type != undefined) {
-            // populate with specific key
-            keys = [type];
-        } else {
-            // populate with all keys
-            keys = Object.getOwnPropertyNames(cacheProperty);
-        }
-
-        for (var i = 0; i < keys.length; i++) {
-            const typeKey = keys[i];
-            const optGroup = document.createElement("optgroup");
-            optGroup.label = typeKey;
-            const optionValues = cacheProperty[typeKey];
-            for (var j = 0; j < optionValues.length; j++) {
-                const optionValue = optionValues[j];
-                const option = document.createElement("option");
-                option.value = optionValue;
-                option.innerHTML = optionValue;
-                optGroup.appendChild(option);
-            }
-            element.appendChild(optGroup);
-        }
-    }
 }
 
+// remotely invoked in credentials.js
 function sendCredentialsToPropertyInspector(message) {
     logMessage("Received message from credentials window");
     logMessage(message);

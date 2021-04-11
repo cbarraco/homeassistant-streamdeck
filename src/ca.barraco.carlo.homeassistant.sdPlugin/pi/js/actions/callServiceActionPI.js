@@ -1,13 +1,13 @@
 // Prototype which represents a call service action property inspector
-function CallServiceActionPI(inUUID, inActionInfo) {
+function CallServiceActionPI(uuid, actionInfo) {
     var instance = this;
 
-    var settings = inActionInfo["payload"]["settings"];
-    var action = inActionInfo["action"];
-    var context = inActionInfo["context"];
+    var settings = actionInfo["payload"]["settings"];
+    var action = actionInfo["action"];
+    var context = actionInfo["context"];
 
     // Inherit from Action
-    ActionPI.call(this, inUUID, inActionInfo);
+    ActionPI.call(this, uuid, actionInfo);
 
     var actionSetUp = this.setUp;
     // Public function called on initial setup
@@ -33,7 +33,7 @@ function CallServiceActionPI(inUUID, inActionInfo) {
         serviceIdElement.addEventListener("input", function (inEvent) {
             var value = inEvent.target.value;
             settings.serviceId = value;
-            saveSettings(action, inUUID, settings);
+            saveSettings(action, uuid, settings);
         });
 
         var payloadElement = document.getElementById("payload");
@@ -43,7 +43,55 @@ function CallServiceActionPI(inUUID, inActionInfo) {
         payloadElement.addEventListener("input", function (inEvent) {
             var value = inEvent.target.value;
             settings.payload = value;
-            saveSettings(action, inUUID, settings);
+            saveSettings(action, uuid, settings);
         });
+    };
+
+    this.update = function(homeAssistantCache){
+        function populateServiceOptions(serviceIdElement, type) {
+            logMessage("Populating services parameter options");
+            logMessage(homeAssistantCache.services);
+            populateOptionsFromCacheProperty(serviceIdElement, homeAssistantCache.services, type);
+        }
+    
+        // move this to ActionPI and try to replace the entity populater with this
+        function populateOptionsFromCacheProperty(element, cacheProperty, type) {
+            element.innerHTML = "";
+    
+            var keys = [];
+            if (type != undefined) {
+                // populate with specific key
+                keys = [type];
+            } else {
+                // populate with all keys
+                keys = Object.getOwnPropertyNames(cacheProperty);
+            }
+    
+            for (var i = 0; i < keys.length; i++) {
+                const typeKey = keys[i];
+                const optGroup = document.createElement("optgroup");
+                optGroup.label = typeKey;
+                const optionValues = cacheProperty[typeKey];
+                for (var j = 0; j < optionValues.length; j++) {
+                    const optionValue = optionValues[j];
+                    const option = document.createElement("option");
+                    option.value = optionValue;
+                    option.innerHTML = optionValue;
+                    optGroup.appendChild(option);
+                }
+                element.appendChild(optGroup);
+            }
+        }
+
+        var serviceIdElement = document.getElementById("serviceId");
+        populateServiceOptions(serviceIdElement);
+        if (settings.serviceId != undefined) {
+            serviceIdElement.value = settings.serviceId;
+        }
+
+        var payloadElement = document.getElementById("payload");
+        if (settings.payload != undefined) {
+            payloadElement.value = settings.payload;
+        }
     };
 }

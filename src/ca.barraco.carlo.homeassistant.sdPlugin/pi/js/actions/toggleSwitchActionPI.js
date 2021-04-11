@@ -1,13 +1,13 @@
 // Prototype which represents a toggle switch action property inspector
-function ToggleSwitchActionPI(inUUID, inActionInfo) {
+function ToggleSwitchActionPI(uuid, actionInfo) {
     var instance = this;
 
-    var settings = inActionInfo["payload"]["settings"];
-    var action = inActionInfo["action"];
-    var context = inActionInfo["context"];
+    var settings = actionInfo["payload"]["settings"];
+    var action = actionInfo["action"];
+    var context = actionInfo["context"];
 
     // Inherit from Action
-    ActionPI.call(this, inUUID, inActionInfo);
+    ActionPI.call(this, uuid, actionInfo);
 
     var actionSetUp = this.setUp;
     // Public function called on initial setup
@@ -27,7 +27,15 @@ function ToggleSwitchActionPI(inUUID, inActionInfo) {
         entityIdElement.addEventListener("input", function (inEvent) {
             var value = inEvent.target.value;
             settings.entityId = value;
-            saveSettings(action, inUUID, settings);
+            saveSettings(action, uuid, settings);
         });
+    };
+
+    this.update = function(homeAssistantCache){
+        var entityIdElement = document.getElementById("entityId");
+        ActionPI.populateEntityOptions(entityIdElement, "switch", homeAssistantCache);
+        if (settings.entityId != undefined) {
+            entityIdElement.value = settings.entityId;
+        }
     };
 }

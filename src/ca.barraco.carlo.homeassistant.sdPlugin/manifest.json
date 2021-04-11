@@ -38,7 +38,7 @@
     },
     {
       "Icon": "plugin/images/actions/setLightColor",
-      "Name": "Sets a light to a color",
+      "Name": "Set a light to a color",
       "States": [
         {
           "Image": "plugin/images/actions/setLightColor",
