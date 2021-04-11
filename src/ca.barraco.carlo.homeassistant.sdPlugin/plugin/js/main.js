@@ -73,7 +73,7 @@ function connectElgatoStreamDeckSocket(inPort, inPluginUUID, inRegisterEvent, in
                     actions[context] = new ToggleLightAction(context, settings);
                 } else if (action == ActionType.SET_LIGHT_COLOR) {
                     actions[context] = new SetLightColorAction(context, settings);
-                } 
+                }
             }
             // buttons need to be visually updated by fetching current state
             if (homeAssistantConnectionState == ConnectionState.CONNECTED) {
@@ -89,93 +89,106 @@ function connectElgatoStreamDeckSocket(inPort, inPluginUUID, inRegisterEvent, in
             globalSettings = jsonPayload["settings"];
 
             // only try connecting if all the credentials are filled in
-            if (globalSettings.homeAssistantAddress !== undefined && globalSettings.accessToken !== undefined) {
-                logMessage("Creating HA websocket");
-                var webSocketAddress = "";
-                if (globalSettings.hasOwnProperty("encrypted") && globalSettings.encrypted == true) {
-                    webSocketAddress = `wss://${globalSettings.homeAssistantAddress}/api/websocket`;
-                } else {
-                    webSocketAddress = `ws://${globalSettings.homeAssistantAddress}/api/websocket`;
-                }
-
-                homeAssistantWebsocket = new WebSocket(webSocketAddress);
-                if (homeAssistantWebsocket == null) {
-                    logMessage("Couldn't connect to HA, probably invalid address");
-                    homeAssistantConnectionState = ConnectionState.INVALID_ADDRESS;
-                    return;
-                }
-
-                homeAssistantWebsocket.onopen = function () {
-                    logMessage("Opened connection to HA");
-                    sendAccessToken();
-                };
-
-                homeAssistantWebsocket.onmessage = function (e) {
-                    const data = JSON.parse(e.data);
-                    const eventType = data.type;
-
-                    if (eventType === "event") {
-                        handleStateChange(data.event.data.entity_id, data.event.data.new_state);
-                    } else if (eventType === "auth_invalid") {
-                        handleInvalidAccessToken(data);
-                    } else if (eventType === "auth_ok") {
-                        // everything is good to go
-                        logHomeAssistantEvent(data);
-                        homeAssistantConnectionState = ConnectionState.CONNECTED;
-                        reconnectTimeout = null;
-                        fetchStates();
-                        fetchServices();
-                        subscribeToStateChanges();
-                    } else if (eventType === "result") {
-                        logHomeAssistantEvent(data);
-                        const results = data.result;
-                        if (results == null) {
-                            logMessage("Results message that doesn't contain results");
-                            return;
-                        } else {
-                            // we got results, but which ones?
-                            if (data.id == lastMessageId.fetchStates) {
-                                updateEntitiesCache(results, context, action);
-                            } else if (data.id == lastMessageId.fetchServices) {
-                                updateServicesCache(results, context, action);
-                            }
-                        }
-                    } else {
-                        // other HA message, just log it
-                        logHomeAssistantEvent(data);
-                    }
-                };
-
-                homeAssistantWebsocket.onerror = function (e) {
-                    // error, shut it down
-                    logHomeAssistantEvent(e);
-                    homeAssistantWebsocket.close();
-                };
-
-                homeAssistantWebsocket.onclose = function (e) {
-                    logMessage("WebSocket closed");
-                    logHomeAssistantEvent(e);
-
-                    var tryAgain = false;
-                    if (homeAssistantConnectionState == ConnectionState.CONNECTED) {
-                        logMessage("We were connected and suddenly disconnected, retry in 30 seconds");
-                        homeAssistantConnectionState = ConnectionState.NEED_RECONNECT;
-                        tryAgain = true;
-                    } else if (homeAssistantConnectionState == ConnectionState.NEED_RECONNECT) {
-                        logMessage("Still not connected, retry in 30 seconds");
-                        tryAgain = true;
-                    } else if (homeAssistantConnectionState == ConnectionState.NOT_CONNECTED) {
-                        logMessage("First connection failed, retry in 30 seconds");
-                        tryAgain = true;
-                    }
-
-                    if (tryAgain && reconnectTimeout != null) {
-                        reconnectTimeout = setTimeout(function () {
-                            requestGlobalSettings(inPluginUUID);
-                        }, 30000);
-                    }
-                };
+            if (globalSettings.homeAssistantAddress == undefined || globalSettings.accessToken == undefined) {
+                logMessage("All the required settings weren't filled in");
+                return;
             }
+            logMessage("Creating HA websocket");
+            var webSocketAddress = "";
+            if (globalSettings.hasOwnProperty("encrypted") && globalSettings.encrypted == true) {
+                webSocketAddress = `wss://${globalSettings.homeAssistantAddress}/api/websocket`;
+            } else {
+                webSocketAddress = `ws://${globalSettings.homeAssistantAddress}/api/websocket`;
+            }
+
+            try {
+                homeAssistantWebsocket = new WebSocket(webSocketAddress);
+            } catch (error) {
+                logMessage("Couldn't connect to HA, probably invalid address");
+                logMessage(error);
+                homeAssistantConnectionState = ConnectionState.INVALID_ADDRESS;
+                return;
+            }
+
+            if (homeAssistantWebsocket == null) {
+                logMessage("Couldn't connect to HA, probably invalid address");
+                homeAssistantConnectionState = ConnectionState.INVALID_ADDRESS;
+                return;
+            }
+
+            homeAssistantWebsocket.onopen = function () {
+                logMessage("Opened connection to HA");
+                sendAccessToken();
+            };
+
+            homeAssistantWebsocket.onmessage = function (e) {
+                const data = JSON.parse(e.data);
+                const eventType = data.type;
+
+                if (eventType === "event") {
+                    handleStateChange(data.event.data.entity_id, data.event.data.new_state);
+                } else if (eventType === "auth_invalid") {
+                    handleInvalidAccessToken(data);
+                } else if (eventType === "auth_ok") {
+                    // everything is good to go
+                    logHomeAssistantEvent(data);
+                    homeAssistantConnectionState = ConnectionState.CONNECTED;
+                    reconnectTimeout = null;
+                    fetchStates();
+                    fetchServices();
+                    subscribeToStateChanges();
+                } else if (eventType === "result") {
+                    logHomeAssistantEvent(data);
+                    const results = data.result;
+                    if (results == null) {
+                        logMessage("Results message that doesn't contain results");
+                        return;
+                    } else {
+                        // we got results, but which ones?
+                        if (data.id == lastMessageId.fetchStates) {
+                            updateEntitiesCache(results, context, action);
+                        } else if (data.id == lastMessageId.fetchServices) {
+                            updateServicesCache(results, context, action);
+                        }
+                    }
+                } else {
+                    // other HA message, just log it
+                    logHomeAssistantEvent(data);
+                }
+            };
+
+            homeAssistantWebsocket.onerror = function (e) {
+                // error, shut it down
+                logHomeAssistantEvent(e);
+                homeAssistantWebsocket.close();
+            };
+
+            homeAssistantWebsocket.onclose = function (e) {
+                logMessage("WebSocket closed");
+                logHomeAssistantEvent(e);
+
+                var tryAgain = false;
+                if (homeAssistantConnectionState == ConnectionState.CONNECTED) {
+                    logMessage("We were connected and suddenly disconnected, retry in 30 seconds");
+                    homeAssistantConnectionState = ConnectionState.NEED_RECONNECT;
+                    tryAgain = true;
+                } else if (homeAssistantConnectionState == ConnectionState.NEED_RECONNECT) {
+                    logMessage("Still not connected, retry in 30 seconds");
+                    tryAgain = true;
+                } else if (
+                    homeAssistantConnectionState == ConnectionState.NOT_CONNECTED ||
+                    homeAssistantConnectionState == ConnectionState.INVALID_ADDRESS
+                ) {
+                    logMessage("First connection failed, retry in 30 seconds");
+                    tryAgain = true;
+                }
+
+                if (tryAgain && reconnectTimeout != null) {
+                    reconnectTimeout = setTimeout(function () {
+                        requestGlobalSettings(inPluginUUID);
+                    }, 30000);
+                }
+            };
         } else if (event == "didReceiveSettings") {
             logStreamDeckEvent(inEvent.data);
             var settings = jsonPayload["settings"];
@@ -289,16 +302,16 @@ function connectElgatoStreamDeckSocket(inPort, inPluginUUID, inRegisterEvent, in
                     logMessage(`Updating state of light ${entityId}`);
 
                     if (newState.state === "on") {
-                        if (newState.attributes.color_mode === "hs"){
+                        if (newState.attributes.color_mode === "hs") {
                             const color_components = newState.attributes.rgb_color;
                             const hexColor = rgbToHex(color_components[0], color_components[1], color_components[2]);
                             mainCanvasContext.fillStyle = hexColor;
-                        } else if (newState.attributes.color_mode === "color_temp"){
+                        } else if (newState.attributes.color_mode === "color_temp") {
                             const miredTemp = newState.attributes.color_temp;
                             const colorTemp = 1000000.0 / miredTemp;
                             const enumTemp = Math.ceil(colorTemp / 100) * 100;
-                            const rgb = KelvinToRgb[enumTemp]
-                            mainCanvasContext.fillStyle = rgbToHex(rgb[0],rgb[1],rgb[2]);
+                            const rgb = KelvinToRgb[enumTemp];
+                            mainCanvasContext.fillStyle = rgbToHex(rgb[0], rgb[1], rgb[2]);
                         }
                     } else {
                         mainCanvasContext.fillStyle = "#000000";

@@ -23,6 +23,15 @@ test.addEventListener("click", function (e) {
         results.style = "color:red";
         results.innerHTML = "Failed to connect";
     };
+
+    function sendGlobalSettings() {
+        logMessage("Sending global settings to property inspector");
+        window.opener.sendCredentialsToPropertyInspector({
+            command: PropertyInspectorCommands.UPDATE_GLOBAL_SETTINGS,
+            data: globalSettings,
+        });
+    }
+    
     request.onload = function () {
         if (request.readyState === request.DONE) {
             logMessage("Got test results");
@@ -31,6 +40,7 @@ test.addEventListener("click", function (e) {
             if (request.status === 200 || request.status == 201) {
                 results.style = "color:green";
                 results.innerHTML = "Success";
+                sendGlobalSettings();
             } else if (request.status === 401) {
                 results.style = "color:red";
                 results.innerHTML = "Invalid Access Token";
@@ -95,7 +105,6 @@ function setUpGlobalSettingsElements() {
         logMessage(inEvent);
         var value = inEvent.target.value;
         globalSettings.homeAssistantAddress = value;
-        sendGlobalSettings();
     });
 
     encrypted.addEventListener("click", function (inEvent) {
@@ -103,7 +112,6 @@ function setUpGlobalSettingsElements() {
         logMessage(inEvent);
         var checked = inEvent.target.checked;
         globalSettings.encrypted = checked;
-        sendGlobalSettings();
     });
 
     accessToken.addEventListener("change", function (inEvent) {
@@ -111,14 +119,7 @@ function setUpGlobalSettingsElements() {
         logMessage(inEvent);
         var value = inEvent.target.value;
         globalSettings.accessToken = value;
-        sendGlobalSettings();
     });
 
-    function sendGlobalSettings() {
-        logMessage("Sending global settings to property inspector");
-        window.opener.sendCredentialsToPropertyInspector({
-            command: PropertyInspectorCommands.UPDATE_GLOBAL_SETTINGS,
-            data: globalSettings,
-        });
-    }
+    
 }
