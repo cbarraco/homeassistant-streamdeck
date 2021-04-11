@@ -1,0 +1,8 @@
+{
+    "recommendations": [
+        "naumovs.color-highlight",
+        "github.vscode-pull-request-github",
+        "esbenp.prettier-vscode",
+        "dbaeumer.vscode-eslint"
+    ]
+}
