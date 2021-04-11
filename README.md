@@ -1,6 +1,8 @@
 # homeassistant-streamdeck
 Home Assistant integration with the Elgato Stream Deck
 
+![GitHub](https://img.shields.io/github/license/cbarraco/homeassistant-streamdeck)
+
 ## Feature List
 ### Release 1 ✔️
 - Store authentication details in secure global settings ✔️
