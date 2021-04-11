@@ -47,7 +47,7 @@ function SetLightColorAction(inContext, inSettings) {
           "id": ${++homeAssistantMessageId},
           "type": "call_service",
           "domain": "light",
-          "service": "turnOn",
+          "service": "turn_on",
           "service_data": {
             "entity_id": "${settings.entityId}"
             ${brightnessPayload}
