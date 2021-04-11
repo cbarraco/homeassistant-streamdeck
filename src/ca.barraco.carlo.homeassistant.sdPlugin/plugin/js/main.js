@@ -269,6 +269,7 @@ function connectElgatoStreamDeckSocket(inPort, inPluginUUID, inRegisterEvent, in
     }
 
     function handleStateChange(entityId, newState) {
+        // this should be delegated to the individual action objects
         for (context in actions) {
             if (actions[context] instanceof ToggleSwitchAction) {
                 var actionSettings = actions[context].getSettings();
@@ -288,9 +289,17 @@ function connectElgatoStreamDeckSocket(inPort, inPluginUUID, inRegisterEvent, in
                     logMessage(`Updating state of light ${entityId}`);
 
                     if (newState.state === "on") {
-                        const color_components = newState.attributes.rgb_color;
-                        const hexColor = rgbToHex(color_components[0], color_components[1], color_components[2]);
-                        mainCanvasContext.fillStyle = hexColor;
+                        if (newState.attributes.color_mode === "hs"){
+                            const color_components = newState.attributes.rgb_color;
+                            const hexColor = rgbToHex(color_components[0], color_components[1], color_components[2]);
+                            mainCanvasContext.fillStyle = hexColor;
+                        } else if (newState.attributes.color_mode === "color_temp"){
+                            const miredTemp = newState.attributes.color_temp;
+                            const colorTemp = 1000000.0 / miredTemp;
+                            const enumTemp = Math.ceil(colorTemp / 100) * 100;
+                            const rgb = KelvinToRgb[enumTemp]
+                            mainCanvasContext.fillStyle = rgbToHex(rgb[0],rgb[1],rgb[2]);
+                        }
                     } else {
                         mainCanvasContext.fillStyle = "#000000";
                     }
