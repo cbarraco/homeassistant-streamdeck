@@ -3,6 +3,7 @@
         "naumovs.color-highlight",
         "github.vscode-pull-request-github",
         "esbenp.prettier-vscode",
-        "dbaeumer.vscode-eslint"
+        "dbaeumer.vscode-eslint",
+        "gruntfuggly.todo-tree"
     ]
 }
