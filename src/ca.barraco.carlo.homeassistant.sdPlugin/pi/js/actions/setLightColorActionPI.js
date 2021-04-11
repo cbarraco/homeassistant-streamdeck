@@ -69,6 +69,8 @@ function SetLightColorActionPI(uuid, actionInfo) {
                 const minMired = entity.attributes.min_mireds;
                 const maxMired = entity.attributes.max_mireds;
 
+                // seems these are off by a little bit and making the ranges out of bounds on the extremes
+                // maybe round to the nearest 100?
                 const minTemperature = Math.round(miredToTemperature(maxMired)); // these are flipped intentionally
                 const maxTemperature = Math.round(miredToTemperature(minMired)); // these are flipped intentionally
 
@@ -90,7 +92,7 @@ function SetLightColorActionPI(uuid, actionInfo) {
                 lightWrapper.innerHTML += colorTemperatureHtml;
 
                 const temperature = document.getElementById("temperature");
-                temperature.value = settings.temperature || 2700;
+                temperature.value = settings.temperature || 3000; // TODO: Use midpoint as default
                 settings.temperature = temperature.value;
                 temperature.addEventListener("change", function (e) {
                     var value = e.target.value;
@@ -107,6 +109,7 @@ function SetLightColorActionPI(uuid, actionInfo) {
                 addTemperatureChooser();
             }
         });
+        
     };
 
     this.update = function (homeAssistantCache) {
@@ -149,8 +152,11 @@ function SetLightColorActionPI(uuid, actionInfo) {
                         </div>`;
             brightnessWrapper.innerHTML = brightnessHtml;
 
-            const brightness = document.getElementById("brightness");
-            brightness.addEventListener("change", function (e) {
+            const brightnessElement = document.getElementById("brightness");
+            if (brightnessElement != null && settings.brightness != undefined) {
+                brightnessElement.value = settings.brightness;
+            }
+            brightnessElement.addEventListener("change", function (e) {
                 logMessage("Saving brightness for " + settings.entityId);
                 var value = e.target.value;
                 settings.brightness = value;
@@ -176,9 +182,13 @@ function SetLightColorActionPI(uuid, actionInfo) {
             colorType.appendChild(colorTempOption);
             logMessage(settings.entityId + " supports temperature mode");
         }
+        
+        if (settings.colorType != undefined) {
+            colorType.value = settings.colorType;
+        }
     };
 
     function miredToTemperature(mired) {
-        return 1000000 / mired;
+        return 1000000.0 / mired;
     }
 }
