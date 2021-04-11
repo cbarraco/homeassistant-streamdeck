@@ -11,6 +11,71 @@ function SetLightColorActionPI(uuid, actionInfo) {
 
     var actionSetUp = this.setUp;
 
+    function resetColorTypeParameters() {
+        function addRgbChooser() {
+            const rgbHtml = `
+                <div type="color" class="sdpi-item">
+                    <div class="sdpi-item-label">Color</div>
+                    <input type="color" class="sdpi-item-value" id="color" value="#ff0000">
+                </div>`;
+            lightWrapper.innerHTML += rgbHtml;
+
+            var colorElement = document.getElementById("color");
+            colorElement.value = settings.color || "#ff0000";
+            settings.color = colorElement.value;
+            colorElement.addEventListener("input", function (e) {
+                var value = e.target.value;
+                settings.color = value;
+                saveSettings(action, uuid, settings);
+            });
+        }
+
+        function addTemperatureChooser() {
+            const entity = homeAssistantCache.entities["light"].find((e) => e.entity_id == settings.entityId);
+            const minMired = entity.attributes.min_mireds;
+            const maxMired = entity.attributes.max_mireds;
+
+            // seems these are off by a little bit and making the ranges out of bounds on the extremes
+            // maybe round to the nearest 100?
+            const minTemperature = Math.round(miredToTemperature(maxMired)); // these are flipped intentionally
+            const maxTemperature = Math.round(miredToTemperature(minMired)); // these are flipped intentionally
+
+            logMessage({ minTemp: minTemperature, maxTemp: maxTemperature });
+
+            const colorTemperatureHtml = `
+                <div type="range" class="sdpi-item">
+                    <div class="sdpi-item-label">Temperature</div>
+                    <div class="sdpi-item-value">
+                        <span class="clickable" value="${minTemperature}" id="min">
+                            ${minTemperature}K
+                        </span>
+                        <input id="temperature" type="range" min="${minTemperature}" max="${maxTemperature}" value=${minTemperature}>
+                        <span class="clickable" value="${maxTemperature}" id="max">
+                            ${maxTemperature}K
+                        </span>
+                    </div>
+                </div>`;
+            lightWrapper.innerHTML += colorTemperatureHtml;
+
+            const temperature = document.getElementById("temperature");
+            temperature.value = settings.temperature || 3000; // TODO: Use midpoint as default
+            settings.temperature = temperature.value;
+            temperature.addEventListener("change", function (e) {
+                var value = e.target.value;
+                settings.temperature = value;
+                saveSettings(action, uuid, settings);
+            });
+        }
+
+        const lightWrapper = document.getElementById("lightWrapper");
+        while (lightWrapper.firstChild) lightWrapper.removeChild(lightWrapper.firstChild);
+        if (settings.colorType == "RGB") {
+            addRgbChooser();
+        } else if (settings.colorType == "Temperature") {
+            addTemperatureChooser();
+        }
+    }
+
     // Public function called on initial setup
     this.setUp = function () {
         actionSetUp.call(this);
@@ -45,71 +110,8 @@ function SetLightColorActionPI(uuid, actionInfo) {
             var value = inEvent.target.value;
             settings.colorType = value;
             saveSettings(action, uuid, settings);
-
-            function addRgbChooser() {
-                const rgbHtml = `
-                    <div type="color" class="sdpi-item">
-                        <div class="sdpi-item-label">Color</div>
-                        <input type="color" class="sdpi-item-value" id="color" value="#ff0000">
-                    </div>`;
-                lightWrapper.innerHTML += rgbHtml;
-
-                var colorElement = document.getElementById("color");
-                colorElement.value = settings.color || "#ff0000";
-                settings.color = colorElement.value;
-                colorElement.addEventListener("input", function (e) {
-                    var value = e.target.value;
-                    settings.color = value;
-                    saveSettings(action, uuid, settings);
-                });
-            }
-
-            function addTemperatureChooser() {
-                const entity = homeAssistantCache.entities["light"].find((e) => e.entity_id == settings.entityId);
-                const minMired = entity.attributes.min_mireds;
-                const maxMired = entity.attributes.max_mireds;
-
-                // seems these are off by a little bit and making the ranges out of bounds on the extremes
-                // maybe round to the nearest 100?
-                const minTemperature = Math.round(miredToTemperature(maxMired)); // these are flipped intentionally
-                const maxTemperature = Math.round(miredToTemperature(minMired)); // these are flipped intentionally
-
-                logMessage({ minTemp: minTemperature, maxTemp: maxTemperature });
-
-                const colorTemperatureHtml = `
-                    <div type="range" class="sdpi-item">
-                        <div class="sdpi-item-label">Temperature</div>
-                        <div class="sdpi-item-value">
-                            <span class="clickable" value="${minTemperature}" id="min">
-                                ${minTemperature}K
-                            </span>
-                            <input id="temperature" type="range" min="${minTemperature}" max="${maxTemperature}" value=${minTemperature}>
-                            <span class="clickable" value="${maxTemperature}" id="max">
-                                ${maxTemperature}K
-                            </span>
-                        </div>
-                    </div>`;
-                lightWrapper.innerHTML += colorTemperatureHtml;
-
-                const temperature = document.getElementById("temperature");
-                temperature.value = settings.temperature || 3000; // TODO: Use midpoint as default
-                settings.temperature = temperature.value;
-                temperature.addEventListener("change", function (e) {
-                    var value = e.target.value;
-                    settings.temperature = value;
-                    saveSettings(action, uuid, settings);
-                });
-            }
-
-            const lightWrapper = document.getElementById("lightWrapper");
-            while (lightWrapper.firstChild) lightWrapper.removeChild(lightWrapper.firstChild);
-            if (settings.colorType == "RGB") {
-                addRgbChooser();
-            } else if (settings.colorType == "Temperature") {
-                addTemperatureChooser();
-            }
+            resetColorTypeParameters();
         });
-        
     };
 
     this.update = function (homeAssistantCache) {
@@ -142,14 +144,14 @@ function SetLightColorActionPI(uuid, actionInfo) {
             logMessage(settings.entityId + " supports brightness");
             const brightnessWrapper = document.getElementById("brightnessWrapper");
             const brightnessHtml = `
-                        <div type="range" class="sdpi-item">
-                            <div class="sdpi-item-label">Brightness</div>
-                            <div class="sdpi-item-value">
-                                <span class="clickable" value="0">0%</span>
-                                <input id="brightness" type="range" min="0" max="100" value=50>
-                                <span class="clickable" value="100">100%</span>
-                            </div>
-                        </div>`;
+                <div type="range" class="sdpi-item">
+                    <div class="sdpi-item-label">Brightness</div>
+                    <div class="sdpi-item-value">
+                        <span class="clickable" value="0">0%</span>
+                        <input id="brightness" type="range" min="0" max="100" value=50>
+                        <span class="clickable" value="100">100%</span>
+                    </div>
+                </div>`;
             brightnessWrapper.innerHTML = brightnessHtml;
 
             const brightnessElement = document.getElementById("brightness");
@@ -182,9 +184,10 @@ function SetLightColorActionPI(uuid, actionInfo) {
             colorType.appendChild(colorTempOption);
             logMessage(settings.entityId + " supports temperature mode");
         }
-        
+
         if (settings.colorType != undefined) {
             colorType.value = settings.colorType;
+            resetColorTypeParameters();
         }
     };
 
