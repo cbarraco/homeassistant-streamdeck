@@ -11,8 +11,8 @@ function SetLightColorActionPI(uuid, actionInfo) {
 
     var actionSetUp = this.setUp;
 
-    function showAppropriateColorChooser(lightWrapper) {
-        function showRgbChooser() {
+    function showAppropriateColorChooser() {
+        function showRgbChooser(lightWrapper) {
             logMessage("Showing RGB chooser");
             lightWrapper.innerHTML = `
                 <div type="color" class="sdpi-item">
@@ -127,20 +127,15 @@ function SetLightColorActionPI(uuid, actionInfo) {
             settings.entityId = entityIdSelector.value;
         }
 
-        var colorElement = document.getElementById("color");
-        if (colorElement != null && settings.color != undefined) {
-            colorElement.value = settings.color;
-        }
-
-        var lights = homeAssistantCache.entities["light"];
-        if (lights === undefined) {
+        var lightsFromCache = homeAssistantCache.entities["light"];
+        if (lightsFromCache === undefined) {
             logMessage("There aren't any lights in the cache yet");
             return;
         }
 
         // figure out what features this light supports
-        const entity = lights.find((e) => e.entity_id == settings.entityId);
-        const supportedFeatures = entity.attributes.supported_features;
+        const lightEntity = lightsFromCache.find((e) => e.entity_id == settings.entityId);
+        const supportedFeatures = lightEntity.attributes.supported_features;
         var lightSupportsBrightness = supportedFeatures & LightSupportedFeaturesBitmask.SUPPORT_BRIGHTNESS;
         var lightSupportsRgb = supportedFeatures & LightSupportedFeaturesBitmask.SUPPORT_COLOR;
         var lightSupportsTemperature = supportedFeatures & LightSupportedFeaturesBitmask.SUPPORT_COLOR_TEMP;
