@@ -11,38 +11,41 @@ function SetLightColorActionPI(uuid, actionInfo) {
 
     var actionSetUp = this.setUp;
 
-    function resetColorTypeParameters() {
-        function addRgbChooser() {
-            const rgbHtml = `
+    function showAppropriateColorChooser(lightWrapper) {
+        function showRgbChooser() {
+            logMessage("Showing RGB chooser");
+            lightWrapper.innerHTML = `
                 <div type="color" class="sdpi-item">
                     <div class="sdpi-item-label">Color</div>
                     <input type="color" class="sdpi-item-value" id="color" value="#ff0000">
                 </div>`;
-            lightWrapper.innerHTML += rgbHtml;
 
-            var colorElement = document.getElementById("color");
-            colorElement.value = settings.color || "#ff0000";
-            settings.color = colorElement.value;
-            colorElement.addEventListener("input", function (e) {
-                var value = e.target.value;
-                settings.color = value;
+            var colorInput = document.getElementById("color");
+            colorInput.value = settings.color || "#ff0000";
+            settings.color = colorInput.value;
+            colorInput.addEventListener("input", function (e) {
+                var selectedColor = e.target.value;
+                logMessage(`RGB color was changed to ${selectedColor}`);
+                settings.color = selectedColor;
                 saveSettings(action, uuid, settings);
             });
         }
 
-        function addTemperatureChooser() {
+        function showTemperatureChooser(lightWrapper) {
+            logMessage("Showing temperature chooser");
             const entity = homeAssistantCache.entities["light"].find((e) => e.entity_id == settings.entityId);
             const minMired = entity.attributes.min_mireds;
             const maxMired = entity.attributes.max_mireds;
 
-            // seems these are off by a little bit and making the ranges out of bounds on the extremes
+            // seems these are off by a little bit and making the ranges out of bounds on the extremes,
             // maybe round to the nearest 100?
+            // TODO Just use the mired directly, thats what HA does anyway
             const minTemperature = Math.round(miredToTemperature(maxMired)); // these are flipped intentionally
             const maxTemperature = Math.round(miredToTemperature(minMired)); // these are flipped intentionally
 
             logMessage({ minTemp: minTemperature, maxTemp: maxTemperature });
 
-            const colorTemperatureHtml = `
+            lightWrapper.innerHTML = `
                 <div type="range" class="sdpi-item">
                     <div class="sdpi-item-label">Temperature</div>
                     <div class="sdpi-item-value">
@@ -55,24 +58,23 @@ function SetLightColorActionPI(uuid, actionInfo) {
                         </span>
                     </div>
                 </div>`;
-            lightWrapper.innerHTML += colorTemperatureHtml;
 
-            const temperature = document.getElementById("temperature");
-            temperature.value = settings.temperature || 3000; // TODO: Use midpoint as default
-            settings.temperature = temperature.value;
-            temperature.addEventListener("change", function (e) {
-                var value = e.target.value;
-                settings.temperature = value;
+            const temperatureSlider = document.getElementById("temperature");
+            temperatureSlider.value = settings.temperature || 3000; // TODO: Use midpoint as default
+            settings.temperature = temperatureSlider.value;
+            temperatureSlider.addEventListener("change", function (e) {
+                var selectedTemperature = e.target.value;
+                logMessage(`Color temperature was changed to ${selectedTemperature}`);
+                settings.temperature = selectedTemperature;
                 saveSettings(action, uuid, settings);
             });
         }
 
         const lightWrapper = document.getElementById("lightWrapper");
-        while (lightWrapper.firstChild) lightWrapper.removeChild(lightWrapper.firstChild);
         if (settings.colorType == "RGB") {
-            addRgbChooser();
+            showRgbChooser(lightWrapper);
         } else if (settings.colorType == "Temperature") {
-            addTemperatureChooser();
+            showTemperatureChooser(lightWrapper);
         }
     }
 
@@ -97,28 +99,31 @@ function SetLightColorActionPI(uuid, actionInfo) {
             <div id="lightWrapper"></div>
             `;
 
-        var entityIdElement = document.getElementById("entityId");
-        entityIdElement.value = settings.entityId;
-        entityIdElement.addEventListener("input", function (inEvent) {
+        var entityIdSelector = document.getElementById("entityId");
+        entityIdSelector.value = settings.entityId;
+        entityIdSelector.addEventListener("input", function (inEvent) {
             var value = inEvent.target.value;
             settings.entityId = value;
             saveSettings(action, uuid, settings);
+            showAppropriateColorChooser();
         });
 
-        var colorType = document.getElementById("colorType");
-        colorType.addEventListener("change", function (inEvent) {
+        var colorTypeSelector = document.getElementById("colorType");
+        colorTypeSelector.addEventListener("change", function (inEvent) {
             var value = inEvent.target.value;
             settings.colorType = value;
             saveSettings(action, uuid, settings);
-            resetColorTypeParameters();
+            showAppropriateColorChooser();
         });
     };
 
     this.update = function (homeAssistantCache) {
-        var entityIdElement = document.getElementById("entityId");
-        ActionPI.populateEntityOptions(entityIdElement, "light", homeAssistantCache);
+        var entityIdSelector = document.getElementById("entityId");
+        ActionPI.populateEntityOptions(entityIdSelector, "light", homeAssistantCache);
         if (settings.entityId != undefined) {
-            entityIdElement.value = settings.entityId;
+            entityIdSelector.value = settings.entityId;
+        } else {
+            settings.entityId = entityIdSelector.value;
         }
 
         var colorElement = document.getElementById("color");
@@ -141,9 +146,44 @@ function SetLightColorActionPI(uuid, actionInfo) {
         var lightSupportsTemperature = supportedFeatures & LightSupportedFeaturesBitmask.SUPPORT_COLOR_TEMP;
 
         if (lightSupportsBrightness) {
-            logMessage(settings.entityId + " supports brightness");
-            const brightnessWrapper = document.getElementById("brightnessWrapper");
-            const brightnessHtml = `
+            addBrightnessSlider();
+        }
+
+        const colorTypeSelector = document.getElementById("colorType");
+        colorTypeSelector.innerHTML = `<option value="none">None</option>`;
+        if (lightSupportsRgb) {
+            addRgbColorType(colorTypeSelector);
+        }
+        if (lightSupportsTemperature) {
+            addTemperatureColorType(colorTypeSelector);
+        }
+
+        if (settings.colorType != undefined) {
+            colorTypeSelector.value = settings.colorType;
+            showAppropriateColorChooser();
+        }
+    };
+
+    function addTemperatureColorType(colorTypeSelector) {
+        const temperatureOption = document.createElement("option");
+        temperatureOption.value = "Temperature";
+        temperatureOption.innerHTML = "Temperature";
+        colorTypeSelector.appendChild(temperatureOption);
+        logMessage(settings.entityId + " supports temperature mode");
+    }
+
+    function addRgbColorType(colorTypeSelector) {
+        const rgbOption = document.createElement("option");
+        rgbOption.value = "RGB";
+        rgbOption.innerHTML = "RGB";
+        colorTypeSelector.appendChild(rgbOption);
+        logMessage(settings.entityId + " supports RGB mode");
+    }
+
+    function addBrightnessSlider() {
+        logMessage(settings.entityId + " supports brightness");
+        const brightnessWrapper = document.getElementById("brightnessWrapper");
+        const brightnessHtml = `
                 <div type="range" class="sdpi-item">
                     <div class="sdpi-item-label">Brightness</div>
                     <div class="sdpi-item-value">
@@ -152,44 +192,19 @@ function SetLightColorActionPI(uuid, actionInfo) {
                         <span class="clickable" value="100">100%</span>
                     </div>
                 </div>`;
-            brightnessWrapper.innerHTML = brightnessHtml;
+        brightnessWrapper.innerHTML = brightnessHtml;
 
-            const brightnessElement = document.getElementById("brightness");
-            if (brightnessElement != null && settings.brightness != undefined) {
-                brightnessElement.value = settings.brightness;
-            }
-            brightnessElement.addEventListener("change", function (e) {
-                logMessage("Saving brightness for " + settings.entityId);
-                var value = e.target.value;
-                settings.brightness = value;
-                saveSettings(action, uuid, settings);
-            });
+        const brightnessElement = document.getElementById("brightness");
+        if (brightnessElement != null && settings.brightness != undefined) {
+            brightnessElement.value = settings.brightness;
         }
-
-        const colorType = document.getElementById("colorType");
-        colorType.innerHTML = `<option value="none">None</option>`;
-
-        if (lightSupportsRgb) {
-            const colorOption = document.createElement("option");
-            colorOption.value = "RGB";
-            colorOption.innerHTML = "RGB";
-            colorType.appendChild(colorOption);
-            logMessage(settings.entityId + " supports RGB mode");
-        }
-
-        if (lightSupportsTemperature) {
-            const colorTempOption = document.createElement("option");
-            colorTempOption.value = "Temperature";
-            colorTempOption.innerHTML = "Temperature";
-            colorType.appendChild(colorTempOption);
-            logMessage(settings.entityId + " supports temperature mode");
-        }
-
-        if (settings.colorType != undefined) {
-            colorType.value = settings.colorType;
-            resetColorTypeParameters();
-        }
-    };
+        brightnessElement.addEventListener("change", function (e) {
+            logMessage("Saving brightness for " + settings.entityId);
+            var value = e.target.value;
+            settings.brightness = value;
+            saveSettings(action, uuid, settings);
+        });
+    }
 
     function miredToTemperature(mired) {
         return 1000000.0 / mired;

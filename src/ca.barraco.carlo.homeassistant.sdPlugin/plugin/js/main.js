@@ -147,6 +147,9 @@ function connectElgatoStreamDeckSocket(inPort, inPluginUUID, inRegisterEvent, in
                         // we got results, but which ones?
                         if (data.id == lastMessageId.fetchStates) {
                             updateEntitiesCache(results, context, action);
+                            for (context in actions) {
+                                sendCacheUpdateToPropertyInspector(action, context);
+                            }
                         } else if (data.id == lastMessageId.fetchServices) {
                             updateServicesCache(results, context, action);
                         }
