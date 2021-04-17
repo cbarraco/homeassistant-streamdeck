@@ -27,6 +27,7 @@ function SetLightColorActionPI(uuid, actionInfo) {
             colorInput.addEventListener("input", function (e) {
                 var selectedColor = e.target.value;
                 logMessage(`RGB color was changed to ${selectedColor}`);
+                settings.temperature = undefined;
                 settings.color = selectedColor;
                 saveSettings(action, uuid, settings);
             });
@@ -62,6 +63,7 @@ function SetLightColorActionPI(uuid, actionInfo) {
                 var selectedTemperature = e.target.value;
                 logMessage(`Color temperature was changed to ${selectedTemperature}`);
                 settings.temperature = selectedTemperature;
+                settings.color = undefined;
                 saveSettings(action, uuid, settings);
             });
         }
@@ -71,6 +73,8 @@ function SetLightColorActionPI(uuid, actionInfo) {
             showRgbChooser(lightWrapper);
         } else if (settings.colorType == "Temperature") {
             showTemperatureChooser(lightWrapper);
+        } else {
+            lightWrapper.innerHTML = "";
         }
     }
 
@@ -101,7 +105,8 @@ function SetLightColorActionPI(uuid, actionInfo) {
             var value = inEvent.target.value;
             settings.entityId = value;
             saveSettings(action, uuid, settings);
-            showAppropriateColorChooser();
+            var lightsFromCache = homeAssistantCache.entities["light"];
+            addParametersBasedOnFeatures(lightsFromCache);
         });
 
         var colorTypeSelector = document.getElementById("colorType");
@@ -130,6 +135,10 @@ function SetLightColorActionPI(uuid, actionInfo) {
             return;
         }
 
+        addParametersBasedOnFeatures(lightsFromCache);
+    };
+
+    function addParametersBasedOnFeatures(lightsFromCache) {
         // figure out what features this light supports
         const lightEntity = lightsFromCache.find((e) => e.entity_id == settings.entityId);
         const supportedFeatures = lightEntity.attributes.supported_features;
@@ -142,7 +151,7 @@ function SetLightColorActionPI(uuid, actionInfo) {
         }
 
         const colorTypeSelector = document.getElementById("colorType");
-        colorTypeSelector.innerHTML = `<option value="none">None</option>`;
+        colorTypeSelector.innerHTML = `<option value="None">None</option>`;
         if (lightSupportsRgb) {
             addRgbColorType(colorTypeSelector);
         }
@@ -151,10 +160,20 @@ function SetLightColorActionPI(uuid, actionInfo) {
         }
 
         if (settings.colorType != undefined) {
-            colorTypeSelector.value = settings.colorType;
+            if (settings.colorType == "RGB" && !lightSupportsRgb){
+                colorTypeSelector.value = "None";
+                settings.colorType = "None";
+                saveSettings(action, uuid, settings);
+            } else if (settings.colorType == "Temperature" && !lightSupportsTemperature){
+                colorTypeSelector.value = "None";
+                settings.colorType = "None";
+                saveSettings(action, uuid, settings);
+            } else {
+                colorTypeSelector.value = settings.colorType;
+            }
             showAppropriateColorChooser();
         }
-    };
+    }
 
     function addBrightnessSlider() {
         logMessage(settings.entityId + " supports brightness");
