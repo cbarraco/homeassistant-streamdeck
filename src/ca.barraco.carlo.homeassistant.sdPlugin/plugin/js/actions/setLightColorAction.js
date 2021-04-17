@@ -5,27 +5,32 @@ function SetLightColorAction(inContext, inSettings) {
     // Inherit from Action
     Action.call(this, inContext, inSettings);
 
-    var actionOnKeyUp = this.onKeyDown;
-
-    // Public function called on keyDown event
-    this.onKeyDown = function (inData) {
-        actionOnKeyUp.call(this, inData);
-        sendCommand(inData.settings);
+    var actiononSettingsUpdate = this.onSettingsUpdate;
+    this.onSettingsUpdate = function(inUpdatedSettings) {
+        actiononSettingsUpdate.call(this, inUpdatedSettings);
+        var mainCanvas = document.getElementById("mainCanvas");
+        var mainCanvasContext = mainCanvas.getContext("2d");
+        if (inUpdatedSettings.colorType == "RGB") {
+            mainCanvasContext.fillStyle = inUpdatedSettings.color;
+            logMessage(`Changing background to ${inUpdatedSettings.color}`);
+        } else if (inUpdatedSettings.colorType == "Temperature") {
+            var hex = miredToHex(inUpdatedSettings.temperature);
+            mainCanvasContext.fillStyle = hex;
+            logMessage(`Changing background to ${hex}`);
+        }
+        mainCanvasContext.fillRect(0, 0, mainCanvas.width, mainCanvas.height);
+        setImage(inContext, mainCanvas.toDataURL());
     };
 
-    function hexToRgb(hex) {
-        var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-        return result
-            ? {
-                  r: parseInt(result[1], 16),
-                  g: parseInt(result[2], 16),
-                  b: parseInt(result[3], 16),
-              }
-            : null;
-    }
+    // Public function called on keyDown event
+    var actionOnKeyUp = this.onKeyDown;
+    this.onKeyDown = function (inData) {
+        actionOnKeyUp.call(this, inData);
+        sendTurnOnCommand(inData.settings);
+    };
 
-    function sendCommand(settings) {
-        logMessage(`Sending turnOn command to HA for entity ${settings.entityId}`);
+    function sendTurnOnCommand(settings) {
+        logMessage(`Sending turn on command to HA for light entity ${settings.entityId}`);
 
         brightnessPayload = "";
         if (settings.brightness != undefined) {
@@ -40,7 +45,7 @@ function SetLightColorAction(inContext, inSettings) {
             const blue = components.b;
             colorPayload = `,"rgb_color": [${red}, ${green}, ${blue}]`;
         } else if (settings.colorType == "Temperature") {
-            colorPayload = `,"kelvin": ${settings.temperature}`;
+            colorPayload = `,"color_temp": ${settings.temperature}`;
         }
 
         const setLightColorMessage = `{

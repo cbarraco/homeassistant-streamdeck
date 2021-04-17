@@ -6,19 +6,16 @@ function Action(inContext, inSettings) {
 
     var settings = inSettings;
 
-    // Public function returning the context
-    this.getContext = function () {
-        return context;
-    };
-
     // Public function returning the settings
     this.getSettings = function () {
         return settings;
     };
 
     // Public function for settings the settings
-    this.setSettings = function (inSettings) {
-        settings = inSettings;
+    this.onSettingsUpdate = function (inUpdatedSettings) {
+        logMessage("Received updated settings");
+        logMessage(inUpdatedSettings);
+        settings = inUpdatedSettings;
     };
 
     // Public function called on keyDown event

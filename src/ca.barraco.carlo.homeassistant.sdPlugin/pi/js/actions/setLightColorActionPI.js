@@ -23,6 +23,7 @@ function SetLightColorActionPI(uuid, actionInfo) {
             var colorInput = document.getElementById("color");
             colorInput.value = settings.color || "#ff0000";
             settings.color = colorInput.value;
+            saveSettings(action, uuid, settings);
             colorInput.addEventListener("input", function (e) {
                 var selectedColor = e.target.value;
                 logMessage(`RGB color was changed to ${selectedColor}`);
@@ -37,31 +38,26 @@ function SetLightColorActionPI(uuid, actionInfo) {
             const minMired = entity.attributes.min_mireds;
             const maxMired = entity.attributes.max_mireds;
 
-            // seems these are off by a little bit and making the ranges out of bounds on the extremes,
-            // maybe round to the nearest 100?
-            // TODO Just use the mired directly, thats what HA does anyway
-            const minTemperature = Math.round(miredToTemperature(maxMired)); // these are flipped intentionally
-            const maxTemperature = Math.round(miredToTemperature(minMired)); // these are flipped intentionally
-
-            logMessage({ minTemp: minTemperature, maxTemp: maxTemperature });
+            logMessage({ minTemp: minMired, maxTemp: maxMired });
 
             lightWrapper.innerHTML = `
                 <div type="range" class="sdpi-item">
                     <div class="sdpi-item-label">Temperature</div>
                     <div class="sdpi-item-value">
-                        <span class="clickable" value="${minTemperature}" id="min">
-                            ${minTemperature}K
+                        <span class="clickable" value="${minMired}" id="min">
+                            ${minMired}
                         </span>
-                        <input id="temperature" type="range" min="${minTemperature}" max="${maxTemperature}" value=${minTemperature}>
-                        <span class="clickable" value="${maxTemperature}" id="max">
-                            ${maxTemperature}K
+                        <input id="temperature" type="range" min="${minMired}" max="${maxMired}" value=${minMired}>
+                        <span class="clickable" value="${maxMired}" id="max">
+                            ${maxMired}
                         </span>
                     </div>
                 </div>`;
 
             const temperatureSlider = document.getElementById("temperature");
-            temperatureSlider.value = settings.temperature || 3000; // TODO: Use midpoint as default
+            temperatureSlider.value = settings.temperature || (minMired + maxMired) / 2;
             settings.temperature = temperatureSlider.value;
+            saveSettings(action, uuid, settings);
             temperatureSlider.addEventListener("change", function (e) {
                 var selectedTemperature = e.target.value;
                 logMessage(`Color temperature was changed to ${selectedTemperature}`);
@@ -200,9 +196,5 @@ function SetLightColorActionPI(uuid, actionInfo) {
         temperatureOption.innerHTML = "Temperature";
         colorTypeSelector.appendChild(temperatureOption);
         logMessage(settings.entityId + " supports temperature mode");
-    }
-
-    function miredToTemperature(mired) {
-        return 1000000.0 / mired;
     }
 }

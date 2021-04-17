@@ -144,7 +144,7 @@ function connectElgatoStreamDeckSocket(inPort, inPluginUUID, inRegisterEvent, in
                         logMessage("Results message that doesn't contain results");
                         return;
                     } else {
-                        // we got results, but which ones?
+                        // we got results, but for what?
                         if (data.id == lastMessageId.fetchStates) {
                             updateEntitiesCache(results, context, action);
                             for (context in actions) {
@@ -196,7 +196,7 @@ function connectElgatoStreamDeckSocket(inPort, inPluginUUID, inRegisterEvent, in
             logStreamDeckEvent(inEvent.data);
             var settings = jsonPayload["settings"];
             if (context in actions) {
-                actions[context].setSettings(settings);
+                actions[context].onSettingsUpdate(settings);
             }
         } else if (event == "sendToPlugin") {
             logStreamDeckEvent(inEvent.data);
@@ -275,17 +275,8 @@ function connectElgatoStreamDeckSocket(inPort, inPluginUUID, inRegisterEvent, in
         homeAssistantWebsocket.close();
     }
 
-    function componentToHex(c) {
-        var hex = c.toString(16);
-        return hex.length == 1 ? "0" + hex : hex;
-    }
-
-    function rgbToHex(r, g, b) {
-        return "#" + componentToHex(r) + componentToHex(g) + componentToHex(b);
-    }
-
     function handleStateChange(entityId, newState) {
-        // this should be delegated to the individual action objects
+        // TODO this should be delegated to the individual action objects
         for (context in actions) {
             if (actions[context] instanceof ToggleSwitchAction) {
                 var actionSettings = actions[context].getSettings();
