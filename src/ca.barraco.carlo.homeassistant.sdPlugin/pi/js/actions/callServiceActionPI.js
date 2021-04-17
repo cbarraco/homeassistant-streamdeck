@@ -87,6 +87,10 @@ function CallServiceActionPI(uuid, actionInfo) {
         populateServiceOptions(serviceIdElement);
         if (settings.serviceId != undefined) {
             serviceIdElement.value = settings.serviceId;
+        } else {
+            // save whatever is first
+            settings.serviceId = serviceIdElement.value;
+            saveSettings(action, uuid, settings);
         }
 
         var payloadElement = document.getElementById("payload");

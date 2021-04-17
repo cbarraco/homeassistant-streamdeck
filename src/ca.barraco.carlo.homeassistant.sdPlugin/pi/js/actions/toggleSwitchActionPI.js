@@ -32,10 +32,14 @@ function ToggleSwitchActionPI(uuid, actionInfo) {
     };
 
     this.update = function(homeAssistantCache){
-        var entityIdElement = document.getElementById("entityId");
-        ActionPI.populateEntityOptions(entityIdElement, "switch", homeAssistantCache);
+        var entityIdSelector = document.getElementById("entityId");
+        ActionPI.populateEntityOptions(entityIdSelector, "switch", homeAssistantCache);
         if (settings.entityId != undefined) {
-            entityIdElement.value = settings.entityId;
+            entityIdSelector.value = settings.entityId;
+        } else {
+            // save whatever is first
+            settings.entityId = entityIdSelector.value;
+            saveSettings(action, uuid, settings);
         }
     };
 }

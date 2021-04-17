@@ -123,8 +123,9 @@ function SetLightColorActionPI(uuid, actionInfo) {
         if (settings.entityId != undefined) {
             entityIdSelector.value = settings.entityId;
         } else {
-            // save whatever is selected on first HA connection
+            // save whatever is first
             settings.entityId = entityIdSelector.value;
+            saveSettings(action, uuid, settings);
         }
 
         var lightsFromCache = homeAssistantCache.entities["light"];
