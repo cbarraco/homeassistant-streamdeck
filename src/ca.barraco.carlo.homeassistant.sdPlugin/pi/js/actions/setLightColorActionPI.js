@@ -123,6 +123,7 @@ function SetLightColorActionPI(uuid, actionInfo) {
         if (settings.entityId != undefined) {
             entityIdSelector.value = settings.entityId;
         } else {
+            // save whatever is selected on first HA connection
             settings.entityId = entityIdSelector.value;
         }
 
@@ -132,7 +133,6 @@ function SetLightColorActionPI(uuid, actionInfo) {
         }
 
         var lights = homeAssistantCache.entities["light"];
-        logMessage(homeAssistantCache);
         if (lights === undefined) {
             logMessage("There aren't any lights in the cache yet");
             return;
@@ -164,22 +164,6 @@ function SetLightColorActionPI(uuid, actionInfo) {
         }
     };
 
-    function addTemperatureColorType(colorTypeSelector) {
-        const temperatureOption = document.createElement("option");
-        temperatureOption.value = "Temperature";
-        temperatureOption.innerHTML = "Temperature";
-        colorTypeSelector.appendChild(temperatureOption);
-        logMessage(settings.entityId + " supports temperature mode");
-    }
-
-    function addRgbColorType(colorTypeSelector) {
-        const rgbOption = document.createElement("option");
-        rgbOption.value = "RGB";
-        rgbOption.innerHTML = "RGB";
-        colorTypeSelector.appendChild(rgbOption);
-        logMessage(settings.entityId + " supports RGB mode");
-    }
-
     function addBrightnessSlider() {
         logMessage(settings.entityId + " supports brightness");
         const brightnessWrapper = document.getElementById("brightnessWrapper");
@@ -204,6 +188,22 @@ function SetLightColorActionPI(uuid, actionInfo) {
             settings.brightness = value;
             saveSettings(action, uuid, settings);
         });
+    }    
+
+    function addRgbColorType(colorTypeSelector) {
+        const rgbOption = document.createElement("option");
+        rgbOption.value = "RGB";
+        rgbOption.innerHTML = "RGB";
+        colorTypeSelector.appendChild(rgbOption);
+        logMessage(settings.entityId + " supports RGB mode");
+    }
+
+    function addTemperatureColorType(colorTypeSelector) {
+        const temperatureOption = document.createElement("option");
+        temperatureOption.value = "Temperature";
+        temperatureOption.innerHTML = "Temperature";
+        colorTypeSelector.appendChild(temperatureOption);
+        logMessage(settings.entityId + " supports temperature mode");
     }
 
     function miredToTemperature(mired) {
