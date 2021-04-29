@@ -47,6 +47,18 @@
       ],
       "Tooltip": "Sets a light entity to specific color in Home Assistant",
       "UUID": "ca.barraco.carlo.homeassistant.action.setlightcolor"
+    },
+    {
+      "Icon": "plugin/images/actions/commandMediaPlayer",
+      "Name": "Sends a command to a media player",
+      "States": [
+        {
+          "Image": "plugin/images/actions/commandMediaPlayer",
+          "Title": ""
+        }
+      ],
+      "Tooltip": "Sends a command to a media player entity in Home Assistant and shows its thumbnail",
+      "UUID": "ca.barraco.carlo.homeassistant.action.commandmediaplayer"
     }
   ],
   "SDKVersion": 2,

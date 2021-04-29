@@ -1,4 +1,4 @@
-function ToggleSwitchActionPI(uuid, actionInfo) {
+function CommandMediaPlayerActionPI(uuid, actionInfo) {
     var instance = this;
 
     var settings = actionInfo["payload"]["settings"];
@@ -15,11 +15,11 @@ function ToggleSwitchActionPI(uuid, actionInfo) {
         logMessage("Injecting parameters");
         const wrapper = document.getElementById("wrapper");
         wrapper.innerHTML += `
-        <div class="sdpi-item">
-            <div class="sdpi-item-label">Entity</div>
-            <select class="sdpi-item-value select" id="entityId">
-            </select>
-        </div>`;
+            <div class="sdpi-item">
+                <div class="sdpi-item-label">Entity</div>
+                <select class="sdpi-item-value select" id="entityId">
+                </select>
+            </div>`;
 
         var entityIdElement = document.getElementById("entityId");
         entityIdElement.value = settings.entityId;
@@ -32,7 +32,7 @@ function ToggleSwitchActionPI(uuid, actionInfo) {
 
     this.update = function(homeAssistantCache){
         var entityIdSelector = document.getElementById("entityId");
-        ActionPI.populateEntityOptions(entityIdSelector, "switch", homeAssistantCache);
+        ActionPI.populateEntityOptions(entityIdSelector, "media_player", homeAssistantCache);
         if (settings.entityId != undefined) {
             entityIdSelector.value = settings.entityId;
         } else {

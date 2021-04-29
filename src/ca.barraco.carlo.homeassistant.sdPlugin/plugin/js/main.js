@@ -14,6 +14,7 @@ var homeAssistantCache = {
 var lastMessageId = {
     fetchStates: -1,
     fetchServices: -1,
+    fetchMediaPlayerThumbnail: -1,
 };
 
 var mainCanvas = null;
@@ -73,6 +74,8 @@ function connectElgatoStreamDeckSocket(inPort, inPluginUUID, inRegisterEvent, in
                     actions[context] = new ToggleLightAction(context, settings);
                 } else if (action == ActionType.SET_LIGHT_COLOR) {
                     actions[context] = new SetLightColorAction(context, settings);
+                } else if (action == ActionType.COMMAND_MEDIA_PLAYER) {
+                    actions[context] = new CommandMediaPlayerAction(context, settings);
                 }
             }
             // buttons need to be visually updated by fetching current state
@@ -152,6 +155,8 @@ function connectElgatoStreamDeckSocket(inPort, inPluginUUID, inRegisterEvent, in
                             }
                         } else if (data.id == lastMessageId.fetchServices) {
                             updateServicesCache(results, context, action);
+                        } else if (data.id == lastMessageId.fetchMediaPlayerThumbnail) {
+                            updateMediaPlayerThumbnail(results, context);
                         }
                     }
                 } else {
@@ -269,6 +274,22 @@ function connectElgatoStreamDeckSocket(inPort, inPluginUUID, inRegisterEvent, in
         logMessage(homeAssistantCache.services);
     }
 
+    function updateMediaPlayerThumbnail(results, context) {
+        logMessage("Updating media player thumbnail");
+        logMessage(results);
+        var state = actions[context].state;
+        var dataUrl = `data:${results.content_type};base64,${results.content}`;
+        var img = new Image();
+        img.onload = function () {
+            mainCanvasContext.drawImage(img, 0, 0, img.width, img.height, 0, 0, mainCanvas.width, mainCanvas.height);
+            mainCanvasContext.font = "10px Arial";
+            mainCanvasContext.fillStyle = "#ff0000";
+            mainCanvasContext.fillText(state, mainCanvas.width, mainCanvas.height);
+            setImage(context, mainCanvas.toDataURL());
+        };
+        img.src = dataUrl;
+    }
+
     function handleInvalidAccessToken(data) {
         logHomeAssistantEvent(data);
         homeAssistantConnectionState = ConnectionState.INVALID_TOKEN;
@@ -313,6 +334,13 @@ function connectElgatoStreamDeckSocket(inPort, inPluginUUID, inRegisterEvent, in
                     mainCanvasContext.fillRect(0, 0, mainCanvas.width, mainCanvas.height);
                     setImage(context, mainCanvas.toDataURL());
                 }
+            } else if (actions[context] instanceof CommandMediaPlayerAction) {
+                var actionSettings = actions[context].getSettings();
+                if (entityId === actionSettings["entityId"]) {
+                    logMessage(`Updating state of media player ${entityId}`);
+                    actions[context].state = newState.state;
+                    fetchMediaPlayerThumbnail(entityId);
+                }
             }
         }
     }
@@ -349,6 +377,17 @@ function connectElgatoStreamDeckSocket(inPort, inPluginUUID, inRegisterEvent, in
         const fetchMessage = `{
                     "id": ${lastMessageId.fetchServices},
                     "type": "get_services"
+                  }`;
+        homeAssistantWebsocket.send(fetchMessage);
+    }
+
+    function fetchMediaPlayerThumbnail(entityId) {
+        logMessage(`Fetching media player thumbnail for ${entityId}`);
+        lastMessageId.fetchMediaPlayerThumbnail = ++homeAssistantMessageId;
+        const fetchMessage = `{
+                    "id": ${lastMessageId.fetchMediaPlayerThumbnail},
+                    "type": "media_player_thumbnail",
+                    "entity_id": "${entityId}"
                   }`;
         homeAssistantWebsocket.send(fetchMessage);
     }

@@ -9,18 +9,18 @@ function ActionPI(inUUID, inActionInfo) {
     this.update = function (homeAssistantCache) {};
 
     // Static function to add all entities of a certain type to an option element
-    ActionPI.populateEntityOptions = function(element, type, homeAssistantCache) {
+    ActionPI.populateEntityOptions = function (element, type, homeAssistantCache) {
         logMessage("Populating entities parameter options");
-    
-        if (homeAssistantCache.entities === undefined){
+
+        if (homeAssistantCache.entities === undefined) {
             logMessage("Cache is not populated yet");
             return;
         }
-    
+
         logMessage(homeAssistantCache.entities);
-    
+
         element.innerHTML = "";
-    
+
         var keys = [];
         if (type != undefined) {
             // populate with specific key
@@ -29,12 +29,16 @@ function ActionPI(inUUID, inActionInfo) {
             // populate with all keys
             keys = Object.getOwnPropertyNames(homeAssistantCache.entities);
         }
-    
+
         for (var i = 0; i < keys.length; i++) {
             const typeKey = keys[i];
             const optGroup = document.createElement("optgroup");
             optGroup.label = typeKey;
             const optionValues = homeAssistantCache.entities[typeKey];
+            if (optionValues === undefined) {
+                logMessage(`No entities of type ${typeKey} found`);
+                return;
+            }
             for (var j = 0; j < optionValues.length; j++) {
                 const optionValue = optionValues[j].entity_id;
                 const option = document.createElement("option");
@@ -44,5 +48,5 @@ function ActionPI(inUUID, inActionInfo) {
             }
             element.appendChild(optGroup);
         }
-    }
+    };
 }

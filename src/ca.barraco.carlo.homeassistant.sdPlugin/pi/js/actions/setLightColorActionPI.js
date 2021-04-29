@@ -1,4 +1,3 @@
-// Prototype which represents a set light color action property inspector
 function SetLightColorActionPI(uuid, actionInfo) {
     var instance = this;
 
@@ -81,7 +80,7 @@ function SetLightColorActionPI(uuid, actionInfo) {
     // Public function called on initial setup
     this.setUp = function () {
         actionSetUp.call(this);
-        logMessage("Injecting set light color parameters");
+        logMessage("Injecting parameters");
         const wrapper = document.getElementById("wrapper");
         wrapper.innerHTML += `
             <div class="sdpi-item">

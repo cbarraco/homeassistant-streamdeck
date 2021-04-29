@@ -5,6 +5,7 @@ const ActionType = {
     CALL_SERVICE: "ca.barraco.carlo.homeassistant.action.callservice",
     TOGGLE_LIGHT: "ca.barraco.carlo.homeassistant.action.togglelight",
     SET_LIGHT_COLOR: "ca.barraco.carlo.homeassistant.action.setlightcolor",
+    COMMAND_MEDIA_PLAYER: "ca.barraco.carlo.homeassistant.action.commandmediaplayer",
 };
 
 const ConnectionState = {

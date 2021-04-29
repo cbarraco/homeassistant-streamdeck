@@ -1,4 +1,3 @@
-// Prototype which represents a toggle light action property inspector
 function ToggleLightActionPI(uuid, actionInfo) {
     var instance = this;
 
@@ -14,7 +13,7 @@ function ToggleLightActionPI(uuid, actionInfo) {
     // Public function called on initial setup
     this.setUp = function () {
         actionSetUp.call(this);
-        logMessage("Injecting toggle light parameters");
+        logMessage("Injecting parameters");
         const wrapper = document.getElementById("wrapper");
         wrapper.innerHTML += `
             <div class="sdpi-item">

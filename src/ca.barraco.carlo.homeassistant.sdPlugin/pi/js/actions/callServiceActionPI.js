@@ -1,4 +1,3 @@
-// Prototype which represents a call service action property inspector
 function CallServiceActionPI(uuid, actionInfo) {
     var instance = this;
 
@@ -13,7 +12,7 @@ function CallServiceActionPI(uuid, actionInfo) {
     // Public function called on initial setup
     this.setUp = function () {
         actionSetUp.call(this);
-        logMessage("Injecting call service parameters");
+        logMessage("Injecting parameters");
         const wrapper = document.getElementById("wrapper");
         wrapper.innerHTML += `
             <div class="sdpi-item">

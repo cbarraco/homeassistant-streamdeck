@@ -45,6 +45,8 @@ function connectElgatoStreamDeckSocket(inPort, inUUID, inRegisterEvent, inInfo, 
         actionPI = new ToggleLightActionPI(inUUID, actionInfo);
     } else if (action == ActionType.SET_LIGHT_COLOR){
         actionPI = new SetLightColorActionPI(inUUID, actionInfo);
+    } else if (action == ActionType.COMMAND_MEDIA_PLAYER){
+        actionPI = new CommandMediaPlayerActionPI(inUUID, actionInfo);
     }
     actionPI.setUp();
 
