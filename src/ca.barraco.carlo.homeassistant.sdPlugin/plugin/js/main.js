@@ -279,15 +279,21 @@ function connectElgatoStreamDeckSocket(inPort, inPluginUUID, inRegisterEvent, in
         logMessage(results);
         var state = actions[context].state;
         var dataUrl = `data:${results.content_type};base64,${results.content}`;
-        var img = new Image();
-        img.onload = function () {
-            mainCanvasContext.drawImage(img, 0, 0, img.width, img.height, 0, 0, mainCanvas.width, mainCanvas.height);
-            mainCanvasContext.font = "10px Arial";
-            mainCanvasContext.fillStyle = "#ff0000";
-            mainCanvasContext.fillText(state, mainCanvas.width, mainCanvas.height);
-            setImage(context, mainCanvas.toDataURL());
+        var thumbnail = new Image();
+        thumbnail.onload = function () {
+            mainCanvasContext.drawImage(thumbnail, 0, 0, thumbnail.width, thumbnail.height, 0, 0, mainCanvas.width, mainCanvas.height);
+            var stateIcon = new Image();
+            if (state === "playing") {
+                stateIcon.src = "images/actions/pause.png"
+            } else {
+                stateIcon.src = "images/actions/play.png"
+            }
+            stateIcon.onload = function(){
+                mainCanvasContext.drawImage(stateIcon, (mainCanvas.width / 2) - (stateIcon.width / 2), (mainCanvas.height / 2) - (stateIcon.height / 2));
+                setImage(context, mainCanvas.toDataURL());
+            }
         };
-        img.src = dataUrl;
+        thumbnail.src = dataUrl;
     }
 
     function handleInvalidAccessToken(data) {
