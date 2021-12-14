@@ -9,6 +9,9 @@ function ToggleSwitchActionPI(uuid, actionInfo) {
     ActionPI.call(this, uuid, actionInfo);
 
     var actionSetUp = this.setUp;
+
+    var actionUpdate = this.update;
+
     // Public function called on initial setup
     this.setUp = function () {
         actionSetUp.call(this);
@@ -31,6 +34,7 @@ function ToggleSwitchActionPI(uuid, actionInfo) {
     };
 
     this.update = function(homeAssistantCache){
+        actionUpdate.call(this, homeAssistantCache);
         var entityIdSelector = document.getElementById("entityId");
         ActionPI.populateEntityOptions(entityIdSelector, "switch", homeAssistantCache);
         if (settings.entityId != undefined) {

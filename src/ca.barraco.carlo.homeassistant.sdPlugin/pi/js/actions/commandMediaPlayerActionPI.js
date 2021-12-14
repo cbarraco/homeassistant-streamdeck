@@ -9,6 +9,9 @@ function CommandMediaPlayerActionPI(uuid, actionInfo) {
     ActionPI.call(this, uuid, actionInfo);
 
     var actionSetUp = this.setUp;
+
+    var actionUpdate = this.update;
+
     // Public function called on initial setup
     this.setUp = function () {
         actionSetUp.call(this);
@@ -31,6 +34,7 @@ function CommandMediaPlayerActionPI(uuid, actionInfo) {
     };
 
     this.update = function(homeAssistantCache){
+        actionUpdate.call(this, homeAssistantCache);
         var entityIdSelector = document.getElementById("entityId");
         ActionPI.populateEntityOptions(entityIdSelector, "media_player", homeAssistantCache);
         if (settings.entityId != undefined) {

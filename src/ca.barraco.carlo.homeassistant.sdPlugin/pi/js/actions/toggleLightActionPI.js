@@ -9,6 +9,8 @@ function ToggleLightActionPI(uuid, actionInfo) {
     ActionPI.call(this, uuid, actionInfo);
 
     var actionSetUp = this.setUp;
+
+    var actionUpdate = this.update;
     
     // Public function called on initial setup
     this.setUp = function () {
@@ -32,6 +34,7 @@ function ToggleLightActionPI(uuid, actionInfo) {
     };
 
     this.update = function(homeAssistantCache){
+        actionUpdate.call(this, homeAssistantCache);
         var entityIdSelector = document.getElementById("entityId");
         ActionPI.populateEntityOptions(entityIdSelector, "light", homeAssistantCache);
         if (settings.entityId != undefined) {

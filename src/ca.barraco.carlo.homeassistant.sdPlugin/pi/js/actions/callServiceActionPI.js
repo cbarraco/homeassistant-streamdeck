@@ -9,6 +9,9 @@ function CallServiceActionPI(uuid, actionInfo) {
     ActionPI.call(this, uuid, actionInfo);
 
     var actionSetUp = this.setUp;
+
+    var actionUpdate = this.update;
+
     // Public function called on initial setup
     this.setUp = function () {
         actionSetUp.call(this);
@@ -47,6 +50,8 @@ function CallServiceActionPI(uuid, actionInfo) {
     };
 
     this.update = function(homeAssistantCache){
+        actionUpdate.call(this, homeAssistantCache);
+
         function populateServiceOptions(serviceIdElement, type) {
             logMessage("Populating services parameter options");
             logMessage(homeAssistantCache.services);

@@ -156,7 +156,11 @@ function connectElgatoStreamDeckSocket(inPort, inPluginUUID, inRegisterEvent, in
                         } else if (data.id == lastMessageId.fetchServices) {
                             updateServicesCache(results, context, action);
                         } else if (data.id == lastMessageId.fetchMediaPlayerThumbnail) {
-                            updateMediaPlayerThumbnail(results, context);
+                            for (context in actions) {
+                                if (actions[context] instanceof CommandMediaPlayerAction) {
+                                    updateMediaPlayerThumbnail(results, context);
+                                }
+                            }
                         }
                     }
                 } else {
@@ -281,6 +285,8 @@ function connectElgatoStreamDeckSocket(inPort, inPluginUUID, inRegisterEvent, in
         var dataUrl = `data:${results.content_type};base64,${results.content}`;
         var thumbnail = new Image();
         thumbnail.onload = function () {
+            mainCanvasContext.fillStyle = "#000000";
+            mainCanvasContext.fillRect(0, 0, mainCanvas.width, mainCanvas.height);
             mainCanvasContext.drawImage(thumbnail, 0, 0, thumbnail.width, thumbnail.height, 0, 0, mainCanvas.width, mainCanvas.height);
             var stateIcon = new Image();
             if (state === "playing") {

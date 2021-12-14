@@ -10,6 +10,8 @@ function SetLightColorActionPI(uuid, actionInfo) {
 
     var actionSetUp = this.setUp;
 
+    var actionUpdate = this.update;
+
     function showAppropriateColorChooser() {
         function showRgbChooser(lightWrapper) {
             logMessage("Showing RGB chooser");
@@ -118,6 +120,7 @@ function SetLightColorActionPI(uuid, actionInfo) {
     };
 
     this.update = function (homeAssistantCache) {
+        actionUpdate.call(this, homeAssistantCache);
         var entityIdSelector = document.getElementById("entityId");
         ActionPI.populateEntityOptions(entityIdSelector, "light", homeAssistantCache);
         if (settings.entityId != undefined) {
