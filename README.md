@@ -15,3 +15,7 @@ Home Assistant integration with the Elgato Stream Deck
 - Action that can call a service
 
 See the Projects tab for upcoming features
+
+## Building
+
+To build, cd to the `src/ca.barraco.carlo.homeassistant.sdPlugin` directory and run `npm run export`. The streamDeckPlugin file will be generated under `build/`
