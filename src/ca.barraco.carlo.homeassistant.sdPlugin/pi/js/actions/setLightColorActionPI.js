@@ -109,6 +109,17 @@ function SetLightColorActionPI(uuid, actionInfo) {
             addParametersBasedOnFeatures(lightState);
         });
 
+        wrapper.innerHTML += `
+            <div class="sdpi-item">
+                <button class="sdpi-item-value" id="refreshCache">Refresh</button>
+            </div>`;
+        const refreshCache = document.getElementById("refreshCache");
+        refreshCache.addEventListener("click", function () {
+            sendToPlugin(action, inUUID, {
+                command: PluginCommands.REQUEST_CACHE_REFRESH,
+            });
+        });
+
         var colorTypeSelector = document.getElementById("colorType");
         colorTypeSelector.addEventListener("change", function (inEvent) {
             var value = inEvent.target.value;

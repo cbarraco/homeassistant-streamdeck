@@ -66,13 +66,10 @@ function connectElgatoStreamDeckSocket(inPort, inPluginUUID, inRegisterEvent, in
     };
 
     function handlePropertyInspectorDidAppear(inData) {
+        logStreamDeckEvent("Handling propertyInspectorDidAppear event");
         // make sure the parameter dropdowns are up to date
         if (homeAssistantConnectionState == ConnectionState.CONNECTED) {
-            fetchStates();
-            fetchServices();
-            for (context in actions) {
-                sendCacheUpdateToPropertyInspector(inData.action, context);
-            }
+            sendCacheToPropertyInspector(inData.action, inData.context);
         }
     }
 
@@ -82,8 +79,11 @@ function connectElgatoStreamDeckSocket(inPort, inPluginUUID, inRegisterEvent, in
         if (command == PluginCommands.REQUEST_RECONNECT) {
             clearTimeout(reconnectTimeout);
             requestGlobalSettings(inPluginUUID);
-        } else if (command == PluginCommands.REQUEST_CACHE_UPDATE) {
-            sendCacheUpdateToPropertyInspector(inData.action, inData.context);
+        } else if (command == PluginCommands.REQUEST_CACHE) {
+            sendCacheToPropertyInspector(inData.action, inData.context);
+        } else if (command == PluginCommands.REQUEST_CACHE_REFRESH) {
+            fetchStates();
+            fetchServices();
         }
     }
 
@@ -252,7 +252,7 @@ function connectElgatoStreamDeckSocket(inPort, inPluginUUID, inRegisterEvent, in
         actions[inData.context].onKeyDown(inData);
     }
 
-    function sendCacheUpdateToPropertyInspector(action, context) {
+    function sendCacheToPropertyInspector(action, context) {
         logMessage(`Sending cache update to ${context}`);
         sendToPropertyInspector(action, context, {
             command: PropertyInspectorCommands.UPDATE_CACHE,
@@ -277,7 +277,7 @@ function connectElgatoStreamDeckSocket(inPort, inPluginUUID, inRegisterEvent, in
         logMessage('Done updating entities cache');
 
         for (context in actions) {
-            sendCacheUpdateToPropertyInspector(actions[context], context);
+            sendCacheToPropertyInspector(actions[context], context);
         }
     }
 
@@ -295,7 +295,7 @@ function connectElgatoStreamDeckSocket(inPort, inPluginUUID, inRegisterEvent, in
             }
         }
         for (context in actions) {
-            sendCacheUpdateToPropertyInspector(actions[context], context);
+            sendCacheToPropertyInspector(actions[context], context);
         }
     }
 

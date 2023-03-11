@@ -36,6 +36,17 @@ function CallServiceActionPI(uuid, actionInfo) {
             saveSettings(action, uuid, settings);
         });
 
+        wrapper.innerHTML += `
+            <div class="sdpi-item">
+                <button class="sdpi-item-value" id="refreshCache">Refresh</button>
+            </div>`;
+        const refreshCache = document.getElementById("refreshCache");
+        refreshCache.addEventListener("click", function () {
+            sendToPlugin(action, inUUID, {
+                command: PluginCommands.REQUEST_CACHE_REFRESH,
+            });
+        });
+
         var payloadElement = document.getElementById("payload");
         if (settings.payload != undefined) {
             payloadElement.value = settings.payload;

@@ -16,7 +16,8 @@ const ConnectionState = {
 };
 
 const PluginCommands = {
-    REQUEST_CACHE_UPDATE: "requestCacheUpdate",
+    REQUEST_CACHE: "requestCache",
+    REQUEST_CACHE_REFRESH: "requestCacheRefresh",
     REQUEST_RECONNECT: "requestReconnect",
 };
 

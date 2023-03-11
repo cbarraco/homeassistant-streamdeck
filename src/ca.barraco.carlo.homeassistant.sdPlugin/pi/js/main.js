@@ -31,7 +31,7 @@ function connectElgatoStreamDeckSocket(inPort, inUUID, inRegisterEvent, inInfo, 
         registerPluginOrPI(inRegisterEvent, inUUID);
         requestGlobalSettings(inUUID);
         sendToPlugin(action, inUUID, {
-            command: PluginCommands.REQUEST_CACHE_UPDATE,
+            command: PluginCommands.REQUEST_CACHE,
         });
     };
 
@@ -84,7 +84,7 @@ function connectElgatoStreamDeckSocket(inPort, inUUID, inRegisterEvent, inInfo, 
             logStreamDeckEvent(streamDeckMessage);
             const command = payload["command"];
             if (command == PropertyInspectorCommands.UPDATE_CACHE) {
-                logMessage("Updating based on update cache command");
+                logMessage("Performing cache update");
                 homeAssistantCache = payload["data"];
                 actionPI.update(homeAssistantCache);
             }

@@ -22,7 +22,6 @@ function ToggleLightActionPI(uuid, actionInfo) {
                 <select class="sdpi-item-value select" id="entityId">
                 </select>
             </div>`;
-
         var entityIdElement = document.getElementById("entityId");
         entityIdElement.value = settings.entityId;
         entityIdElement.addEventListener("input", function (inEvent) {
@@ -30,16 +29,28 @@ function ToggleLightActionPI(uuid, actionInfo) {
             settings.entityId = value;
             saveSettings(action, uuid, settings);
         });
+
+
+        wrapper.innerHTML += `
+            <div class="sdpi-item">
+                <button class="sdpi-item-value" id="refreshCache">Refresh</button>
+            </div>`;
+        const refreshCache = document.getElementById("refreshCache");
+        refreshCache.addEventListener("click", function () {
+            sendToPlugin(action, inUUID, {
+                command: PluginCommands.REQUEST_CACHE_REFRESH,
+            });
+        });
     };
 
     this.update = function(homeAssistantCache){
-        var entityIdSelector = document.getElementById("entityId");
-        ActionPI.populateEntityOptionsFromDomain(entityIdSelector, "light", homeAssistantCache);
+        var entityIdElement = document.getElementById("entityId");
+        ActionPI.populateEntityOptionsFromDomain(entityIdElement, "light", homeAssistantCache);
         if (settings.entityId != undefined) {
-            entityIdSelector.value = settings.entityId;
+            entityIdElement.value = settings.entityId;
         } else {
             // save whatever is first
-            settings.entityId = entityIdSelector.value;
+            settings.entityId = entityIdElement.value;
             saveSettings(action, uuid, settings);
         }
     };
