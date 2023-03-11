@@ -10,8 +10,7 @@ function ToggleLightAction(inContext, inSettings) {
     // Public function called on keyDown event
     this.onKeyDown = function (inData) {
         actionOnKeyUp.call(this, inData);
-        const entityId = inData.settings.entityId;
-        sendCommand(entityId);
+        sendCommand(inData.payload.settings.entityId);
     };
 
     function sendCommand(entityId) {

@@ -38,5 +38,3 @@ const LightSupportedFeaturesBitmask = {
     SUPPORT_TRANSITION: 32,
     SUPPORT_WHITE_VALUE: 128,
 };
-
-

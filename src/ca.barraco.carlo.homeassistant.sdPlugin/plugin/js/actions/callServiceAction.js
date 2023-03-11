@@ -10,8 +10,8 @@ function CallServiceAction(inContext, inSettings) {
     // Public function called on keyDown event
     this.onKeyDown = function (inData) {
         actionOnKeyUp.call(this, inData);
-        const serviceId = inData.settings.serviceId;
-        var payload = inData.settings.payload;
+        const serviceId = inData.payload.settings.serviceId;
+        var payload = inData.payload.settings.payload;
         if (payload == "" || payload == undefined){
             payload = "{}";
         }

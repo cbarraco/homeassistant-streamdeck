@@ -26,7 +26,7 @@ function SetLightColorAction(inContext, inSettings) {
     var actionOnKeyUp = this.onKeyDown;
     this.onKeyDown = function (inData) {
         actionOnKeyUp.call(this, inData);
-        sendTurnOnCommand(inData.settings);
+        sendTurnOnCommand(inData.payload.settings);
     };
 
     function sendTurnOnCommand(settings) {
