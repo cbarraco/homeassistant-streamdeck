@@ -33,7 +33,7 @@ function ToggleSwitchActionPI(uuid, actionInfo) {
 
     this.update = function(homeAssistantCache){
         var entityIdSelector = document.getElementById("entityId");
-        ActionPI.populateEntityOptions(entityIdSelector, "switch", homeAssistantCache);
+        ActionPI.populateEntityOptionsFromDomain(entityIdSelector, "switch", homeAssistantCache);
         if (settings.entityId != undefined) {
             entityIdSelector.value = settings.entityId;
         } else {

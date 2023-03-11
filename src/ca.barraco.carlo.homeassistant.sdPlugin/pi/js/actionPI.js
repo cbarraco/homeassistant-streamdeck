@@ -8,41 +8,28 @@ function ActionPI(inUUID, inActionInfo) {
     // Public function called when the cache is updated
     this.update = function (homeAssistantCache) {};
 
-    // Static function to add all entities of a certain type to an option element
-    ActionPI.populateEntityOptions = function(element, type, homeAssistantCache) {
-        logMessage("Populating entities parameter options");
-    
-        if (homeAssistantCache.entities === undefined){
+    // Static function to add all entities of a certain domain to an option element
+    ActionPI.populateEntityOptionsFromDomain = function (element, domain, homeAssistantCache) {
+        logMessage("Populating entity options");
+        if (homeAssistantCache.entities === undefined) {
             logMessage("Cache is not populated yet");
             return;
         }
-    
-        logMessage(homeAssistantCache.entities);
-    
+
+        // create option for each entity and add to the domain group
+        const entityIds = homeAssistantCache.find((e) => e.entity_id.startsWith(domain + "."));
+        const optionsElement = document.createElement("optgroup");
+        optionsElement.label = domain;
+        const optionValues = entityIds
+        for (var j = 0; j < optionValues.length; j++) {
+            const optionValue = optionValues[j].entity_id;
+            const optionElement = document.createElement("option");
+            optionElement.value = optionValue;
+            optionElement.innerHTML = optionValue;
+            optionsElement.appendChild(optionElement);
+        }
+
         element.innerHTML = "";
-    
-        var keys = [];
-        if (type != undefined) {
-            // populate with specific key
-            keys = [type];
-        } else {
-            // populate with all keys
-            keys = Object.getOwnPropertyNames(homeAssistantCache.entities);
-        }
-    
-        for (var i = 0; i < keys.length; i++) {
-            const typeKey = keys[i];
-            const optGroup = document.createElement("optgroup");
-            optGroup.label = typeKey;
-            const optionValues = homeAssistantCache.entities[typeKey];
-            for (var j = 0; j < optionValues.length; j++) {
-                const optionValue = optionValues[j].entity_id;
-                const option = document.createElement("option");
-                option.value = optionValue;
-                option.innerHTML = optionValue;
-                optGroup.appendChild(option);
-            }
-            element.appendChild(optGroup);
-        }
-    }
+        element.appendChild(optionsElement);
+    };
 }

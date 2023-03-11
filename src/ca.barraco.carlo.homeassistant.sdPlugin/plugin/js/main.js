@@ -259,11 +259,10 @@ function connectElgatoStreamDeckSocket(inPort, inPluginUUID, inRegisterEvent, in
         for (var i = 0; i < results.length; i++) {
             const entityState = results[i];
             const entityId = entityState.entity_id;
-            const domain = entityId.split(".")[0];
-            if (homeAssistantCache.entities[domain] == undefined) {
-                homeAssistantCache.entities[domain] = [];
+            if (homeAssistantCache.entities[entityId] == undefined) {
+                homeAssistantCache.entities[entityId] = [];
             }
-            homeAssistantCache.entities[domain].push(entityState);
+            homeAssistantCache.entities[entityId].push(entityState);
             handleStateChange(entityState.entity_id, entityState);
         }
         logMessage('Done updating entities cache');

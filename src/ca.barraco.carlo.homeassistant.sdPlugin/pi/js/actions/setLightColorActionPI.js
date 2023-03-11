@@ -35,7 +35,7 @@ function SetLightColorActionPI(uuid, actionInfo) {
 
         function showTemperatureChooser(lightWrapper) {
             logMessage("Showing temperature chooser");
-            const entity = homeAssistantCache.entities["light"].find((e) => e.entity_id == settings.entityId);
+            const entity = homeAssistantCache.entities[settings.entityId];
             const minMired = entity.attributes.min_mireds;
             const maxMired = entity.attributes.max_mireds;
 
@@ -105,8 +105,8 @@ function SetLightColorActionPI(uuid, actionInfo) {
             var value = inEvent.target.value;
             settings.entityId = value;
             saveSettings(action, uuid, settings);
-            var lightsFromCache = homeAssistantCache.entities["light"];
-            addParametersBasedOnFeatures(lightsFromCache);
+            var lightState = homeAssistantCache.entities[settings.entityId];
+            addParametersBasedOnFeatures(lightState);
         });
 
         var colorTypeSelector = document.getElementById("colorType");
@@ -120,28 +120,23 @@ function SetLightColorActionPI(uuid, actionInfo) {
 
     this.update = function (homeAssistantCache) {
         var entityIdSelector = document.getElementById("entityId");
-        ActionPI.populateEntityOptions(entityIdSelector, "light", homeAssistantCache);
+        ActionPI.populateEntityOptionsFromDomain(entityIdSelector, "light", homeAssistantCache);
         if (settings.entityId != undefined) {
+            // overwrite with the saved value
             entityIdSelector.value = settings.entityId;
         } else {
-            // save whatever is first
+            // save entity id
             settings.entityId = entityIdSelector.value;
             saveSettings(action, uuid, settings);
         }
 
-        var lightsFromCache = homeAssistantCache.entities["light"];
-        if (lightsFromCache === undefined) {
-            logMessage("There aren't any lights in the cache yet");
-            return;
-        }
-
-        addParametersBasedOnFeatures(lightsFromCache);
+        entityState = homeAssistantCache[settings.entityId];
+        addParametersBasedOnFeatures(entityState);
     };
 
-    function addParametersBasedOnFeatures(lightsFromCache) {
+    function addParametersBasedOnFeatures(lightState) {
         // figure out what features this light supports
-        const lightEntity = lightsFromCache.find((e) => e.entity_id == settings.entityId);
-        const supportedFeatures = lightEntity.attributes.supported_features;
+        const supportedFeatures = lightState.attributes.supported_features;
         var lightSupportsBrightness = supportedFeatures & LightSupportedFeaturesBitmask.SUPPORT_BRIGHTNESS;
         var lightSupportsRgb = supportedFeatures & LightSupportedFeaturesBitmask.SUPPORT_COLOR;
         var lightSupportsTemperature = supportedFeatures & LightSupportedFeaturesBitmask.SUPPORT_COLOR_TEMP;

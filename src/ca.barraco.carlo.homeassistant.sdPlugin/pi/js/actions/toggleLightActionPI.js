@@ -34,7 +34,7 @@ function ToggleLightActionPI(uuid, actionInfo) {
 
     this.update = function(homeAssistantCache){
         var entityIdSelector = document.getElementById("entityId");
-        ActionPI.populateEntityOptions(entityIdSelector, "light", homeAssistantCache);
+        ActionPI.populateEntityOptionsFromDomain(entityIdSelector, "light", homeAssistantCache);
         if (settings.entityId != undefined) {
             entityIdSelector.value = settings.entityId;
         } else {
