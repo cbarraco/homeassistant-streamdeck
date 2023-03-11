@@ -17,8 +17,7 @@ var homeAssistantCache = {
 
 var lastMessageId = {
     fetchStates: -1,
-    fetchServices: -1,
-    subscribeToTrigger: -1,
+    fetchServices: -1
 };
 
 var subscriptions = {};
@@ -40,6 +39,7 @@ function connectElgatoStreamDeckSocket(inPort, inPluginUUID, inRegisterEvent, in
     streamDeckWebSocket = new WebSocket("ws://127.0.0.1:" + inPort);
 
     streamDeckWebSocket.onopen = function () {
+        logStreamDeckEvent("Connected to Stream Deck");
         registerPluginOrPI(inRegisterEvent, inPluginUUID);
         requestGlobalSettings(inPluginUUID);
     };
@@ -60,6 +60,8 @@ function connectElgatoStreamDeckSocket(inPort, inPluginUUID, inRegisterEvent, in
             handleSendToPlugin(inEvent, inData);
         } else if (inData.event == "propertyInspectorDidAppear") {
             handlePropertyInspectorDidAppear(inData);
+        } else {
+            logStreamDeckEvent("Received unhandled event: " + inData.event);
         }
     };
 
@@ -161,7 +163,7 @@ function connectElgatoStreamDeckSocket(inPort, inPluginUUID, inRegisterEvent, in
                 if (results == null) {
                     var entityId = findKeyByValue(subscriptions, homeAssistantEvent.id);
                     if (entityId == null) {
-                        logMessage("Results message that doesn't contain results");
+                        logHomeAssistantEvent("Results message that doesn't contain results");
                     } else {
                         logHomeAssistantEvent("Successfully subscribed to events from " + entityId);
                     }
@@ -187,8 +189,7 @@ function connectElgatoStreamDeckSocket(inPort, inPluginUUID, inRegisterEvent, in
         };
 
         homeAssistantWebsocket.onclose = function (e) {
-            logMessage("WebSocket closed:");
-            logHomeAssistantEvent(e);
+            logMessage(`WebSocket closed: ${e.code} ${e.reason}`);
 
             var tryAgain = false;
             if (homeAssistantConnectionState == ConnectionState.CONNECTED) {
@@ -346,11 +347,10 @@ function connectElgatoStreamDeckSocket(inPort, inPluginUUID, inRegisterEvent, in
             return;
         }
         else {
-            lastMessageId.subscribeToTrigger = ++homeAssistantMessageId;
-            subscriptions[entityId] = lastMessageId.subscribeToTrigger;
+            subscriptions[entityId] = ++homeAssistantMessageId;
         }
         const subscribeMessage = `{
-            "id": ${lastMessageId.subscribeToTrigger},
+            "id": ${subscriptions[entityId]},
             "type": "subscribe_trigger",
             "trigger": {
                 "platform": "${platform}",
