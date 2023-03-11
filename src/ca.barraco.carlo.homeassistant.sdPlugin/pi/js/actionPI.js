@@ -17,15 +17,13 @@ function ActionPI(inUUID, inActionInfo) {
         }
 
         // create option for each entity and add to the domain group
-        const entityIds = homeAssistantCache.find((e) => e.entity_id.startsWith(domain + "."));
+        const entityIds = Object.keys(homeAssistantCache.entities).filter((e) => e.startsWith(domain + "."));
         const optionsElement = document.createElement("optgroup");
         optionsElement.label = domain;
-        const optionValues = entityIds
-        for (var j = 0; j < optionValues.length; j++) {
-            const optionValue = optionValues[j].entity_id;
+        for (var j = 0; j < entityIds.length; j++) {
             const optionElement = document.createElement("option");
-            optionElement.value = optionValue;
-            optionElement.innerHTML = optionValue;
+            optionElement.value = entityIds[j];
+            optionElement.innerHTML = entityIds[j];
             optionsElement.appendChild(optionElement);
         }
 

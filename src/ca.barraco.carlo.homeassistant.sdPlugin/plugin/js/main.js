@@ -228,12 +228,21 @@ function connectElgatoStreamDeckSocket(inPort, inPluginUUID, inRegisterEvent, in
             // Add current instance
             if (inData.action == ActionType.TOGGLE_SWITCH) {
                 actions[inData.context] = new ToggleSwitchAction(inData.context, inData.payload.settings);
+                if (homeAssistantCache[inData.payload.settings.entityId] != null) {
+                    handleStateChange(inData.payload.settings.entityId, homeAssistantCache[inData.payload.settings.entityId]);
+                }
             } else if (inData.action == ActionType.CALL_SERVICE) {
                 actions[inData.context] = new CallServiceAction(inData.context, inData.payload.settings);
             } else if (inData.action == ActionType.TOGGLE_LIGHT) {
                 actions[inData.context] = new ToggleLightAction(inData.context, inData.payload.settings);
+                if (homeAssistantCache[inData.payload.settings.entityId] != null) {
+                    handleStateChange(inData.payload.settings.entityId, homeAssistantCache[inData.payload.settings.entityId]);
+                }
             } else if (inData.action == ActionType.SET_LIGHT_COLOR) {
                 actions[inData.context] = new SetLightColorAction(inData.context, inData.payload.settings);
+                if (homeAssistantCache[inData.payload.settings.entityId] != null) {
+                    handleStateChange(inData.payload.settings.entityId, homeAssistantCache[inData.payload.settings.entityId]);
+                }
             }
         }
     }
