@@ -18,9 +18,9 @@ See the Projects tab for upcoming features
 
 ## Building
 
-1. `cd src/ca.barraco.carlo.homeassistant.sdPlugin`
-2. Install dependencies once: `npm install`
-3. (Optional) Compile the TypeScript sources for quick iteration: `npm run build`
-4. Package the plugin: `npm run export` (this command always runs the TypeScript build first)
+1. `cd src`
+2. Install dependencies: `npm install`
+3. Build the plugin and property inspector bundles: `npm run build`
+4. For rapid iteration on the plugin runtime, use `npm run watch`
 
-All JavaScript inside `lib/`, `plugin/js/`, and `pi/js/` is generated from TypeScript and ignored by git. Make sure you run `npm run build` (or `npm run export`) before testing or distributing changes so the runtime artifacts are up to date. The resulting `.streamDeckPlugin` bundle will be generated under the `build/` directory.
+The Rollup build emits the plugin runtime at `ca.barraco.carlo.homeassistant.sdPlugin/bin/plugin.js`. Property inspector bundles are generated under `ca.barraco.carlo.homeassistant.sdPlugin/ui/js/`. Run `streamdeck plugin pack` (or `npm run build && streamdeck plugin pack`) to produce a `.streamDeckPlugin` when you are ready to test or distribute.
