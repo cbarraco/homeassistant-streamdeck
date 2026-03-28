@@ -1,0 +1,20 @@
+{
+    "extends": "@tsconfig/node20/tsconfig.json",
+    "compilerOptions": {
+        "customConditions": [
+            "node"
+        ],
+        "module": "ES2022",
+        "moduleResolution": "Bundler",
+        "noImplicitOverride": true,
+        "rootDir": "."
+    },
+    "include": [
+        "src/**/*.ts",
+        "shared/**/*.ts"
+    ],
+    "exclude": [
+        "node_modules",
+        "src/ui-src"
+    ]
+}

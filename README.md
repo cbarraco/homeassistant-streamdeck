@@ -18,4 +18,9 @@ See the Projects tab for upcoming features
 
 ## Building
 
-To build, cd to the `src/ca.barraco.carlo.homeassistant.sdPlugin` directory and run `npm run export`. The streamDeckPlugin file will be generated under `build/`
+1. `cd src`
+2. Install dependencies: `npm install`
+3. Build the plugin and property inspector bundles: `npm run build`
+4. For rapid iteration on the plugin runtime, use `npm run watch`
+
+The Rollup build emits the plugin runtime at `ca.barraco.carlo.homeassistant.sdPlugin/bin/plugin.js`. Property inspector bundles are generated under `ca.barraco.carlo.homeassistant.sdPlugin/ui/js/`. Run `streamdeck plugin pack` (or `npm run build && streamdeck plugin pack`) to produce a `.streamDeckPlugin` when you are ready to test or distribute.

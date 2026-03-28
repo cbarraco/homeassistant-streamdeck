@@ -1,65 +1,70 @@
 {
+  "UUID": "ca.barraco.carlo.homeassistant",
   "Actions": [
     {
-      "Icon": "plugin/images/actions/toggleSwitch",
+      "Icon": "imgs/actions/toggleSwitch/toggleSwitch",
       "Name": "Toggle a switch",
       "States": [
         {
-          "Image": "plugin/images/actions/toggleSwitch",
+          "Image": "imgs/actions/toggleSwitch/toggleSwitch",
           "Title": "Switch"
         }
       ],
       "Tooltip": "Toggles a switch entity in Home Assistant",
-      "UUID": "ca.barraco.carlo.homeassistant.action.toggleswitch"
+      "UUID": "ca.barraco.carlo.homeassistant.action.toggleswitch",
+      "PropertyInspectorPath": "ui/index.html"
     },
     {
-      "Icon": "plugin/images/actions/callService",
+      "Icon": "imgs/actions/callService/callService",
       "Name": "Call a service",
       "States": [
         {
-          "Image": "plugin/images/actions/callService",
+          "Image": "imgs/actions/callService/callService",
           "Title": "Service"
         }
       ],
       "Tooltip": "Calls a service in Home Assistant",
-      "UUID": "ca.barraco.carlo.homeassistant.action.callservice"
+      "UUID": "ca.barraco.carlo.homeassistant.action.callservice",
+      "PropertyInspectorPath": "ui/index.html"
     },
     {
-      "Icon": "plugin/images/actions/toggleLight",
+      "Icon": "imgs/actions/toggleLight/toggleLight",
       "Name": "Toggle a light",
       "States": [
         {
-          "Image": "plugin/images/actions/toggleLight",
+          "Image": "imgs/actions/toggleLight/toggleLight",
           "Title": "Light"
         }
       ],
       "Tooltip": "Toggles a light entity in Home Assistant",
-      "UUID": "ca.barraco.carlo.homeassistant.action.togglelight"
+      "UUID": "ca.barraco.carlo.homeassistant.action.togglelight",
+      "PropertyInspectorPath": "ui/index.html"
     },
     {
-      "Icon": "plugin/images/actions/setLightColor",
+      "Icon": "imgs/actions/setLightColor/setLightColor",
       "Name": "Set a light to a color",
       "States": [
         {
-          "Image": "plugin/images/actions/setLightColor",
+          "Image": "imgs/actions/setLightColor/setLightColor",
           "Title": "Light"
         }
       ],
       "Tooltip": "Sets a light entity to specific color in Home Assistant",
-      "UUID": "ca.barraco.carlo.homeassistant.action.setlightcolor"
+      "UUID": "ca.barraco.carlo.homeassistant.action.setlightcolor",
+      "PropertyInspectorPath": "ui/index.html"
     }
   ],
-  "SDKVersion": 2,
+  "SDKVersion": 3,
   "Author": "Carlo Barraco",
-  "CodePath": "plugin/index.html",
-  "PropertyInspectorPath": "pi/index.html",
+  "CodePath": "bin/plugin.js",
+  "PropertyInspectorPath": "ui/index.html",
   "Description": "Home Assistant integration with the Elgato Stream Deck",
   "Name": "Home Assistant Integration",
-  "Icon": "plugin/images/icons/pluginIcon",
+  "Icon": "imgs/plugin/pluginIcon",
   "URL": "https://github.com/cbarraco/homeassistant-streamdeck",
-  "Version": "1.0.0",
+  "Version": "1.0.0.0",
   "Category": "Home Assistant Integration",
-  "CategoryIcon": "plugin/images/icons/pluginIcon",
+  "CategoryIcon": "imgs/plugin/pluginIcon",
   "OS": [
     {
       "Platform": "mac",
@@ -71,6 +76,10 @@
     }
   ],
   "Software": {
-    "MinimumVersion": "4.9"
+    "MinimumVersion": "7.3"
+  },
+  "Nodejs": {
+    "Version": "20",
+    "Debug": "enabled"
   }
 }

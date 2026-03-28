@@ -1,2 +1,10 @@
 build
 data
+src/ca.barraco.carlo.homeassistant.sdPlugin/node_modules/
+src/ca.barraco.carlo.homeassistant.sdPlugin/lib/*.js
+src/ca.barraco.carlo.homeassistant.sdPlugin/lib/*.js.map
+src/ca.barraco.carlo.homeassistant.sdPlugin/plugin/js/**/*.js
+src/ca.barraco.carlo.homeassistant.sdPlugin/plugin/js/**/*.js.map
+src/ca.barraco.carlo.homeassistant.sdPlugin/pi/js/**/*.js
+src/ca.barraco.carlo.homeassistant.sdPlugin/pi/js/**/*.js.map
+src/ca.barraco.carlo.homeassistant.sdPlugin/dist/
