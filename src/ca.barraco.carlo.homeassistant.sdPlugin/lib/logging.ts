@@ -1,18 +1,18 @@
-const LOG_STYLES = {
+export const LOG_STYLES = {
     streamDeck: "color: white; background: green;",
     homeAssistant: "color: white; background: blue;",
     plugin: "color: white; background: magenta;",
 };
 
-function logStreamDeckEvent(jsn: unknown): void {
+export function logStreamDeckEvent(jsn: unknown): void {
     console.log("%c%s", LOG_STYLES.streamDeck, JSON.stringify(jsn));
 }
 
-function logHomeAssistantEvent(jsn: unknown): void {
+export function logHomeAssistantEvent(jsn: unknown): void {
     console.log("%c%s", LOG_STYLES.homeAssistant, JSON.stringify(jsn));
 }
 
-function logMessage(message: unknown): void {
+export function logMessage(message: unknown): void {
     console.log("%c%s", LOG_STYLES.plugin, JSON.stringify(message));
 }
 

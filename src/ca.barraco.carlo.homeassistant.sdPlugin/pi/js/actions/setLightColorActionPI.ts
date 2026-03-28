@@ -1,4 +1,10 @@
-class SetLightColorActionPI extends ActionPI {
+import { logMessage } from "../../../lib/logging.js";
+import { appStore, type HomeAssistantEntity, type HomeAssistantCache } from "../../../lib/globals.js";
+import { LightSupportedFeaturesBitmask } from "../../../lib/enums.js";
+import { saveSettings } from "../../../lib/utils.js";
+import { ActionPI, type PropertyInspectorActionInfo } from "../actionPI.js";
+
+export class SetLightColorActionPI extends ActionPI {
     constructor(uuid: string, actionInfo: PropertyInspectorActionInfo) {
         super(uuid, actionInfo);
     }
@@ -41,7 +47,7 @@ class SetLightColorActionPI extends ActionPI {
             const value = (event.target as HTMLSelectElement).value;
             this.settings.entityId = value;
             saveSettings(this.action, this.uuid, this.settings);
-            const lights = homeAssistantCache.entities["light"];
+            const lights = appStore.getState().homeAssistantCache.entities["light"];
             if (lights) {
                 this.addParametersBasedOnFeatures(lights);
             }
@@ -51,7 +57,7 @@ class SetLightColorActionPI extends ActionPI {
             const value = (event.target as HTMLSelectElement).value;
             this.settings.colorType = value;
             saveSettings(this.action, this.uuid, this.settings);
-            const lights = homeAssistantCache.entities["light"];
+            const lights = appStore.getState().homeAssistantCache.entities["light"];
             if (lights) {
                 this.showAppropriateColorChooser(lights);
             }

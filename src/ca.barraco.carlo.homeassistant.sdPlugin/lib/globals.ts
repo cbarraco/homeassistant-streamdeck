@@ -1,41 +1,21 @@
-type Dictionary<T> = Record<string, T>;
+import type { PropertyInspectorCommand } from "./enums.js";
+import type { GlobalSettings } from "./state/store.js";
+export {
+    appStore,
+    type AppState,
+    type Dictionary,
+    type GlobalSettings,
+    type HomeAssistantCache,
+    type HomeAssistantEntity,
+    type HomeAssistantEntityAttributes,
+} from "./state/store.js";
 
-interface HomeAssistantEntityAttributes {
-    color_mode?: string;
-    rgb_color?: [number, number, number];
-    color_temp?: number;
-    min_mireds?: number;
-    max_mireds?: number;
-    supported_features?: number;
-    [key: string]: unknown;
-}
-
-interface HomeAssistantEntity {
-    entity_id: string;
-    state: string;
-    attributes: HomeAssistantEntityAttributes;
-}
-
-interface HomeAssistantCache {
-    entities: Dictionary<HomeAssistantEntity[]>;
-    services: Dictionary<string[]>;
-}
-
-interface GlobalSettings {
-    homeAssistantAddress?: string;
-    accessToken?: string;
-    encrypted?: boolean;
-    [key: string]: unknown;
-}
-
-let streamDeckWebSocket: WebSocket | null = null;
-let globalSettings: GlobalSettings = {};
-let homeAssistantCache: HomeAssistantCache = { entities: {}, services: {} };
-
-interface Window {
-    sendCredentialsToPropertyInspector?: (message: {
-        command: PropertyInspectorCommand;
-        data: GlobalSettings;
-    }) => void;
-    connectElgatoStreamDeckSocket?: (...args: any[]) => void; // eslint-disable-line @typescript-eslint/no-explicit-any
+declare global {
+    interface Window {
+        connectElgatoStreamDeckSocket?: (...args: unknown[]) => void;
+        sendCredentialsToPropertyInspector?: (message: {
+            command: PropertyInspectorCommand;
+            data: GlobalSettings;
+        }) => void;
+    }
 }

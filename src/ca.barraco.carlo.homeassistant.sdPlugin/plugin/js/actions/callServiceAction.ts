@@ -1,4 +1,9 @@
-class CallServiceAction extends Action {
+import { logMessage } from "../../../lib/logging.js";
+import type { ActionSettings, KeyDownData } from "../action.js";
+import { Action } from "../action.js";
+import { homeAssistantService } from "../../../lib/services/homeAssistantService.js";
+
+export class CallServiceAction extends Action {
     constructor(context: string, settings: ActionSettings = {}) {
         super(context, settings);
     }
@@ -14,22 +19,21 @@ class CallServiceAction extends Action {
         this.sendServiceCommand(serviceId, payload);
     }
 
-    private normalizePayload(rawPayload?: string): string {
+    private normalizePayload(rawPayload?: string): Record<string, unknown> {
         if (!rawPayload || rawPayload.trim() === "") {
-            return "{}";
+            return {};
         }
 
         try {
-            JSON.parse(rawPayload);
-            return rawPayload;
+            return JSON.parse(rawPayload) as Record<string, unknown>;
         } catch (error) {
             logMessage("Payload is not valid JSON. Falling back to empty object.");
-            return "{}";
+            return {};
         }
     }
 
-    private sendServiceCommand(serviceId: string, payload: string): void {
-        if (!homeAssistantWebsocket) {
+    private sendServiceCommand(serviceId: string, payload: Record<string, unknown>): void {
+        if (!homeAssistantService.isConnected()) {
             logMessage("Home Assistant websocket is not connected.");
             return;
         }
@@ -41,13 +45,13 @@ class CallServiceAction extends Action {
         }
 
         logMessage(`Calling ${domain}.${service}`);
-        const callServiceMessage = `{
-          "id": ${++homeAssistantMessageId},
-          "type": "call_service",
-          "domain": "${domain}",
-          "service": "${service}",
-          "service_data": ${payload}
-        }`;
-        homeAssistantWebsocket.send(callServiceMessage);
+        const callServiceMessage = {
+            id: homeAssistantService.getNextMessageId(),
+            type: "call_service",
+            domain,
+            service,
+            service_data: payload,
+        };
+        homeAssistantService.sendMessage(callServiceMessage);
     }
 }

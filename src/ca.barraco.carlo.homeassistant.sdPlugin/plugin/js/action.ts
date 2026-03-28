@@ -1,4 +1,6 @@
-interface ActionSettings extends Record<string, unknown> {
+import { logMessage } from "../../lib/logging.js";
+
+export interface ActionSettings extends Record<string, unknown> {
     entityId?: string;
     serviceId?: string;
     payload?: string;
@@ -8,7 +10,7 @@ interface ActionSettings extends Record<string, unknown> {
     temperature?: number;
 }
 
-interface KeyDownData {
+export interface KeyDownData {
     context: string;
     settings: ActionSettings;
     coordinates?: { column: number; row: number };
@@ -16,7 +18,7 @@ interface KeyDownData {
     state?: number;
 }
 
-class Action {
+export class Action {
     constructor(protected context: string, protected settings: ActionSettings = {}) {}
 
     getSettings(): ActionSettings {
@@ -29,6 +31,7 @@ class Action {
         this.settings = updatedSettings;
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     onKeyDown(_data: KeyDownData): void {
         // default no-op
     }

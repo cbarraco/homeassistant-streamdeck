@@ -1,4 +1,9 @@
-class ToggleSwitchAction extends Action {
+import { logMessage } from "../../../lib/logging.js";
+import type { ActionSettings, KeyDownData } from "../action.js";
+import { Action } from "../action.js";
+import { homeAssistantService } from "../../../lib/services/homeAssistantService.js";
+
+export class ToggleSwitchAction extends Action {
     constructor(context: string, settings: ActionSettings = {}) {
         super(context, settings);
     }
@@ -14,21 +19,21 @@ class ToggleSwitchAction extends Action {
     }
 
     private sendCommand(entityId: string): void {
-        if (!homeAssistantWebsocket) {
+        if (!homeAssistantService.isConnected()) {
             logMessage("Home Assistant websocket is not connected.");
             return;
         }
 
         logMessage(`Sending toggle command to HA for entity ${entityId}`);
-        const message = `{
-          "id": ${++homeAssistantMessageId},
-          "type": "call_service",
-          "domain": "switch",
-          "service": "toggle",
-          "service_data": {
-            "entity_id": "${entityId}"
-          }
-        }`;
-        homeAssistantWebsocket.send(message);
+        const message = {
+            id: homeAssistantService.getNextMessageId(),
+            type: "call_service",
+            domain: "switch",
+            service: "toggle",
+            service_data: {
+                entity_id: entityId,
+            },
+        };
+        homeAssistantService.sendMessage(message);
     }
 }

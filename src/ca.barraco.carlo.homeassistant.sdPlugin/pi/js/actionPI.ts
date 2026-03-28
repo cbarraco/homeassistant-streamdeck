@@ -1,4 +1,9 @@
-interface PropertyInspectorActionInfo {
+import { logMessage } from "../../lib/logging.js";
+import type { ActionTypeValue } from "../../lib/enums.js";
+import type { HomeAssistantCache } from "../../lib/globals.js";
+import type { ActionSettings } from "../../plugin/js/action.js";
+
+export interface PropertyInspectorActionInfo {
     action: ActionTypeValue;
     context: string;
     payload: {
@@ -6,7 +11,7 @@ interface PropertyInspectorActionInfo {
     };
 }
 
-class ActionPI {
+export class ActionPI {
     protected settings: ActionSettings;
     protected action: ActionTypeValue;
     protected context: string;
@@ -25,6 +30,7 @@ class ActionPI {
         // default no-op
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     update(_homeAssistantCache: HomeAssistantCache): void {
         // default no-op
     }

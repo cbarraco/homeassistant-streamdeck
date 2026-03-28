@@ -20,7 +20,7 @@ See the Projects tab for upcoming features
 
 1. `cd src/ca.barraco.carlo.homeassistant.sdPlugin`
 2. Install dependencies once: `npm install`
-3. Compile the TypeScript sources: `npm run build`
-4. Package the plugin: `npm run export`
+3. (Optional) Compile the TypeScript sources for quick iteration: `npm run build`
+4. Package the plugin: `npm run export` (this command always runs the TypeScript build first)
 
-The resulting `.streamDeckPlugin` bundle will be generated under the `build/` directory.
+All JavaScript inside `lib/`, `plugin/js/`, and `pi/js/` is generated from TypeScript and ignored by git. Make sure you run `npm run build` (or `npm run export`) before testing or distributing changes so the runtime artifacts are up to date. The resulting `.streamDeckPlugin` bundle will be generated under the `build/` directory.

@@ -1,3 +1,21 @@
+import { logStreamDeckEvent, logMessage } from "../../lib/logging.js";
+import { appStore, type GlobalSettings, type HomeAssistantCache } from "../../lib/globals.js";
+import {
+    CredentialsCommands,
+    PropertyInspectorCommands,
+    PluginCommands,
+    ActionType,
+    type ActionTypeValue,
+    type PropertyInspectorCommand,
+} from "../../lib/enums.js";
+import { registerPluginOrPI, requestGlobalSettings, saveGlobalSettings, sendToPlugin } from "../../lib/utils.js";
+import type { ActionSettings } from "../../plugin/js/action.js";
+import { ActionPI, type PropertyInspectorActionInfo } from "./actionPI.js";
+import { ToggleSwitchActionPI } from "./actions/toggleSwitchActionPI.js";
+import { CallServiceActionPI } from "./actions/callServiceActionPI.js";
+import { ToggleLightActionPI } from "./actions/toggleLightActionPI.js";
+import { SetLightColorActionPI } from "./actions/setLightColorActionPI.js";
+
 let settings: ActionSettings = {};
 let credentialsWindow: Window | null = null;
 let pluginUUID: string | null = null;
@@ -19,7 +37,6 @@ const connectElgatoStreamDeckSocketPI = (
     inInfo: string,
     inActionInfo: string
 ): void => {
-    const info = JSON.parse(inInfo);
     pluginUUID = inUUID;
 
     const actionInfo = JSON.parse(inActionInfo) as PropertyInspectorActionInfo;
@@ -28,9 +45,10 @@ const connectElgatoStreamDeckSocketPI = (
     settings = (actionInfo.payload.settings ?? {}) as ActionSettings;
     const action = actionInfo.action;
 
-    streamDeckWebSocket = new WebSocket(`ws://127.0.0.1:${inPort}`);
+    const streamDeckSocket = new WebSocket(`ws://127.0.0.1:${inPort}`);
+    appStore.dispatch({ type: "SET_STREAM_DECK_SOCKET", socket: streamDeckSocket });
 
-    streamDeckWebSocket.onopen = function () {
+    streamDeckSocket.onopen = function () {
         registerPluginOrPI(inRegisterEvent, inUUID);
         requestGlobalSettings(inUUID);
         sendToPlugin(action, inUUID, {
@@ -54,45 +72,46 @@ const connectElgatoStreamDeckSocketPI = (
             function () {
                 credentialsWindow?.postMessage({
                     command: CredentialsCommands.UPDATE_ELEMENTS,
-                    data: globalSettings,
+                    data: appStore.getState().globalSettings,
                 });
             },
             { once: true }
         );
     });
 
-    streamDeckWebSocket.onmessage = function (streamDeckMessage) {
+    streamDeckSocket.onmessage = function (streamDeckMessage) {
         logStreamDeckEvent(streamDeckMessage);
         const streamDeckMessageData = JSON.parse(streamDeckMessage.data) as StreamDeckPIMessage;
         const event = streamDeckMessageData.event;
         const payload = streamDeckMessageData.payload ?? {};
 
         if (event === "didReceiveGlobalSettings") {
-            globalSettings = (payload.settings ?? {}) as GlobalSettings;
+            appStore.dispatch({ type: "SET_GLOBAL_SETTINGS", settings: (payload.settings ?? {}) as GlobalSettings });
             if (credentialsWindow) {
                 logMessage("Sending global settings to credentials window");
                 credentialsWindow.postMessage({
                     command: CredentialsCommands.UPDATE_ELEMENTS,
-                    data: globalSettings,
+                    data: appStore.getState().globalSettings,
                 });
             }
         } else if (event === "didReceiveSettings") {
             settings = (payload.settings ?? {}) as ActionSettings;
             logMessage("Updating based on new settings");
             actionPI?.setSettings(settings);
-            actionPI?.update(homeAssistantCache);
+            actionPI?.update(appStore.getState().homeAssistantCache);
         } else if (event === "sendToPropertyInspector") {
             const command = payload.command;
             if (command === PropertyInspectorCommands.UPDATE_CACHE && payload.data) {
                 logMessage("Updating based on update cache command");
-                homeAssistantCache = payload.data;
-                actionPI?.update(homeAssistantCache);
+                hydrateCache(payload.data);
+                actionPI?.update(appStore.getState().homeAssistantCache);
             }
         }
     };
 };
 
-window.connectElgatoStreamDeckSocket = connectElgatoStreamDeckSocketPI;
+window.connectElgatoStreamDeckSocket = connectElgatoStreamDeckSocketPI as unknown as
+    typeof window.connectElgatoStreamDeckSocket;
 
 function createPropertyInspector(
     action: ActionTypeValue,
@@ -116,14 +135,27 @@ function createPropertyInspector(
     return null;
 }
 
-function sendCredentialsToPropertyInspector(message: { command: PropertyInspectorCommand; data: GlobalSettings }): void {
+export function sendCredentialsToPropertyInspector(message: { command: PropertyInspectorCommand; data: GlobalSettings }): void {
     logMessage("Received message from credentials window");
     logMessage(message);
     if (message.command === PropertyInspectorCommands.UPDATE_GLOBAL_SETTINGS) {
         logMessage("Updating global settings");
-        globalSettings = message.data;
+        appStore.dispatch({ type: "SET_GLOBAL_SETTINGS", settings: message.data });
         if (pluginUUID) {
             saveGlobalSettings(pluginUUID);
         }
     }
+}
+
+window.sendCredentialsToPropertyInspector = sendCredentialsToPropertyInspector;
+
+function hydrateCache(cache: HomeAssistantCache): void {
+    appStore.dispatch({
+        type: "SET_ENTITIES_CACHE",
+        entities: cache.entities ?? {},
+    });
+    appStore.dispatch({
+        type: "SET_SERVICES_CACHE",
+        services: cache.services ?? {},
+    });
 }

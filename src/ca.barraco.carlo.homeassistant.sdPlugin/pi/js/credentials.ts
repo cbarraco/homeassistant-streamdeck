@@ -1,20 +1,30 @@
+import { logMessage } from "../../lib/logging.js";
+import { appStore, type GlobalSettings } from "../../lib/globals.js";
+import {
+    PropertyInspectorCommands,
+    CredentialsCommands,
+    type CredentialsCommand,
+    type PropertyInspectorCommand,
+} from "../../lib/enums.js";
+
 setUpGlobalSettingsElements();
 
 const testButton = document.getElementById("test") as HTMLButtonElement | null;
 testButton?.addEventListener("click", function () {
-    if (!globalSettings.homeAssistantAddress || !globalSettings.accessToken) {
+    const settings = appStore.getState().globalSettings;
+    if (!settings.homeAssistantAddress || !settings.accessToken) {
         logMessage("Home Assistant address or access token missing");
         return;
     }
 
     logMessage("Testing using global settings");
-    logMessage(globalSettings);
-    const protocol = globalSettings.encrypted ? "https" : "http";
-    const address = `${protocol}://${globalSettings.homeAssistantAddress}/api/`;
+    logMessage(settings);
+    const protocol = settings.encrypted ? "https" : "http";
+    const address = `${protocol}://${settings.homeAssistantAddress}/api/`;
 
     const request = new XMLHttpRequest();
     request.open("GET", address);
-    request.setRequestHeader("Authorization", `Bearer ${globalSettings.accessToken}`);
+    request.setRequestHeader("Authorization", `Bearer ${settings.accessToken}`);
     request.setRequestHeader("Content-Type", "application/json");
 
     request.onerror = function (event) {
@@ -57,7 +67,7 @@ function updateTestResults(message: string, color: string): void {
     if (!results) {
         return;
     }
-    results.style.color = color;
+    (results as HTMLElement).style.color = color;
     results.textContent = message;
 }
 
@@ -68,7 +78,7 @@ function sendGlobalSettings(): void {
     logMessage("Sending global settings to property inspector");
     window.opener.sendCredentialsToPropertyInspector({
         command: PropertyInspectorCommands.UPDATE_GLOBAL_SETTINGS,
-        data: globalSettings,
+        data: appStore.getState().globalSettings,
     });
 }
 
@@ -77,27 +87,28 @@ function handleMessage(message: { command: CredentialsCommand; data: GlobalSetti
     logMessage(message);
 
     if (message.command === CredentialsCommands.UPDATE_ELEMENTS) {
-        globalSettings = message.data;
+        appStore.dispatch({ type: "SET_GLOBAL_SETTINGS", settings: message.data });
         updateElementsFromGlobalSettings();
     }
 }
 
 function updateElementsFromGlobalSettings(): void {
     logMessage("Updating UI using global settings");
-    logMessage(globalSettings);
+    logMessage(appStore.getState().globalSettings);
 
     const homeAssistantAddress = document.getElementById("homeAssistantAddress") as HTMLInputElement | null;
     const encrypted = document.getElementById("encrypted") as HTMLInputElement | null;
     const accessToken = document.getElementById("accessToken") as HTMLInputElement | null;
+    const settings = appStore.getState().globalSettings;
 
-    if (homeAssistantAddress && globalSettings.homeAssistantAddress) {
-        homeAssistantAddress.value = globalSettings.homeAssistantAddress;
+    if (homeAssistantAddress && settings.homeAssistantAddress) {
+        homeAssistantAddress.value = settings.homeAssistantAddress;
     }
-    if (encrypted && typeof globalSettings.encrypted === "boolean") {
-        encrypted.checked = globalSettings.encrypted;
+    if (encrypted && typeof settings.encrypted === "boolean") {
+        encrypted.checked = settings.encrypted;
     }
-    if (accessToken && globalSettings.accessToken) {
-        accessToken.value = globalSettings.accessToken;
+    if (accessToken && settings.accessToken) {
+        accessToken.value = settings.accessToken;
     }
 }
 
@@ -109,16 +120,27 @@ function setUpGlobalSettingsElements(): void {
 
     homeAssistantAddress?.addEventListener("change", function (event) {
         const value = (event.target as HTMLInputElement).value;
-        globalSettings.homeAssistantAddress = value;
+        updateSettings({ homeAssistantAddress: value });
     });
 
     encrypted?.addEventListener("click", function (event) {
         const checked = (event.target as HTMLInputElement).checked;
-        globalSettings.encrypted = checked;
+        updateSettings({ encrypted: checked });
     });
 
     accessToken?.addEventListener("change", function (event) {
         const value = (event.target as HTMLInputElement).value;
-        globalSettings.accessToken = value;
+        updateSettings({ accessToken: value });
+    });
+}
+
+function updateSettings(patch: Partial<GlobalSettings>): void {
+    const current = appStore.getState().globalSettings;
+    appStore.dispatch({
+        type: "SET_GLOBAL_SETTINGS",
+        settings: {
+            ...current,
+            ...patch,
+        },
     });
 }

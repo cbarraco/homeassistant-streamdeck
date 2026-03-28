@@ -1,4 +1,11 @@
-class SetLightColorAction extends Action {
+import { miredToHex, hexToRgb } from "../../../lib/colorUtils.js";
+import { logMessage } from "../../../lib/logging.js";
+import { setImage } from "../../../lib/utils.js";
+import type { ActionSettings, KeyDownData } from "../action.js";
+import { Action } from "../action.js";
+import { homeAssistantService } from "../../../lib/services/homeAssistantService.js";
+
+export class SetLightColorAction extends Action {
     constructor(context: string, settings: ActionSettings = {}) {
         super(context, settings);
     }
@@ -34,7 +41,7 @@ class SetLightColorAction extends Action {
     }
 
     private sendTurnOnCommand(settings: ActionSettings): void {
-        if (!homeAssistantWebsocket) {
+        if (!homeAssistantService.isConnected()) {
             logMessage("Home Assistant websocket is not connected.");
             return;
         }
@@ -70,15 +77,15 @@ class SetLightColorAction extends Action {
             }
         }
 
-        const setLightColorMessage = JSON.stringify({
-            id: ++homeAssistantMessageId,
+        const setLightColorMessage = {
+            id: homeAssistantService.getNextMessageId(),
             type: "call_service",
             domain: "light",
             service: "turn_on",
             service_data: serviceData,
-        });
+        };
 
-        logMessage(setLightColorMessage);
-        homeAssistantWebsocket.send(setLightColorMessage);
+        logMessage(JSON.stringify(setLightColorMessage));
+        homeAssistantService.sendMessage(setLightColorMessage);
     }
 }

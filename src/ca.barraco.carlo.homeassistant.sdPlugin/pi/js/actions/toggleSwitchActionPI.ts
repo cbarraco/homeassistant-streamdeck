@@ -1,4 +1,9 @@
-class ToggleSwitchActionPI extends ActionPI {
+import { logMessage } from "../../../lib/logging.js";
+import type { HomeAssistantCache } from "../../../lib/globals.js";
+import { saveSettings } from "../../../lib/utils.js";
+import { ActionPI, type PropertyInspectorActionInfo } from "../actionPI.js";
+
+export class ToggleSwitchActionPI extends ActionPI {
     constructor(uuid: string, actionInfo: PropertyInspectorActionInfo) {
         super(uuid, actionInfo);
     }

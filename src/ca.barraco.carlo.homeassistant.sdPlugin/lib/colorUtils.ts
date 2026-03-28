@@ -4,7 +4,7 @@ interface RGBColor {
     b: number;
 }
 
-function miredToHex(mired: number): string {
+export function miredToHex(mired: number): string {
     let temperature = (miredToKelvin(mired) * 1.5) / 100;
 
     let red = 255;
@@ -44,7 +44,7 @@ function miredToHex(mired: number): string {
     return rgbToHex(Math.round(red), Math.round(green), Math.round(blue));
 }
 
-function miredToKelvin(mired: number): number {
+export function miredToKelvin(mired: number): number {
     return Math.round(1000000.0 / mired);
 }
 
@@ -53,11 +53,11 @@ function componentToHex(component: number): string {
     return hex.length == 1 ? "0" + hex : hex;
 }
 
-function rgbToHex(r: number, g: number, b: number): string {
+export function rgbToHex(r: number, g: number, b: number): string {
     return "#" + componentToHex(r) + componentToHex(g) + componentToHex(b);
 }
 
-function hexToRgb(hex: string): RGBColor | null {
+export function hexToRgb(hex: string): RGBColor | null {
     const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
     return result
         ? {

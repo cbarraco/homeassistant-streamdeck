@@ -2,16 +2,27 @@
   "name": "ca.barraco.carlo.homeassistant.sdplugin",
   "version": "1.0.0",
   "description": "Home Assistant Integration for Elgato Stream Deck",
-  "main": "app.js",
   "scripts": {
-    "build": "tsc --project tsconfig.json",
-    "export": "rm -f ../../build/ca.barraco.carlo.homeassistant.streamDeckPlugin && DistributionTool -b -i ../ca.barraco.carlo.homeassistant.sdPlugin -o ../../build"
+    "build": "npm run build:dev",
+    "build:dev": "tsc --project tsconfig.json",
+    "build:prod": "webpack --config webpack.config.cjs --mode production",
+    "prepare:dev": "npm run build:dev && node ./scripts/copy-dev-to-runtime.mjs",
+    "prepare:prod": "npm run build:prod",
+    "package": "node ./scripts/package.mjs",
+    "export": "npm run export:prod",
+    "export:dev": "npm run prepare:dev && npm run package",
+    "export:prod": "npm run prepare:prod && npm run package",
+    "test": "vitest run"
   },
   "author": "Carlo Barraco",
   "license": "MIT",
   "devDependencies": {
-    "typescript": "^6.0.2"
+    "ts-loader": "^9.5.1",
+    "typescript": "^6.0.2",
+    "vitest": "^1.5.0",
+    "@types/node": "^20.11.30",
+    "webpack": "^5.91.0",
+    "webpack-cli": "^5.1.4"
   },
-  "dependencies": {
-  }
+  "dependencies": {}
 }
