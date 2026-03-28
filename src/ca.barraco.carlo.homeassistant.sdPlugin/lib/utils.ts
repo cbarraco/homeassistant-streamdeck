@@ -1,14 +1,24 @@
-"use strict";
-function sendStreamDeckMessage(payload) {
+type StreamDeckUUID = string;
+type StreamDeckContext = string;
+type StreamDeckAction = string;
+type StreamDeckTarget = number | undefined;
+type StreamDeckState = number | undefined;
+type StreamDeckPayload = Record<string, unknown>;
+type LocalizationCallback = (success: boolean, data: Record<string, unknown> | string) => void;
+
+function sendStreamDeckMessage(payload: unknown): void {
     if (!streamDeckWebSocket) {
         return;
     }
+
     streamDeckWebSocket.send(JSON.stringify(payload));
 }
-function registerPluginOrPI(event, uuid) {
+
+function registerPluginOrPI(event: string, uuid: StreamDeckUUID): void {
     sendStreamDeckMessage({ event, uuid });
 }
-function saveSettings(action, uuid, settings) {
+
+function saveSettings(action: StreamDeckAction, uuid: StreamDeckContext, settings: StreamDeckPayload): void {
     sendStreamDeckMessage({
         action,
         event: "setSettings",
@@ -16,26 +26,30 @@ function saveSettings(action, uuid, settings) {
         payload: settings,
     });
 }
-function saveGlobalSettings(uuid) {
+
+function saveGlobalSettings(uuid: StreamDeckUUID): void {
     sendStreamDeckMessage({
         event: "setGlobalSettings",
         context: uuid,
         payload: globalSettings,
     });
 }
-function requestGlobalSettings(uuid) {
+
+function requestGlobalSettings(uuid: StreamDeckUUID): void {
     sendStreamDeckMessage({
         event: "getGlobalSettings",
         context: uuid,
     });
 }
-function addAccount(uuid) {
+
+function addAccount(uuid: StreamDeckUUID): void {
     sendStreamDeckMessage({
         event: "addAccount",
         context: uuid,
     });
 }
-function openUrl(url) {
+
+function openUrl(url: string): void {
     sendStreamDeckMessage({
         event: "openUrl",
         payload: {
@@ -43,10 +57,12 @@ function openUrl(url) {
         },
     });
 }
-function log(message) {
+
+function log(message: string): void {
     const time = new Date();
     const timeString = `${time.toLocaleDateString()} ${time.toLocaleTimeString()}`;
     console.log(`${timeString}: ${message}`);
+
     try {
         sendStreamDeckMessage({
             event: "logMessage",
@@ -54,56 +70,64 @@ function log(message) {
                 message,
             },
         });
-    }
-    catch (error) {
+    } catch (error) {
         console.log("Websocket not defined", error);
     }
 }
-function showOk(uuid) {
+
+function showOk(uuid: StreamDeckUUID): void {
     sendStreamDeckMessage({
         event: "showOk",
         context: uuid,
     });
 }
-function showAlert(uuid) {
+
+function showAlert(uuid: StreamDeckUUID): void {
     sendStreamDeckMessage({
         event: "showAlert",
         context: uuid,
     });
 }
-function setTitle(uuid, title, target, state) {
-    const payload = {
+
+function setTitle(uuid: StreamDeckUUID, title: string, target?: StreamDeckTarget, state?: StreamDeckState): void {
+    const payload: Record<string, unknown> = {
         title,
     };
+
     if (typeof target !== "undefined") {
         payload.target = target;
     }
     if (typeof state !== "undefined") {
         payload.state = state;
     }
+
     sendStreamDeckMessage({
         event: "setTitle",
         context: uuid,
         payload,
     });
 }
-function setImage(uuid, image, target, state) {
-    const payload = {
+
+function setImage(uuid: StreamDeckUUID, image: string, target?: StreamDeckTarget, state?: StreamDeckState): void {
+    const payload: Record<string, unknown> = {
         image,
     };
+
     if (typeof target !== "undefined") {
         payload.target = target;
     }
     if (typeof state !== "undefined") {
         payload.state = state;
     }
+
     sendStreamDeckMessage({
         event: "setImage",
         context: uuid,
         payload,
     });
 }
-function setState(uuid, state) {
+
+function setState(uuid: StreamDeckUUID, state: number): void {
     sendStreamDeckMessage({
         event: "setState",
         context: uuid,
@@ -112,7 +136,8 @@ function setState(uuid, state) {
         },
     });
 }
-function sendToPropertyInspector(action, context, data) {
+
+function sendToPropertyInspector(action: StreamDeckAction, context: StreamDeckContext, data: StreamDeckPayload): void {
     sendStreamDeckMessage({
         action,
         event: "sendToPropertyInspector",
@@ -120,7 +145,8 @@ function sendToPropertyInspector(action, context, data) {
         payload: data,
     });
 }
-function sendToPlugin(action, context, data) {
+
+function sendToPlugin(action: StreamDeckAction, context: StreamDeckContext, data: StreamDeckPayload): void {
     sendStreamDeckMessage({
         action,
         event: "sendToPlugin",
@@ -128,23 +154,21 @@ function sendToPlugin(action, context, data) {
         payload: data,
     });
 }
-function getLocalization(language, callback) {
+
+function getLocalization(language: string, callback: LocalizationCallback): void {
     const url = `../${language}.json`;
     const xhr = new XMLHttpRequest();
     xhr.open("GET", url, true);
     xhr.onload = function () {
-        var _a;
         if (xhr.readyState === XMLHttpRequest.DONE) {
             try {
-                const data = JSON.parse(xhr.responseText);
-                const localization = (_a = data["Localization"]) !== null && _a !== void 0 ? _a : {};
+                const data = JSON.parse(xhr.responseText) as Record<string, unknown>;
+                const localization = (data["Localization"] as Record<string, unknown>) ?? {};
                 callback(true, localization);
-            }
-            catch (error) {
+            } catch (error) {
                 callback(false, "Localizations is not a valid json.");
             }
-        }
-        else {
+        } else {
             callback(false, "Could not load the localizations.");
         }
     };

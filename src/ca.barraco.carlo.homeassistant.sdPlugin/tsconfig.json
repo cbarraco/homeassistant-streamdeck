@@ -1,0 +1,18 @@
+{
+  "compilerOptions": {
+    "target": "ES2019",
+    "module": "es2015",
+    "strict": true,
+    "noImplicitAny": true,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "noEmitOnError": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "lib": ["DOM", "ES2019"],
+    "moduleResolution": "bundler"
+  },
+  "include": ["lib/**/*.ts", "plugin/**/*.ts", "pi/**/*.ts"],
+  "exclude": ["node_modules"]
+}
+

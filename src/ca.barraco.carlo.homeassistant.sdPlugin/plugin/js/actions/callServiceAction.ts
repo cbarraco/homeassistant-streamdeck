@@ -1,9 +1,9 @@
-"use strict";
 class CallServiceAction extends Action {
-    constructor(context, settings = {}) {
+    constructor(context: string, settings: ActionSettings = {}) {
         super(context, settings);
     }
-    onKeyDown(data) {
+
+    onKeyDown(data: KeyDownData): void {
         super.onKeyDown(data);
         const serviceId = data.settings.serviceId;
         if (!serviceId) {
@@ -13,29 +13,33 @@ class CallServiceAction extends Action {
         const payload = this.normalizePayload(data.settings.payload);
         this.sendServiceCommand(serviceId, payload);
     }
-    normalizePayload(rawPayload) {
+
+    private normalizePayload(rawPayload?: string): string {
         if (!rawPayload || rawPayload.trim() === "") {
             return "{}";
         }
+
         try {
             JSON.parse(rawPayload);
             return rawPayload;
-        }
-        catch (error) {
+        } catch (error) {
             logMessage("Payload is not valid JSON. Falling back to empty object.");
             return "{}";
         }
     }
-    sendServiceCommand(serviceId, payload) {
+
+    private sendServiceCommand(serviceId: string, payload: string): void {
         if (!homeAssistantWebsocket) {
             logMessage("Home Assistant websocket is not connected.");
             return;
         }
+
         const [domain, service] = serviceId.split(".");
         if (!domain || !service) {
             logMessage(`Invalid service id: ${serviceId}`);
             return;
         }
+
         logMessage(`Calling ${domain}.${service}`);
         const callServiceMessage = `{
           "id": ${++homeAssistantMessageId},

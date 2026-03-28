@@ -18,4 +18,9 @@ See the Projects tab for upcoming features
 
 ## Building
 
-To build, cd to the `src/ca.barraco.carlo.homeassistant.sdPlugin` directory and run `npm run export`. The streamDeckPlugin file will be generated under `build/`
+1. `cd src/ca.barraco.carlo.homeassistant.sdPlugin`
+2. Install dependencies once: `npm install`
+3. Compile the TypeScript sources: `npm run build`
+4. Package the plugin: `npm run export`
+
+The resulting `.streamDeckPlugin` bundle will be generated under the `build/` directory.

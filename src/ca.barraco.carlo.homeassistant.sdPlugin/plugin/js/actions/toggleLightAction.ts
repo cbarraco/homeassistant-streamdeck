@@ -1,9 +1,9 @@
-"use strict";
 class ToggleLightAction extends Action {
-    constructor(context, settings = {}) {
+    constructor(context: string, settings: ActionSettings = {}) {
         super(context, settings);
     }
-    onKeyDown(data) {
+
+    onKeyDown(data: KeyDownData): void {
         super.onKeyDown(data);
         const entityId = data.settings.entityId;
         if (!entityId) {
@@ -12,11 +12,13 @@ class ToggleLightAction extends Action {
         }
         this.sendCommand(entityId);
     }
-    sendCommand(entityId) {
+
+    private sendCommand(entityId: string): void {
         if (!homeAssistantWebsocket) {
             logMessage("Home Assistant websocket is not connected.");
             return;
         }
+
         logMessage(`Sending toggle command to HA for entity ${entityId}`);
         const message = `{
           "id": ${++homeAssistantMessageId},

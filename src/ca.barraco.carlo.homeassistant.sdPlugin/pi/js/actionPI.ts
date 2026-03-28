@@ -1,35 +1,50 @@
-"use strict";
+interface PropertyInspectorActionInfo {
+    action: ActionTypeValue;
+    context: string;
+    payload: {
+        settings?: ActionSettings;
+    };
+}
+
 class ActionPI {
-    constructor(uuid, actionInfo) {
-        var _a;
-        this.uuid = uuid;
-        this.actionInfo = actionInfo;
-        this.settings = ((_a = actionInfo.payload.settings) !== null && _a !== void 0 ? _a : {});
+    protected settings: ActionSettings;
+    protected action: ActionTypeValue;
+    protected context: string;
+
+    constructor(protected uuid: string, protected actionInfo: PropertyInspectorActionInfo) {
+        this.settings = (actionInfo.payload.settings ?? {}) as ActionSettings;
         this.action = actionInfo.action;
         this.context = actionInfo.context;
     }
-    setSettings(updatedSettings) {
+
+    setSettings(updatedSettings: ActionSettings): void {
         this.settings = updatedSettings;
     }
-    setUp() {
+
+    setUp(): void {
         // default no-op
     }
-    update(_homeAssistantCache) {
+
+    update(_homeAssistantCache: HomeAssistantCache): void {
         // default no-op
     }
-    static populateEntityOptions(element, type, cache) {
+
+    static populateEntityOptions(element: HTMLSelectElement, type: string | undefined, cache: HomeAssistantCache): void {
         logMessage("Populating entities parameter options");
+
         if (!cache.entities) {
             logMessage("Cache is not populated yet");
             return;
         }
+
         element.innerHTML = "";
+
         const keys = type ? [type] : Object.getOwnPropertyNames(cache.entities);
+
         keys.forEach((typeKey) => {
-            var _a;
             const optGroup = document.createElement("optgroup");
             optGroup.label = typeKey;
-            const optionValues = (_a = cache.entities[typeKey]) !== null && _a !== void 0 ? _a : [];
+            const optionValues = cache.entities[typeKey] ?? [];
             optionValues.forEach((value) => {
                 const option = document.createElement("option");
                 option.value = value.entity_id;

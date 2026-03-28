@@ -1,17 +1,35 @@
-"use strict";
-let settings = {};
-let credentialsWindow = null;
-let pluginUUID = null;
-let actionPI = null;
-const connectElgatoStreamDeckSocketPI = (inPort, inUUID, inRegisterEvent, inInfo, inActionInfo) => {
-    var _a;
+let settings: ActionSettings = {};
+let credentialsWindow: Window | null = null;
+let pluginUUID: string | null = null;
+let actionPI: ActionPI | null = null;
+
+interface StreamDeckPIMessage {
+    event: string;
+    payload?: {
+        settings?: ActionSettings;
+        command?: PropertyInspectorCommand;
+        data?: HomeAssistantCache;
+    };
+}
+
+const connectElgatoStreamDeckSocketPI = (
+    inPort: string,
+    inUUID: string,
+    inRegisterEvent: string,
+    inInfo: string,
+    inActionInfo: string
+): void => {
     const info = JSON.parse(inInfo);
     pluginUUID = inUUID;
-    const actionInfo = JSON.parse(inActionInfo);
+
+    const actionInfo = JSON.parse(inActionInfo) as PropertyInspectorActionInfo;
     logStreamDeckEvent(actionInfo);
-    settings = ((_a = actionInfo.payload.settings) !== null && _a !== void 0 ? _a : {});
+
+    settings = (actionInfo.payload.settings ?? {}) as ActionSettings;
     const action = actionInfo.action;
+
     streamDeckWebSocket = new WebSocket(`ws://127.0.0.1:${inPort}`);
+
     streamDeckWebSocket.onopen = function () {
         registerPluginOrPI(inRegisterEvent, inUUID);
         requestGlobalSettings(inUUID);
@@ -19,30 +37,38 @@ const connectElgatoStreamDeckSocketPI = (inPort, inUUID, inRegisterEvent, inInfo
             command: PluginCommands.REQUEST_CACHE_UPDATE,
         });
     };
+
     actionPI = createPropertyInspector(action, inUUID, actionInfo);
-    actionPI === null || actionPI === void 0 ? void 0 : actionPI.setUp();
-    const enterCredentials = document.getElementById("enterCredentials");
-    enterCredentials === null || enterCredentials === void 0 ? void 0 : enterCredentials.addEventListener("click", function () {
+    actionPI?.setUp();
+
+    const enterCredentials = document.getElementById("enterCredentials") as HTMLButtonElement | null;
+    enterCredentials?.addEventListener("click", function () {
         credentialsWindow = window.open("credentials.html", "Enter Credentials");
         if (!credentialsWindow) {
             return;
         }
+
         logMessage("Sending global settings to credentials window");
-        credentialsWindow.addEventListener("DOMContentLoaded", function () {
-            credentialsWindow === null || credentialsWindow === void 0 ? void 0 : credentialsWindow.postMessage({
-                command: CredentialsCommands.UPDATE_ELEMENTS,
-                data: globalSettings,
-            });
-        }, { once: true });
+        credentialsWindow.addEventListener(
+            "DOMContentLoaded",
+            function () {
+                credentialsWindow?.postMessage({
+                    command: CredentialsCommands.UPDATE_ELEMENTS,
+                    data: globalSettings,
+                });
+            },
+            { once: true }
+        );
     });
+
     streamDeckWebSocket.onmessage = function (streamDeckMessage) {
-        var _a, _b, _c;
         logStreamDeckEvent(streamDeckMessage);
-        const streamDeckMessageData = JSON.parse(streamDeckMessage.data);
+        const streamDeckMessageData = JSON.parse(streamDeckMessage.data) as StreamDeckPIMessage;
         const event = streamDeckMessageData.event;
-        const payload = (_a = streamDeckMessageData.payload) !== null && _a !== void 0 ? _a : {};
+        const payload = streamDeckMessageData.payload ?? {};
+
         if (event === "didReceiveGlobalSettings") {
-            globalSettings = ((_b = payload.settings) !== null && _b !== void 0 ? _b : {});
+            globalSettings = (payload.settings ?? {}) as GlobalSettings;
             if (credentialsWindow) {
                 logMessage("Sending global settings to credentials window");
                 credentialsWindow.postMessage({
@@ -50,25 +76,29 @@ const connectElgatoStreamDeckSocketPI = (inPort, inUUID, inRegisterEvent, inInfo
                     data: globalSettings,
                 });
             }
-        }
-        else if (event === "didReceiveSettings") {
-            settings = ((_c = payload.settings) !== null && _c !== void 0 ? _c : {});
+        } else if (event === "didReceiveSettings") {
+            settings = (payload.settings ?? {}) as ActionSettings;
             logMessage("Updating based on new settings");
-            actionPI === null || actionPI === void 0 ? void 0 : actionPI.setSettings(settings);
-            actionPI === null || actionPI === void 0 ? void 0 : actionPI.update(homeAssistantCache);
-        }
-        else if (event === "sendToPropertyInspector") {
+            actionPI?.setSettings(settings);
+            actionPI?.update(homeAssistantCache);
+        } else if (event === "sendToPropertyInspector") {
             const command = payload.command;
             if (command === PropertyInspectorCommands.UPDATE_CACHE && payload.data) {
                 logMessage("Updating based on update cache command");
                 homeAssistantCache = payload.data;
-                actionPI === null || actionPI === void 0 ? void 0 : actionPI.update(homeAssistantCache);
+                actionPI?.update(homeAssistantCache);
             }
         }
     };
 };
+
 window.connectElgatoStreamDeckSocket = connectElgatoStreamDeckSocketPI;
-function createPropertyInspector(action, uuid, actionInfo) {
+
+function createPropertyInspector(
+    action: ActionTypeValue,
+    uuid: string,
+    actionInfo: PropertyInspectorActionInfo
+): ActionPI | null {
     logMessage(`Creating actionPI of type ${action}`);
     if (action === ActionType.TOGGLE_SWITCH) {
         return new ToggleSwitchActionPI(uuid, actionInfo);
@@ -85,7 +115,8 @@ function createPropertyInspector(action, uuid, actionInfo) {
     logMessage(`Unknown action type for PI: ${action}`);
     return null;
 }
-function sendCredentialsToPropertyInspector(message) {
+
+function sendCredentialsToPropertyInspector(message: { command: PropertyInspectorCommand; data: GlobalSettings }): void {
     logMessage("Received message from credentials window");
     logMessage(message);
     if (message.command === PropertyInspectorCommands.UPDATE_GLOBAL_SETTINGS) {

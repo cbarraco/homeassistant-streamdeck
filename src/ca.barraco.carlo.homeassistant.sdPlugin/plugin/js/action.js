@@ -1,23 +1,18 @@
-// Protype which represents an action
-function Action(inContext, inSettings) {
-    var instance = this;
-
-    var context = inContext;
-
-    var settings = inSettings;
-
-    // Public function returning the settings
-    this.getSettings = function () {
-        return settings;
-    };
-
-    // Public function for settings the settings
-    this.onSettingsUpdate = function (inUpdatedSettings) {
+"use strict";
+class Action {
+    constructor(context, settings = {}) {
+        this.context = context;
+        this.settings = settings;
+    }
+    getSettings() {
+        return this.settings;
+    }
+    onSettingsUpdate(updatedSettings) {
         logMessage("Received updated settings");
-        logMessage(inUpdatedSettings);
-        settings = inUpdatedSettings;
-    };
-
-    // Public function called on keyDown event
-    this.onKeyDown = function (inData) {};
+        logMessage(updatedSettings);
+        this.settings = updatedSettings;
+    }
+    onKeyDown(_data) {
+        // default no-op
+    }
 }

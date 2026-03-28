@@ -1,24 +1,28 @@
-"use strict";
 setUpGlobalSettingsElements();
-const testButton = document.getElementById("test");
-testButton === null || testButton === void 0 ? void 0 : testButton.addEventListener("click", function () {
+
+const testButton = document.getElementById("test") as HTMLButtonElement | null;
+testButton?.addEventListener("click", function () {
     if (!globalSettings.homeAssistantAddress || !globalSettings.accessToken) {
         logMessage("Home Assistant address or access token missing");
         return;
     }
+
     logMessage("Testing using global settings");
     logMessage(globalSettings);
     const protocol = globalSettings.encrypted ? "https" : "http";
     const address = `${protocol}://${globalSettings.homeAssistantAddress}/api/`;
+
     const request = new XMLHttpRequest();
     request.open("GET", address);
     request.setRequestHeader("Authorization", `Bearer ${globalSettings.accessToken}`);
     request.setRequestHeader("Content-Type", "application/json");
+
     request.onerror = function (event) {
         logMessage("Error during test");
         logMessage(event);
         updateTestResults("Failed to connect", "red");
     };
+
     request.onload = function () {
         if (request.readyState === XMLHttpRequest.DONE) {
             logMessage("Got test results");
@@ -26,25 +30,29 @@ testButton === null || testButton === void 0 ? void 0 : testButton.addEventListe
             if (request.status === 200 || request.status === 201) {
                 updateTestResults("Success", "green");
                 sendGlobalSettings();
-            }
-            else if (request.status === 401) {
+            } else if (request.status === 401) {
                 updateTestResults("Invalid Access Token", "red");
-            }
-            else if (request.status === 404) {
+            } else if (request.status === 404) {
                 updateTestResults("Invalid Address", "red");
-            }
-            else {
+            } else {
                 updateTestResults("Failed to connect", "red");
             }
         }
     };
+
     request.send();
 });
-window.addEventListener("message", function (event) {
-    logMessage("Received posted message");
-    handleMessage(event.data);
-}, false);
-function updateTestResults(message, color) {
+
+window.addEventListener(
+    "message",
+    function (event: MessageEvent<{ command: CredentialsCommand; data: GlobalSettings }>) {
+        logMessage("Received posted message");
+        handleMessage(event.data);
+    },
+    false
+);
+
+function updateTestResults(message: string, color: string): void {
     const results = document.getElementById("results");
     if (!results) {
         return;
@@ -52,7 +60,8 @@ function updateTestResults(message, color) {
     results.style.color = color;
     results.textContent = message;
 }
-function sendGlobalSettings() {
+
+function sendGlobalSettings(): void {
     if (!window.opener || typeof window.opener.sendCredentialsToPropertyInspector !== "function") {
         return;
     }
@@ -62,20 +71,25 @@ function sendGlobalSettings() {
         data: globalSettings,
     });
 }
-function handleMessage(message) {
+
+function handleMessage(message: { command: CredentialsCommand; data: GlobalSettings }): void {
     logMessage("Received message from property inspector");
     logMessage(message);
+
     if (message.command === CredentialsCommands.UPDATE_ELEMENTS) {
         globalSettings = message.data;
         updateElementsFromGlobalSettings();
     }
 }
-function updateElementsFromGlobalSettings() {
+
+function updateElementsFromGlobalSettings(): void {
     logMessage("Updating UI using global settings");
     logMessage(globalSettings);
-    const homeAssistantAddress = document.getElementById("homeAssistantAddress");
-    const encrypted = document.getElementById("encrypted");
-    const accessToken = document.getElementById("accessToken");
+
+    const homeAssistantAddress = document.getElementById("homeAssistantAddress") as HTMLInputElement | null;
+    const encrypted = document.getElementById("encrypted") as HTMLInputElement | null;
+    const accessToken = document.getElementById("accessToken") as HTMLInputElement | null;
+
     if (homeAssistantAddress && globalSettings.homeAssistantAddress) {
         homeAssistantAddress.value = globalSettings.homeAssistantAddress;
     }
@@ -86,21 +100,25 @@ function updateElementsFromGlobalSettings() {
         accessToken.value = globalSettings.accessToken;
     }
 }
-function setUpGlobalSettingsElements() {
+
+function setUpGlobalSettingsElements(): void {
     logMessage("Setting up event listeners for global settings parameters");
-    const homeAssistantAddress = document.getElementById("homeAssistantAddress");
-    const encrypted = document.getElementById("encrypted");
-    const accessToken = document.getElementById("accessToken");
-    homeAssistantAddress === null || homeAssistantAddress === void 0 ? void 0 : homeAssistantAddress.addEventListener("change", function (event) {
-        const value = event.target.value;
+    const homeAssistantAddress = document.getElementById("homeAssistantAddress") as HTMLInputElement | null;
+    const encrypted = document.getElementById("encrypted") as HTMLInputElement | null;
+    const accessToken = document.getElementById("accessToken") as HTMLInputElement | null;
+
+    homeAssistantAddress?.addEventListener("change", function (event) {
+        const value = (event.target as HTMLInputElement).value;
         globalSettings.homeAssistantAddress = value;
     });
-    encrypted === null || encrypted === void 0 ? void 0 : encrypted.addEventListener("click", function (event) {
-        const checked = event.target.checked;
+
+    encrypted?.addEventListener("click", function (event) {
+        const checked = (event.target as HTMLInputElement).checked;
         globalSettings.encrypted = checked;
     });
-    accessToken === null || accessToken === void 0 ? void 0 : accessToken.addEventListener("change", function (event) {
-        const value = event.target.value;
+
+    accessToken?.addEventListener("change", function (event) {
+        const value = (event.target as HTMLInputElement).value;
         globalSettings.accessToken = value;
     });
 }
