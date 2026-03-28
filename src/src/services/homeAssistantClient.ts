@@ -7,17 +7,27 @@ import { logHomeAssistantEvent, logMessage } from "../logging";
 
 type ServicesPayload = Record<string, Record<string, unknown>>;
 
+type PendingRequest = {
+    resolve: (value: unknown) => void;
+    reject: (error: Error) => void;
+};
+
 type HomeAssistantEvents = {
-    connectionState: (state: ConnectionStateValue) => void;
-    entities: (entities: HomeAssistantEntity[]) => void;
-    services: (services: ServicesPayload) => void;
-    stateChanged: (entityId: string, entity: HomeAssistantEntity) => void;
+    connectionState: [state: ConnectionStateValue];
+    entities: [entities: HomeAssistantEntity[]];
+    services: [services: ServicesPayload];
+    stateChanged: [entityId: string, entity: HomeAssistantEntity];
 };
 
 interface HomeAssistantMessage {
     type: string;
     id?: number;
+    success?: boolean;
     result?: unknown;
+    error?: {
+        code?: string | number;
+        message?: string;
+    };
     event?: {
         data: {
             entity_id: string;
@@ -27,28 +37,17 @@ interface HomeAssistantMessage {
 }
 
 const RECONNECT_DELAY_MS = 30_000;
+const REQUEST_TIMEOUT_MS = 15_000;
 
-export class HomeAssistantClient extends EventEmitter {
+export class HomeAssistantClient extends EventEmitter<HomeAssistantEvents> {
     private socket: WebSocket | null = null;
     private reconnectTimer: NodeJS.Timeout | null = null;
     private settings: GlobalSettings | null = null;
     private messageId = 0;
-    private lastMessageIds = {
-        fetchStates: -1,
-        fetchServices: -1,
-    };
+    private readonly pendingRequests = new Map<number, PendingRequest>();
 
     constructor() {
         super();
-    }
-
-    override on(event: "connectionState", listener: (state: ConnectionStateValue) => void): this;
-    override on(event: "entities", listener: (entities: HomeAssistantEntity[]) => void): this;
-    override on(event: "services", listener: (services: ServicesPayload) => void): this;
-    override on(event: "stateChanged", listener: (entityId: string, entity: HomeAssistantEntity) => void): this;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    override on(event: string, listener: (...args: any[]) => void): this {
-        return super.on(event, listener);
     }
 
     applySettings(settings: GlobalSettings): void {
@@ -71,23 +70,17 @@ export class HomeAssistantClient extends EventEmitter {
         return this.socket !== null && this.socket.readyState === WebSocket.OPEN;
     }
 
-    callService(domain: string, service: string, serviceData: Record<string, unknown>): void {
-        if (!this.isConnected()) {
-            throw new Error("Home Assistant websocket is not connected.");
-        }
-
-        const payload = {
-            id: this.getNextMessageId(),
+    async callService(domain: string, service: string, serviceData: Record<string, unknown>): Promise<unknown> {
+        return this.sendRequest({
             type: "call_service",
             domain,
             service,
             service_data: serviceData,
-        };
-        this.send(payload);
+        });
     }
 
-    sendRawMessage(payload: Record<string, unknown>): void {
-        this.send(payload);
+    sendRawMessage<T = unknown>(payload: Record<string, unknown>): Promise<T> {
+        return this.sendRequest<T>(payload);
     }
 
     private connect(): void {
@@ -96,12 +89,7 @@ export class HomeAssistantClient extends EventEmitter {
         }
 
         this.clearReconnectTimer();
-
-        if (this.socket) {
-            this.socket.removeAllListeners();
-            this.socket.close();
-            this.socket = null;
-        }
+        this.closeSocketSilently();
 
         const { homeAssistantAddress, accessToken, encrypted } = this.settings;
         if (!this.hasCredentials(this.settings)) {
@@ -134,14 +122,17 @@ export class HomeAssistantClient extends EventEmitter {
         });
 
         this.socket.on("message", (data) => {
-            const parsed = JSON.parse(data.toString()) as HomeAssistantMessage;
-            this.handleMessage(parsed);
+            const parsed = this.parseMessage(data);
+            if (parsed) {
+                this.handleMessage(parsed);
+            }
         });
 
         this.socket.on("close", (code) => {
             logMessage(`Home Assistant websocket closed: code=${code}`);
             this.socket = null;
             this.emitConnectionState(ConnectionState.NEED_RECONNECT);
+            this.rejectAllPending(new Error("Home Assistant websocket closed."));
             this.scheduleReconnect();
         });
 
@@ -152,39 +143,25 @@ export class HomeAssistantClient extends EventEmitter {
 
     private handleMessage(message: HomeAssistantMessage): void {
         const { type } = message;
-        if (type === "auth_ok") {
-            logMessage("Authenticated with Home Assistant.");
-            this.emitConnectionState(ConnectionState.CONNECTED);
-            this.fetchStates();
-            this.fetchServices();
-            this.subscribeToStateChanges();
-            return;
-        }
-
-        if (type === "auth_invalid") {
-            logMessage("Home Assistant rejected the access token.");
-            this.emitConnectionState(ConnectionState.INVALID_TOKEN);
-            this.socket?.close();
-            return;
-        }
-
-        if (type === "event" && message.event) {
-            const entityId = message.event.data.entity_id;
-            const newState = message.event.data.new_state;
-            this.emit("stateChanged", entityId, newState);
-            return;
-        }
-
-        if (type === "result") {
-            if (message.id === this.lastMessageIds.fetchStates && Array.isArray(message.result)) {
-                this.emit("entities", message.result as HomeAssistantEntity[]);
+        switch (type) {
+            case "auth_ok":
+                this.handleAuthOk();
                 return;
-            }
-
-            if (message.id === this.lastMessageIds.fetchServices && message.result) {
-                this.emit("services", message.result as ServicesPayload);
+            case "auth_invalid":
+                this.handleAuthInvalid();
                 return;
-            }
+            case "event":
+                if (this.handleEventMessage(message)) {
+                    return;
+                }
+                break;
+            case "result":
+                if (this.resolvePendingRequest(message)) {
+                    return;
+                }
+                break;
+            default:
+                break;
         }
 
         logHomeAssistantEvent(message);
@@ -198,27 +175,76 @@ export class HomeAssistantClient extends EventEmitter {
         });
     }
 
-    private fetchStates(): void {
-        this.lastMessageIds.fetchStates = this.getNextMessageId();
-        this.send({
-            id: this.lastMessageIds.fetchStates,
-            type: "get_states",
-        });
+    private async fetchStates(): Promise<void> {
+        try {
+            const entities = await this.sendRequest<HomeAssistantEntity[]>({
+                type: "get_states",
+            });
+            if (Array.isArray(entities)) {
+                this.emit("entities", entities);
+            }
+        } catch (error) {
+            logHomeAssistantEvent(error);
+        }
     }
 
-    private fetchServices(): void {
-        this.lastMessageIds.fetchServices = this.getNextMessageId();
-        this.send({
-            id: this.lastMessageIds.fetchServices,
-            type: "get_services",
-        });
+    private async fetchServices(): Promise<void> {
+        try {
+            const services = await this.sendRequest<ServicesPayload>({
+                type: "get_services",
+            });
+            if (services) {
+                this.emit("services", services);
+            }
+        } catch (error) {
+            logHomeAssistantEvent(error);
+        }
     }
 
     private send(payload: Record<string, unknown>): void {
-        if (!this.socket || this.socket.readyState !== WebSocket.OPEN) {
-            throw new Error("Home Assistant websocket is not connected.");
-        }
-        this.socket.send(JSON.stringify(payload));
+        this.getSocket().send(JSON.stringify(payload));
+    }
+
+    private sendRequest<T>(payload: Record<string, unknown>): Promise<T> {
+        return new Promise<T>((resolve, reject) => {
+            let socket: WebSocket;
+            try {
+                socket = this.getSocket();
+            } catch (error) {
+                reject(error instanceof Error ? error : new Error(String(error)));
+                return;
+            }
+
+            const id = this.getNextMessageId();
+            const message = {
+                ...payload,
+                id,
+            };
+
+            const timeout = setTimeout(() => {
+                this.pendingRequests.delete(id);
+                reject(new Error(`Home Assistant request ${id} timed out after ${REQUEST_TIMEOUT_MS} ms.`));
+            }, REQUEST_TIMEOUT_MS);
+
+            this.pendingRequests.set(id, {
+                resolve: (value) => {
+                    clearTimeout(timeout);
+                    resolve(value as T);
+                },
+                reject: (error) => {
+                    clearTimeout(timeout);
+                    reject(error);
+                },
+            });
+
+            try {
+                socket.send(JSON.stringify(message));
+            } catch (error) {
+                clearTimeout(timeout);
+                this.pendingRequests.delete(id);
+                reject(error instanceof Error ? error : new Error(String(error)));
+            }
+        });
     }
 
     private getNextMessageId(): number {
@@ -226,16 +252,89 @@ export class HomeAssistantClient extends EventEmitter {
         return this.messageId;
     }
 
+    private resolvePendingRequest(message: HomeAssistantMessage): boolean {
+        if (typeof message.id !== "number") {
+            return false;
+        }
+
+        const pending = this.pendingRequests.get(message.id);
+        if (!pending) {
+            return false;
+        }
+
+        this.pendingRequests.delete(message.id);
+
+        if (message.success === false) {
+            const errorMessage = message.error?.message ?? "Home Assistant returned an error.";
+            pending.reject(new Error(errorMessage));
+            return true;
+        }
+
+        pending.resolve(message.result);
+        return true;
+    }
+
+    private rejectAllPending(error: Error): void {
+        this.pendingRequests.forEach((pending) => pending.reject(error));
+        this.pendingRequests.clear();
+    }
+
+    private handleAuthOk(): void {
+        logMessage("Authenticated with Home Assistant.");
+        this.emitConnectionState(ConnectionState.CONNECTED);
+        void this.fetchStates();
+        void this.fetchServices();
+        this.subscribeToStateChanges();
+    }
+
+    private handleAuthInvalid(): void {
+        logMessage("Home Assistant rejected the access token.");
+        this.emitConnectionState(ConnectionState.INVALID_TOKEN);
+        this.socket?.close();
+    }
+
+    private handleEventMessage(message: HomeAssistantMessage): boolean {
+        if (!message.event) {
+            return false;
+        }
+        const entityId = message.event.data.entity_id;
+        const newState = message.event.data.new_state;
+        this.emit("stateChanged", entityId, newState);
+        return true;
+    }
+
+    private parseMessage(data: WebSocket.RawData): HomeAssistantMessage | null {
+        try {
+            return JSON.parse(data.toString()) as HomeAssistantMessage;
+        } catch (error) {
+            logHomeAssistantEvent(error);
+            return null;
+        }
+    }
+
+    private getSocket(): WebSocket {
+        if (!this.socket || this.socket.readyState !== WebSocket.OPEN) {
+            throw new Error("Home Assistant websocket is not connected.");
+        }
+        return this.socket;
+    }
+
+    private closeSocketSilently(): void {
+        if (!this.socket) {
+            return;
+        }
+        this.socket.removeAllListeners();
+        this.socket.close();
+        this.socket = null;
+    }
+
     private hasCredentials(settings: GlobalSettings): boolean {
         return Boolean(settings.homeAssistantAddress && settings.accessToken);
     }
 
     private disconnect(): void {
-        if (this.socket) {
-            this.socket.removeAllListeners();
-            this.socket.close();
-            this.socket = null;
-        }
+        this.closeSocketSilently();
+        this.rejectAllPending(new Error("Home Assistant websocket disconnected."));
         this.clearReconnectTimer();
     }
 

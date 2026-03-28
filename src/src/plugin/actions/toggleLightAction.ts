@@ -1,12 +1,12 @@
 import { action, KeyDownEvent } from "@elgato/streamdeck";
 
-import type { ActionSettings, HomeAssistantEntity } from "../../shared/types";
-import { ColorUtils } from "../../shared/colorUtils";
-import { logMessage } from "../logging";
-import { homeAssistantClient } from "../services/homeAssistantClient";
-import { solidColorSvg } from "../utils/svg";
+import type { ActionSettings, HomeAssistantEntity } from "../../../shared/types";
+import { ColorUtils } from "../../../shared/colorUtils";
+import { logMessage } from "../../logging";
+import { solidColorSvg } from "../../utils/svg";
 import { BaseAction } from "./baseAction";
-import { ActionType } from "../../shared/actionTypes";
+import { ActionType } from "../../../shared/actionTypes";
+import { homeAssistantClient } from "../../services/homeAssistantClient";
 
 const LIGHT_OFF_COLOR = "#000000";
 
@@ -27,7 +27,7 @@ export class ToggleLightAction extends BaseAction {
         }
 
         try {
-            homeAssistantClient.callService("light", "toggle", { entity_id: entityId });
+            await homeAssistantClient.callService("light", "toggle", { entity_id: entityId });
             await ev.action.showOk();
         } catch (error) {
             logMessage(error);

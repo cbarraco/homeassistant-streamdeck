@@ -1,7 +1,7 @@
 import streamDeck from "@elgato/streamdeck";
 
 import type { GlobalSettings } from "../shared/types";
-import { registerActions } from "./actions/index";
+import { registerActions } from "./plugin/actions/index";
 import { logMessage } from "./logging";
 import { homeAssistantClient } from "./services/homeAssistantClient";
 import { cacheManager } from "./state/cache";

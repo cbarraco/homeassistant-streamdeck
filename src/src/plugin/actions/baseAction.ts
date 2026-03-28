@@ -13,10 +13,10 @@ import {
 import type { JsonValue } from "@elgato/utils";
 import streamDeck from "@elgato/streamdeck";
 
-import { PluginCommands, PropertyInspectorCommands } from "../../shared/commands";
-import type { ActionSettings, HomeAssistantCache } from "../../shared/types";
-import { cacheManager } from "../state/cache";
-import { homeAssistantClient } from "../services/homeAssistantClient";
+import { PluginCommands, PropertyInspectorCommands } from "../../../shared/commands";
+import type { ActionSettings, HomeAssistantCache } from "../../../shared/types";
+import { cacheManager } from "../../state/cache";
+import { homeAssistantClient } from "../../services/homeAssistantClient";
 
 interface RegisteredContext<TSettings extends ActionSettings> {
     action: KeyAction<TSettings>;

@@ -1,12 +1,12 @@
 import { action, KeyAction, KeyDownEvent, DidReceiveSettingsEvent, WillAppearEvent } from "@elgato/streamdeck";
 
-import { ColorUtils } from "../../shared/colorUtils";
-import type { ActionSettings } from "../../shared/types";
-import { logMessage } from "../logging";
-import { homeAssistantClient } from "../services/homeAssistantClient";
-import { solidColorSvg } from "../utils/svg";
+import { ColorUtils } from "../../../shared/colorUtils";
+import type { ActionSettings } from "../../../shared/types";
+import { logMessage } from "../../logging";
+import { solidColorSvg } from "../../utils/svg";
 import { BaseAction } from "./baseAction";
-import { ActionType } from "../../shared/actionTypes";
+import { ActionType } from "../../../shared/actionTypes";
+import { homeAssistantClient } from "../../services/homeAssistantClient";
 
 @action({ UUID: ActionType.SET_LIGHT_COLOR })
 export class SetLightColorAction extends BaseAction {
@@ -53,7 +53,7 @@ export class SetLightColorAction extends BaseAction {
         }
 
         try {
-            homeAssistantClient.callService("light", "turn_on", serviceData);
+            await homeAssistantClient.callService("light", "turn_on", serviceData);
             await ev.action.showOk();
         } catch (error) {
             logMessage(error);
