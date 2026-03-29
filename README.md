@@ -16,6 +16,7 @@ Home Assistant integration with the Elgato Stream Deck
 - Action that can call a service
 - Action that can trigger an automation
 - Action that can run a script
+- Action that can arm or disarm an alarm control panel
 - Action that shows a live camera thumbnail
 - Action that controls a media player
 

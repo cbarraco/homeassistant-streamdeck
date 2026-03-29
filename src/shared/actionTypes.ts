@@ -8,6 +8,7 @@ export const ActionType = {
     MEDIA_PLAYER: "ca.barraco.carlo.homeassistant.action.mediaplayer",
     TRIGGER_AUTOMATION: "ca.barraco.carlo.homeassistant.action.triggerautomation",
     RUN_SCRIPT: "ca.barraco.carlo.homeassistant.action.runscript",
+    ALARM_CONTROL_PANEL: "ca.barraco.carlo.homeassistant.action.alarmcontrolpanel",
 } as const;
 
 export type ActionTypeValue = (typeof ActionType)[keyof typeof ActionType];

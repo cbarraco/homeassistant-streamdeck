@@ -9,6 +9,7 @@ import { ToggleLightAction } from "./toggleLight";
 import { ToggleSwitchAction } from "./toggleSwitch";
 import { TriggerAutomationAction } from "./triggerAutomation";
 import { RunScriptAction } from "./runScript";
+import { AlarmControlPanelAction } from "./alarmControlPanel";
 
 export function registerActions(): void {
     streamDeck.actions.registerAction(new ToggleSwitchAction());
@@ -20,4 +21,5 @@ export function registerActions(): void {
     streamDeck.actions.registerAction(new MediaPlayerAction());
     streamDeck.actions.registerAction(new TriggerAutomationAction());
     streamDeck.actions.registerAction(new RunScriptAction());
+    streamDeck.actions.registerAction(new AlarmControlPanelAction());
 }

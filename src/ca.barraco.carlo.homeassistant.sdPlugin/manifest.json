@@ -117,6 +117,19 @@
       "Tooltip": "Runs a script in Home Assistant",
       "UUID": "ca.barraco.carlo.homeassistant.action.runscript",
       "PropertyInspectorPath": "ui/index.html"
+    },
+    {
+      "Icon": "imgs/actions/callService/callService",
+      "Name": "Alarm Control Panel",
+      "States": [
+        {
+          "Image": "imgs/actions/callService/callService",
+          "Title": "Alarm"
+        }
+      ],
+      "Tooltip": "Arms or disarms an alarm control panel in Home Assistant",
+      "UUID": "ca.barraco.carlo.homeassistant.action.alarmcontrolpanel",
+      "PropertyInspectorPath": "ui/index.html"
     }
   ],
   "SDKVersion": 3,

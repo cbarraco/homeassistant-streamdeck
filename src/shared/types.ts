@@ -45,4 +45,5 @@ export interface ActionSettings extends JsonObject {
     direction?: BrightnessDirection;
     refreshInterval?: number;
     mediaCommand?: string;
+    alarmCommand?: string;
 }
