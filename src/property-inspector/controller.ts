@@ -15,6 +15,7 @@ import { StepLightBrightnessPIAction as StepLightBrightnessActionPI } from "./pa
 import { CameraFeedPIAction as CameraFeedActionPI } from "./panels/cameraFeed";
 import { MediaPlayerPIAction as MediaPlayerActionPI } from "./panels/mediaPlayer";
 import { TriggerAutomationPIAction as TriggerAutomationActionPI } from "./panels/triggerAutomation";
+import { RunScriptPIAction as RunScriptActionPI } from "./panels/runScript";
 
 interface StreamDeckPIMessage {
     event: string;
@@ -166,6 +167,9 @@ export class PropertyInspectorController {
         }
         if (action === ActionType.TRIGGER_AUTOMATION) {
             return new TriggerAutomationActionPI(uuid, actionInfo);
+        }
+        if (action === ActionType.RUN_SCRIPT) {
+            return new RunScriptActionPI(uuid, actionInfo);
         }
         logMessage(`Unknown action type for PI: ${action}`);
         return null;

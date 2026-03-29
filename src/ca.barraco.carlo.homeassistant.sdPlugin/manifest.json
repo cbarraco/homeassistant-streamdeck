@@ -104,6 +104,19 @@
       "Tooltip": "Triggers an automation in Home Assistant",
       "UUID": "ca.barraco.carlo.homeassistant.action.triggerautomation",
       "PropertyInspectorPath": "ui/index.html"
+    },
+    {
+      "Icon": "imgs/actions/callService/callService",
+      "Name": "Run a script",
+      "States": [
+        {
+          "Image": "imgs/actions/callService/callService",
+          "Title": "Script"
+        }
+      ],
+      "Tooltip": "Runs a script in Home Assistant",
+      "UUID": "ca.barraco.carlo.homeassistant.action.runscript",
+      "PropertyInspectorPath": "ui/index.html"
     }
   ],
   "SDKVersion": 3,

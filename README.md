@@ -12,7 +12,12 @@ Home Assistant integration with the Elgato Stream Deck
 - Action that can toggle a switch
 - Action that can toggle a light
 - Action that set a light to a specific color
+- Action that can step a light's brightness up or down
 - Action that can call a service
+- Action that can trigger an automation
+- Action that can run a script
+- Action that shows a live camera thumbnail
+- Action that controls a media player
 
 See the Projects tab for upcoming features
 

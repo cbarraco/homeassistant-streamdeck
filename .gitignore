@@ -1,5 +1,6 @@
 build
 data
+.claude
 src/ca.barraco.carlo.homeassistant.sdPlugin/node_modules/
 src/ca.barraco.carlo.homeassistant.sdPlugin/lib/*.js
 src/ca.barraco.carlo.homeassistant.sdPlugin/lib/*.js.map
