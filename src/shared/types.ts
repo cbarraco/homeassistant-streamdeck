@@ -7,6 +7,7 @@ export interface HomeAssistantEntityAttributes extends JsonObject {
     min_mireds?: number;
     max_mireds?: number;
     supported_features?: number;
+    supported_color_modes?: string[];
     [key: string]: JsonValue | undefined;
 }
 

@@ -49,7 +49,7 @@ export class SetLightColorAction extends BaseAction {
                 serviceData.rgb_color = [components.red, components.green, components.blue];
             }
         } else if (settings?.colorType === "Temperature" && typeof settings.temperature === "number") {
-            serviceData.color_temp = Math.round(settings.temperature);
+            serviceData.color_temp_kelvin = Math.round(settings.temperature);
         }
 
         try {
@@ -73,8 +73,8 @@ export class SetLightColorAction extends BaseAction {
         }
 
         if (settings.colorType === "Temperature" && typeof settings.temperature === "number") {
-            const hex = ColorUtils.miredToHex(settings.temperature);
-            await keyAction.setImage(solidColorSvg(hex));
+            const { red, green, blue } = ColorUtils.kelvinToRgb(settings.temperature);
+            await keyAction.setImage(solidColorSvg(ColorUtils.rgbToHex(red, green, blue)));
             return;
         }
 

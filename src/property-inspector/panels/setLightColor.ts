@@ -6,12 +6,10 @@ import { ActionPI, type PropertyInspectorActionInfo } from "../action";
 const LightSupportedFeaturesBitmask = {
     SUPPORT_BRIGHTNESS: 1,
     SUPPORT_COLOR_TEMP: 2,
-    SUPPORT_EFFECT: 4,
-    SUPPORT_FLASH: 8,
     SUPPORT_COLOR: 16,
-    SUPPORT_TRANSITION: 32,
-    SUPPORT_WHITE_VALUE: 128,
 } as const;
+
+const RGB_COLOR_MODES = ["rgb", "hs", "xy"];
 
 export class SetLightColorPIAction extends ActionPI {
     constructor(uuid: string, actionInfo: PropertyInspectorActionInfo) {
@@ -102,16 +100,8 @@ export class SetLightColorPIAction extends ActionPI {
             return;
         }
 
-        const supportedFeatures = Number(lightEntity.attributes.supported_features ?? 0);
-        const lightSupportsBrightness =
-            (supportedFeatures & LightSupportedFeaturesBitmask.SUPPORT_BRIGHTNESS) ===
-            LightSupportedFeaturesBitmask.SUPPORT_BRIGHTNESS;
-        const lightSupportsRgb =
-            (supportedFeatures & LightSupportedFeaturesBitmask.SUPPORT_COLOR) ===
-            LightSupportedFeaturesBitmask.SUPPORT_COLOR;
-        const lightSupportsTemperature =
-            (supportedFeatures & LightSupportedFeaturesBitmask.SUPPORT_COLOR_TEMP) ===
-            LightSupportedFeaturesBitmask.SUPPORT_COLOR_TEMP;
+        const { lightSupportsBrightness, lightSupportsRgb, lightSupportsTemperature } =
+            this.resolveLightCapabilities(lightEntity);
 
         if (lightSupportsBrightness) {
             this.addBrightnessSlider();
@@ -185,6 +175,29 @@ export class SetLightColorPIAction extends ActionPI {
         });
     }
 
+    private resolveLightCapabilities(entity: HomeAssistantEntity): {
+        lightSupportsBrightness: boolean;
+        lightSupportsRgb: boolean;
+        lightSupportsTemperature: boolean;
+    } {
+        const colorModes = entity.attributes.supported_color_modes;
+        if (Array.isArray(colorModes)) {
+            return {
+                lightSupportsBrightness: colorModes.some((m) => m !== "onoff"),
+                lightSupportsRgb: colorModes.some((m) => RGB_COLOR_MODES.includes(m)),
+                lightSupportsTemperature: colorModes.includes("color_temp"),
+            };
+        }
+
+        // Fallback for older Home Assistant versions using supported_features bitmask
+        const features = Number(entity.attributes.supported_features ?? 0);
+        return {
+            lightSupportsBrightness: (features & LightSupportedFeaturesBitmask.SUPPORT_BRIGHTNESS) !== 0,
+            lightSupportsRgb: (features & LightSupportedFeaturesBitmask.SUPPORT_COLOR) !== 0,
+            lightSupportsTemperature: (features & LightSupportedFeaturesBitmask.SUPPORT_COLOR_TEMP) !== 0,
+        };
+    }
+
     private addColorTypeOption(selector: HTMLSelectElement, value: string): void {
         const option = document.createElement("option");
         option.value = value;
@@ -241,16 +254,25 @@ export class SetLightColorPIAction extends ActionPI {
             return;
         }
 
-        const minMired = Number(entity.attributes.min_mireds ?? 0);
-        const maxMired = Number(entity.attributes.max_mireds ?? 0);
+        const minKelvin = entity.attributes.min_color_temp_kelvin != null
+            ? Number(entity.attributes.min_color_temp_kelvin)
+            : entity.attributes.max_mireds != null
+                ? Math.round(1_000_000 / Number(entity.attributes.max_mireds))
+                : 2000;
+
+        const maxKelvin = entity.attributes.max_color_temp_kelvin != null
+            ? Number(entity.attributes.max_color_temp_kelvin)
+            : entity.attributes.min_mireds != null
+                ? Math.round(1_000_000 / Number(entity.attributes.min_mireds))
+                : 6500;
 
         lightWrapper.innerHTML = `
                 <div type="range" class="sdpi-item">
                     <div class="sdpi-item-label">Temperature</div>
                     <div class="sdpi-item-value">
-                        <span class="clickable" value="${minMired}" id="min">${minMired}</span>
-                        <input id="temperature" type="range" min="${minMired}" max="${maxMired}" value="${minMired}">
-                        <span class="clickable" value="${maxMired}" id="max">${maxMired}</span>
+                        <span class="clickable" value="${minKelvin}" id="min">${minKelvin}K</span>
+                        <input id="temperature" type="range" min="${minKelvin}" max="${maxKelvin}" value="${minKelvin}">
+                        <span class="clickable" value="${maxKelvin}" id="max">${maxKelvin}K</span>
                     </div>
                 </div>`;
 
@@ -262,7 +284,7 @@ export class SetLightColorPIAction extends ActionPI {
         const defaultValue =
             typeof this.settings.temperature === "number"
                 ? this.settings.temperature
-                : (minMired + maxMired) / 2;
+                : Math.round((minKelvin + maxKelvin) / 2);
         temperatureSlider.value = String(defaultValue);
         this.settings.temperature = defaultValue;
         this.settings.color = undefined;
