@@ -14,6 +14,7 @@ import { DisplayStateAction } from "./displayState";
 import { ControlCoverAction } from "./controlCover";
 import { ClimateControlAction } from "./climateControl";
 import { LockControlAction } from "./lockControl";
+import { TimerControlAction } from "./timerControl";
 
 export function registerActions(): void {
     streamDeck.actions.registerAction(new ToggleSwitchAction());
@@ -30,4 +31,5 @@ export function registerActions(): void {
     streamDeck.actions.registerAction(new ControlCoverAction());
     streamDeck.actions.registerAction(new ClimateControlAction());
     streamDeck.actions.registerAction(new LockControlAction());
+    streamDeck.actions.registerAction(new TimerControlAction());
 }

@@ -13,6 +13,7 @@ export const ActionType = {
     CONTROL_COVER: "ca.barraco.carlo.homeassistant.action.controlcover",
     CLIMATE_CONTROL: "ca.barraco.carlo.homeassistant.action.climatecontrol",
     LOCK_CONTROL: "ca.barraco.carlo.homeassistant.action.lockcontrol",
+    TIMER_CONTROL: "ca.barraco.carlo.homeassistant.action.timercontrol",
 } as const;
 
 export type ActionTypeValue = (typeof ActionType)[keyof typeof ActionType];

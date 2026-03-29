@@ -51,4 +51,5 @@ export interface ActionSettings extends JsonObject {
     climateCommand?: string;
     hvacMode?: string;
     lockCommand?: string;
+    timerCommand?: string;
 }

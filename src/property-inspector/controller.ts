@@ -21,6 +21,7 @@ import { DisplayStatePIAction as DisplayStateActionPI } from "./panels/displaySt
 import { ControlCoverPIAction as ControlCoverActionPI } from "./panels/controlCover";
 import { ClimateControlPIAction as ClimateControlActionPI } from "./panels/climateControl";
 import { LockControlPIAction as LockControlActionPI } from "./panels/lockControl";
+import { TimerControlPIAction as TimerControlActionPI } from "./panels/timerControl";
 
 interface StreamDeckPIMessage {
     event: string;
@@ -190,6 +191,9 @@ export class PropertyInspectorController {
         }
         if (action === ActionType.LOCK_CONTROL) {
             return new LockControlActionPI(uuid, actionInfo);
+        }
+        if (action === ActionType.TIMER_CONTROL) {
+            return new TimerControlActionPI(uuid, actionInfo);
         }
         logMessage(`Unknown action type for PI: ${action}`);
         return null;

@@ -182,6 +182,19 @@
       "Tooltip": "Locks, unlocks, or toggles a lock entity in Home Assistant and displays the current lock state",
       "UUID": "ca.barraco.carlo.homeassistant.action.lockcontrol",
       "PropertyInspectorPath": "ui/index.html"
+    },
+    {
+      "Icon": "imgs/actions/callService/callService",
+      "Name": "Timer Control",
+      "States": [
+        {
+          "Image": "imgs/actions/callService/callService",
+          "Title": "Timer"
+        }
+      ],
+      "Tooltip": "Starts, pauses, or cancels a Home Assistant timer and displays a live countdown on the button",
+      "UUID": "ca.barraco.carlo.homeassistant.action.timercontrol",
+      "PropertyInspectorPath": "ui/index.html"
     }
   ],
   "SDKVersion": 3,
