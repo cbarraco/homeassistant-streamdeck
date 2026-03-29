@@ -18,6 +18,7 @@ Home Assistant integration with the Elgato Stream Deck
 - Action that can run a script
 - Action that can arm or disarm an alarm control panel
 - Action that displays the current state of any entity on the button
+- Action that can open, close, stop, or toggle a cover (blinds, garage door, etc.)
 - Action that shows a live camera thumbnail
 - Action that controls a media player
 

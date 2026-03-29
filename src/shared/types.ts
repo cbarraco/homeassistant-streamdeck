@@ -46,4 +46,5 @@ export interface ActionSettings extends JsonObject {
     refreshInterval?: number;
     mediaCommand?: string;
     alarmCommand?: string;
+    coverCommand?: string;
 }

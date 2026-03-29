@@ -143,6 +143,19 @@
       "Tooltip": "Displays the current state of a Home Assistant entity on the button",
       "UUID": "ca.barraco.carlo.homeassistant.action.displaystate",
       "PropertyInspectorPath": "ui/index.html"
+    },
+    {
+      "Icon": "imgs/actions/callService/callService",
+      "Name": "Control a cover",
+      "States": [
+        {
+          "Image": "imgs/actions/callService/callService",
+          "Title": "Cover"
+        }
+      ],
+      "Tooltip": "Opens, closes, stops, or toggles a cover entity in Home Assistant",
+      "UUID": "ca.barraco.carlo.homeassistant.action.controlcover",
+      "PropertyInspectorPath": "ui/index.html"
     }
   ],
   "SDKVersion": 3,
