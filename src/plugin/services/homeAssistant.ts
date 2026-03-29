@@ -22,11 +22,6 @@ type HomeAssistantEvents = {
   stateChanged: [entityId: string, entity: HomeAssistantEntity];
 };
 
-type StateChangeListener = (
-  entityId: string,
-  entity: HomeAssistantEntity,
-) => void;
-
 interface HomeAssistantMessage {
   type: string;
   id?: number;
@@ -45,7 +40,7 @@ interface HomeAssistantMessage {
 }
 
 const RECONNECT_DELAY_MS = 30_000;
-const REQUEST_TIMEOUT_MS = 15_000;
+const DEFAULT_TIMEOUT_MS = 15_000;
 
 export class HomeAssistantClient extends EventEmitter<HomeAssistantEvents> {
   private socket: WebSocket | null = null;
@@ -53,9 +48,8 @@ export class HomeAssistantClient extends EventEmitter<HomeAssistantEvents> {
   private settings: GlobalSettings | null = null;
   private messageId = 0;
   private readonly pendingRequests = new Map<number, PendingRequest>();
-  private readonly stateChangeListeners = new Set<StateChangeListener>();
   private stateChangeSubscriptionActive = false;
-  private unsubscribeFromStateChanges: (() => void) | null = null;
+  private stateChangeSubscriptionId: number | null = null;
 
   constructor() {
     super();
@@ -108,17 +102,19 @@ export class HomeAssistantClient extends EventEmitter<HomeAssistantEvents> {
     domain: string,
     service: string,
     serviceData: Record<string, unknown>,
+    timeoutMs = DEFAULT_TIMEOUT_MS,
   ): Promise<unknown> {
     return this.sendRequest({
       type: "call_service",
       domain,
       service,
       service_data: serviceData,
-    });
+    }, timeoutMs);
   }
 
-  sendRawMessage<T = unknown>(payload: Record<string, unknown>): Promise<T> {
-    return this.sendRequest<T>(payload);
+  async getEntityStates(timeoutMs = DEFAULT_TIMEOUT_MS): Promise<HomeAssistantEntity[]> {
+    const result = await this.sendRequest<HomeAssistantEntity[]>({ type: "get_states" }, timeoutMs);
+    return Array.isArray(result) ? result : [];
   }
 
   private connect(): void {
@@ -208,28 +204,22 @@ export class HomeAssistantClient extends EventEmitter<HomeAssistantEvents> {
     logHomeAssistantEvent(message);
   }
 
-  private subscribeToStateChanges(listener: StateChangeListener): () => void {
-    if (!this.stateChangeSubscriptionActive) {
-      try {
-        this.send({
-          id: this.getNextMessageId(),
-          type: "subscribe_events",
-          event_type: "state_changed",
-        });
-      } catch (error) {
-        throw error instanceof Error ? error : new Error(String(error));
-      }
-      this.stateChangeSubscriptionActive = true;
+  private subscribeToStateChanges(): void {
+    if (this.stateChangeSubscriptionActive) {
+      return;
     }
-
-    this.stateChangeListeners.add(listener);
-
-    return () => {
-      this.stateChangeListeners.delete(listener);
-      if (this.stateChangeListeners.size === 0) {
-        this.stateChangeSubscriptionActive = false;
-      }
-    };
+    const id = this.getNextMessageId();
+    try {
+      this.send({
+        id,
+        type: "subscribe_events",
+        event_type: "state_changed",
+      });
+    } catch (error) {
+      throw error instanceof Error ? error : new Error(String(error));
+    }
+    this.stateChangeSubscriptionId = id;
+    this.stateChangeSubscriptionActive = true;
   }
 
   private async fetchStates(): Promise<void> {
@@ -262,7 +252,7 @@ export class HomeAssistantClient extends EventEmitter<HomeAssistantEvents> {
     this.getSocket().send(JSON.stringify(payload));
   }
 
-  private sendRequest<T>(payload: Record<string, unknown>): Promise<T> {
+  private sendRequest<T>(payload: Record<string, unknown>, timeoutMs = DEFAULT_TIMEOUT_MS): Promise<T> {
     return new Promise<T>((resolve, reject) => {
       let socket: WebSocket;
       try {
@@ -282,10 +272,10 @@ export class HomeAssistantClient extends EventEmitter<HomeAssistantEvents> {
         this.pendingRequests.delete(id);
         reject(
           new Error(
-            `Home Assistant request ${id} timed out after ${REQUEST_TIMEOUT_MS} ms.`,
+            `Home Assistant request ${id} timed out after ${timeoutMs} ms.`,
           ),
         );
-      }, REQUEST_TIMEOUT_MS);
+      }, timeoutMs);
 
       this.pendingRequests.set(id, {
         resolve: (value) => {
@@ -348,11 +338,7 @@ export class HomeAssistantClient extends EventEmitter<HomeAssistantEvents> {
     void this.fetchServices();
     this.teardownStateChangeSubscription();
     try {
-      this.unsubscribeFromStateChanges = this.subscribeToStateChanges(
-        (entityId, entity) => {
-          this.emit("stateChanged", entityId, entity);
-        },
-      );
+      this.subscribeToStateChanges();
     } catch (error) {
       logHomeAssistantEvent(error);
     }
@@ -371,9 +357,7 @@ export class HomeAssistantClient extends EventEmitter<HomeAssistantEvents> {
     }
     const entityId = message.event.data.entity_id;
     const newState = message.event.data.new_state;
-    this.stateChangeListeners.forEach((listener) =>
-      listener(entityId, newState),
-    );
+    this.emit("stateChanged", entityId, newState);
     return true;
   }
 
@@ -435,10 +419,18 @@ export class HomeAssistantClient extends EventEmitter<HomeAssistantEvents> {
   }
 
   private teardownStateChangeSubscription(): void {
-    if (this.unsubscribeFromStateChanges) {
-      this.unsubscribeFromStateChanges();
-      this.unsubscribeFromStateChanges = null;
+    if (this.stateChangeSubscriptionId !== null && this.socket?.readyState === WebSocket.OPEN) {
+      try {
+        this.send({
+          id: this.getNextMessageId(),
+          type: "unsubscribe_events",
+          subscription: this.stateChangeSubscriptionId,
+        });
+      } catch (error) {
+        logHomeAssistantEvent(error);
+      }
     }
+    this.stateChangeSubscriptionId = null;
     this.stateChangeSubscriptionActive = false;
   }
 }

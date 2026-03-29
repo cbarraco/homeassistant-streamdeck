@@ -93,7 +93,7 @@ export class MediaPlayerAction extends BaseAction {
 
         // Fetch current state via get_states to get entity_picture immediately on appear
         try {
-            const states = await homeAssistantClient.sendRawMessage<HomeAssistantEntity[]>({ type: "get_states" });
+            const states = await homeAssistantClient.getEntityStates();
             const entity = states.find((e) => e.entity_id === settings.entityId);
             if (!entity) {
                 return;
