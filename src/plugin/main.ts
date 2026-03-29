@@ -1,10 +1,10 @@
 import streamDeck from "@elgato/streamdeck";
 
 import type { GlobalSettings, HomeAssistantEntity } from "../shared/types";
-import { registerActions } from "./plugin/actions/index";
+import { registerActions } from "./actions/index";
 import { logMessage } from "./logging";
 import { cacheManager } from "./state/cache";
-import { homeAssistantClient } from "./services/homeAssistantClient";
+import { homeAssistantClient } from "./services/homeAssistant";
 
 async function bootstrap(): Promise<void> {
   streamDeck.logger.setLevel("trace");

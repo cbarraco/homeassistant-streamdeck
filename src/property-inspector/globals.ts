@@ -1,4 +1,4 @@
-import type { PropertyInspectorCommand } from "./propertyInspector/commands";
+import type { PropertyInspectorCommand } from "./commands";
 import type { GlobalSettings } from "./state/store";
 export {
     appStore,

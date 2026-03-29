@@ -12,7 +12,7 @@ const sdPlugin = "ca.barraco.carlo.homeassistant.sdPlugin";
  * @type {import('rollup').RollupOptions}
  */
 const config = {
-    input: "src/plugin.ts",
+    input: "plugin/main.ts",
     output: {
         file: `${sdPlugin}/bin/plugin.js`,
         sourcemap: isWatching,

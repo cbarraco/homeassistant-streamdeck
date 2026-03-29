@@ -10,11 +10,11 @@
         "rootDir": "."
     },
     "include": [
-        "src/**/*.ts",
+        "plugin/**/*.ts",
         "shared/**/*.ts"
     ],
     "exclude": [
         "node_modules",
-        "src/ui-src"
+        "property-inspector"
     ]
 }

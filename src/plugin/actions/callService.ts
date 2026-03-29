@@ -1,10 +1,10 @@
 import { action, KeyDownEvent } from "@elgato/streamdeck";
 
-import type { ActionSettings } from "../../../shared/types";
-import { logMessage } from "../../logging";
-import { homeAssistantClient } from "../../services/homeAssistantClient";
-import { BaseAction } from "./baseAction";
-import { ActionType } from "../../../shared/actionTypes";
+import type { ActionSettings } from "../../shared/types";
+import { logMessage } from "../logging";
+import { homeAssistantClient } from "../services/homeAssistant";
+import { BaseAction } from "./base";
+import { ActionType } from "../../shared/actionTypes";
 
 @action({ UUID: ActionType.CALL_SERVICE })
 export class CallServiceAction extends BaseAction {

@@ -1,10 +1,10 @@
 import { action, KeyDownEvent, WillAppearEvent } from "@elgato/streamdeck";
 
-import type { ActionSettings, HomeAssistantEntity } from "../../../shared/types";
-import { logMessage } from "../../logging";
-import { BaseAction } from "./baseAction";
-import { ActionType } from "../../../shared/actionTypes";
-import { homeAssistantClient } from "../../services/homeAssistantClient";
+import type { ActionSettings, HomeAssistantEntity } from "../../shared/types";
+import { logMessage } from "../logging";
+import { BaseAction } from "./base";
+import { ActionType } from "../../shared/actionTypes";
+import { homeAssistantClient } from "../services/homeAssistant";
 
 // Commands that live under a different domain than media_player
 const DOMAIN_OVERRIDES: Partial<Record<string, string>> = {

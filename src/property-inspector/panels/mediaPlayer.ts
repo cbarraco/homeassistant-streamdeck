@@ -1,7 +1,7 @@
 import { logMessage } from "../logging";
 import type { HomeAssistantCache } from "../globals";
 import { saveSettings } from "../utils";
-import { ActionPI, type PropertyInspectorActionInfo } from "../propertyInspector/action";
+import { ActionPI, type PropertyInspectorActionInfo } from "../action";
 
 const MEDIA_COMMANDS = [
     { value: "media_play_pause", label: "Play / Pause" },

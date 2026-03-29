@@ -1,5 +1,5 @@
-import { logMessage } from "../../logging";
-import { appStore, type GlobalSettings } from "../../globals";
+import { logMessage } from "../logging";
+import { appStore, type GlobalSettings } from "../globals";
 import { PropertyInspectorCommands, type PropertyInspectorCommand } from "../commands";
 import { CredentialsCommands, type CredentialsCommand } from "./commands";
 

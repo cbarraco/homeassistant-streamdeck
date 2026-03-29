@@ -1,11 +1,11 @@
 import { action, KeyDownEvent } from "@elgato/streamdeck";
 
-import type { ActionSettings, HomeAssistantEntity } from "../../../shared/types";
-import { logMessage } from "../../logging";
-import { homeAssistantClient } from "../../services/homeAssistantClient";
-import { solidColorSvg } from "../../utils/svg";
-import { BaseAction } from "./baseAction";
-import { ActionType } from "../../../shared/actionTypes";
+import type { ActionSettings, HomeAssistantEntity } from "../../shared/types";
+import { logMessage } from "../logging";
+import { homeAssistantClient } from "../services/homeAssistant";
+import { solidColorSvg } from "../utils/svg";
+import { BaseAction } from "./base";
+import { ActionType } from "../../shared/actionTypes";
 
 const SWITCH_ON_COLOR = "#1976D2";
 const SWITCH_OFF_COLOR = "#FF5252";

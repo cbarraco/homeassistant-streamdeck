@@ -1,10 +1,10 @@
 import { action, KeyDownEvent } from "@elgato/streamdeck";
 
-import type { ActionSettings } from "../../../shared/types";
-import { logMessage } from "../../logging";
-import { BaseAction } from "./baseAction";
-import { ActionType } from "../../../shared/actionTypes";
-import { homeAssistantClient } from "../../services/homeAssistantClient";
+import type { ActionSettings } from "../../shared/types";
+import { logMessage } from "../logging";
+import { BaseAction } from "./base";
+import { ActionType } from "../../shared/actionTypes";
+import { homeAssistantClient } from "../services/homeAssistant";
 
 const DEFAULT_STEP = 10;
 

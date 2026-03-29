@@ -1,7 +1,7 @@
 import { logMessage } from "../logging";
 import { appStore, type HomeAssistantCache, type HomeAssistantEntity } from "../globals";
 import { saveSettings } from "../utils";
-import { ActionPI, type PropertyInspectorActionInfo } from "../propertyInspector/action";
+import { ActionPI, type PropertyInspectorActionInfo } from "../action";
 
 const LightSupportedFeaturesBitmask = {
     SUPPORT_BRIGHTNESS: 1,

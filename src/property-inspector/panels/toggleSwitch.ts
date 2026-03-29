@@ -2,7 +2,7 @@ import { logMessage } from "../logging";
 import type { HomeAssistantCache } from "../globals";
 import type { ActionSettings } from "../../shared/types";
 import { saveSettings } from "../utils";
-import { ActionPI, type PropertyInspectorActionInfo } from "../propertyInspector/action";
+import { ActionPI, type PropertyInspectorActionInfo } from "../action";
 
 export class ToggleSwitchPIAction extends ActionPI {
     constructor(uuid: string, actionInfo: PropertyInspectorActionInfo) {

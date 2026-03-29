@@ -1,12 +1,12 @@
 import { action, KeyAction, KeyDownEvent, DidReceiveSettingsEvent, WillAppearEvent } from "@elgato/streamdeck";
 
-import { ColorUtils } from "../../../shared/colorUtils";
-import type { ActionSettings } from "../../../shared/types";
-import { logMessage } from "../../logging";
-import { solidColorSvg } from "../../utils/svg";
-import { BaseAction } from "./baseAction";
-import { ActionType } from "../../../shared/actionTypes";
-import { homeAssistantClient } from "../../services/homeAssistantClient";
+import { ColorUtils } from "../../shared/colorUtils";
+import type { ActionSettings } from "../../shared/types";
+import { logMessage } from "../logging";
+import { solidColorSvg } from "../utils/svg";
+import { BaseAction } from "./base";
+import { ActionType } from "../../shared/actionTypes";
+import { homeAssistantClient } from "../services/homeAssistant";
 
 @action({ UUID: ActionType.SET_LIGHT_COLOR })
 export class SetLightColorAction extends BaseAction {

@@ -1,12 +1,12 @@
 import streamDeck from "@elgato/streamdeck";
 
-import { CallServiceAction } from "./callServiceAction";
-import { CameraFeedAction } from "./cameraFeedAction";
-import { MediaPlayerAction } from "./mediaPlayerAction";
-import { SetLightColorAction } from "./setLightColorAction";
-import { StepLightBrightnessAction } from "./stepLightBrightnessAction";
-import { ToggleLightAction } from "./toggleLightAction";
-import { ToggleSwitchAction } from "./toggleSwitchAction";
+import { CallServiceAction } from "./callService";
+import { CameraFeedAction } from "./cameraFeed";
+import { MediaPlayerAction } from "./mediaPlayer";
+import { SetLightColorAction } from "./setLightColor";
+import { StepLightBrightnessAction } from "./stepLightBrightness";
+import { ToggleLightAction } from "./toggleLight";
+import { ToggleSwitchAction } from "./toggleSwitch";
 
 export function registerActions(): void {
     streamDeck.actions.registerAction(new ToggleSwitchAction());

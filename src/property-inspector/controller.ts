@@ -1,19 +1,19 @@
-import { logStreamDeckEvent, logMessage } from "../logging";
-import { appStore, type GlobalSettings, type HomeAssistantCache } from "../globals";
+import { logStreamDeckEvent, logMessage } from "./logging";
+import { appStore, type GlobalSettings, type HomeAssistantCache } from "./globals";
 import { CredentialsCommands } from "./credentials/commands";
 import { PropertyInspectorCommands, type PropertyInspectorCommand } from "./commands";
-import { PluginCommands } from "../../shared/commands";
-import { ActionType, type ActionTypeValue } from "../../shared/actionTypes";
-import { registerPluginOrPI, requestGlobalSettings, saveGlobalSettings, sendToPlugin } from "../utils";
-import type { ActionSettings } from "../../shared/types";
+import { PluginCommands } from "../shared/commands";
+import { ActionType, type ActionTypeValue } from "../shared/actionTypes";
+import { registerPluginOrPI, requestGlobalSettings, saveGlobalSettings, sendToPlugin } from "./utils";
+import type { ActionSettings } from "../shared/types";
 import { ActionPI, type PropertyInspectorActionInfo } from "./action";
-import { ToggleSwitchPIAction as ToggleSwitchActionPI } from "../actions/toggleSwitch";
-import { CallServicePIAction as CallServiceActionPI } from "../actions/callService";
-import { ToggleLightPIAction as ToggleLightActionPI } from "../actions/toggleLight";
-import { SetLightColorPIAction as SetLightColorActionPI } from "../actions/setLightColor";
-import { StepLightBrightnessPIAction as StepLightBrightnessActionPI } from "../actions/stepLightBrightness";
-import { CameraFeedPIAction as CameraFeedActionPI } from "../actions/cameraFeed";
-import { MediaPlayerPIAction as MediaPlayerActionPI } from "../actions/mediaPlayer";
+import { ToggleSwitchPIAction as ToggleSwitchActionPI } from "./panels/toggleSwitch";
+import { CallServicePIAction as CallServiceActionPI } from "./panels/callService";
+import { ToggleLightPIAction as ToggleLightActionPI } from "./panels/toggleLight";
+import { SetLightColorPIAction as SetLightColorActionPI } from "./panels/setLightColor";
+import { StepLightBrightnessPIAction as StepLightBrightnessActionPI } from "./panels/stepLightBrightness";
+import { CameraFeedPIAction as CameraFeedActionPI } from "./panels/cameraFeed";
+import { MediaPlayerPIAction as MediaPlayerActionPI } from "./panels/mediaPlayer";
 
 interface StreamDeckPIMessage {
     event: string;

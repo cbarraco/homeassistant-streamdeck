@@ -1,7 +1,7 @@
-import { logMessage } from "../logging";
-import type { ActionTypeValue } from "../../shared/actionTypes";
-import type { HomeAssistantCache } from "../globals";
-import type { ActionSettings } from "../../shared/types";
+import { logMessage } from "./logging";
+import type { ActionTypeValue } from "../shared/actionTypes";
+import type { HomeAssistantCache } from "./globals";
+import type { ActionSettings } from "../shared/types";
 
 export interface PropertyInspectorActionInfo {
     action: ActionTypeValue;
