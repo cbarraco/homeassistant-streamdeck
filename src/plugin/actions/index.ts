@@ -7,6 +7,7 @@ import { SetLightColorAction } from "./setLightColor";
 import { StepLightBrightnessAction } from "./stepLightBrightness";
 import { ToggleLightAction } from "./toggleLight";
 import { ToggleSwitchAction } from "./toggleSwitch";
+import { TriggerAutomationAction } from "./triggerAutomation";
 
 export function registerActions(): void {
     streamDeck.actions.registerAction(new ToggleSwitchAction());
@@ -16,4 +17,5 @@ export function registerActions(): void {
     streamDeck.actions.registerAction(new StepLightBrightnessAction());
     streamDeck.actions.registerAction(new CameraFeedAction());
     streamDeck.actions.registerAction(new MediaPlayerAction());
+    streamDeck.actions.registerAction(new TriggerAutomationAction());
 }

@@ -91,6 +91,19 @@
       "Tooltip": "Controls a media player entity in Home Assistant",
       "UUID": "ca.barraco.carlo.homeassistant.action.mediaplayer",
       "PropertyInspectorPath": "ui/index.html"
+    },
+    {
+      "Icon": "imgs/actions/callService/callService",
+      "Name": "Trigger an automation",
+      "States": [
+        {
+          "Image": "imgs/actions/callService/callService",
+          "Title": "Automation"
+        }
+      ],
+      "Tooltip": "Triggers an automation in Home Assistant",
+      "UUID": "ca.barraco.carlo.homeassistant.action.triggerautomation",
+      "PropertyInspectorPath": "ui/index.html"
     }
   ],
   "SDKVersion": 3,

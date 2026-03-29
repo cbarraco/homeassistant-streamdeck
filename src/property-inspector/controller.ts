@@ -14,6 +14,7 @@ import { SetLightColorPIAction as SetLightColorActionPI } from "./panels/setLigh
 import { StepLightBrightnessPIAction as StepLightBrightnessActionPI } from "./panels/stepLightBrightness";
 import { CameraFeedPIAction as CameraFeedActionPI } from "./panels/cameraFeed";
 import { MediaPlayerPIAction as MediaPlayerActionPI } from "./panels/mediaPlayer";
+import { TriggerAutomationPIAction as TriggerAutomationActionPI } from "./panels/triggerAutomation";
 
 interface StreamDeckPIMessage {
     event: string;
@@ -162,6 +163,9 @@ export class PropertyInspectorController {
         }
         if (action === ActionType.MEDIA_PLAYER) {
             return new MediaPlayerActionPI(uuid, actionInfo);
+        }
+        if (action === ActionType.TRIGGER_AUTOMATION) {
+            return new TriggerAutomationActionPI(uuid, actionInfo);
         }
         logMessage(`Unknown action type for PI: ${action}`);
         return null;
