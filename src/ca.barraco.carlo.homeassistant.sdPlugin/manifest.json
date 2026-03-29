@@ -156,6 +156,19 @@
       "Tooltip": "Opens, closes, stops, or toggles a cover entity in Home Assistant",
       "UUID": "ca.barraco.carlo.homeassistant.action.controlcover",
       "PropertyInspectorPath": "ui/index.html"
+    },
+    {
+      "Icon": "imgs/actions/callService/callService",
+      "Name": "Control Climate/Thermostat",
+      "States": [
+        {
+          "Image": "imgs/actions/callService/callService",
+          "Title": "Climate"
+        }
+      ],
+      "Tooltip": "Controls a climate/thermostat entity in Home Assistant — set HVAC mode or target temperature, and displays current temperature",
+      "UUID": "ca.barraco.carlo.homeassistant.action.climatecontrol",
+      "PropertyInspectorPath": "ui/index.html"
     }
   ],
   "SDKVersion": 3,

@@ -48,4 +48,6 @@ export interface ActionSettings extends JsonObject {
     mediaCommand?: string;
     alarmCommand?: string;
     coverCommand?: string;
+    climateCommand?: string;
+    hvacMode?: string;
 }
