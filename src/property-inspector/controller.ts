@@ -17,6 +17,7 @@ import { MediaPlayerPIAction as MediaPlayerActionPI } from "./panels/mediaPlayer
 import { TriggerAutomationPIAction as TriggerAutomationActionPI } from "./panels/triggerAutomation";
 import { RunScriptPIAction as RunScriptActionPI } from "./panels/runScript";
 import { AlarmControlPanelPIAction as AlarmControlPanelActionPI } from "./panels/alarmControlPanel";
+import { DisplayStatePIAction as DisplayStateActionPI } from "./panels/displayState";
 
 interface StreamDeckPIMessage {
     event: string;
@@ -174,6 +175,9 @@ export class PropertyInspectorController {
         }
         if (action === ActionType.ALARM_CONTROL_PANEL) {
             return new AlarmControlPanelActionPI(uuid, actionInfo);
+        }
+        if (action === ActionType.DISPLAY_STATE) {
+            return new DisplayStateActionPI(uuid, actionInfo);
         }
         logMessage(`Unknown action type for PI: ${action}`);
         return null;

@@ -10,6 +10,7 @@ import { ToggleSwitchAction } from "./toggleSwitch";
 import { TriggerAutomationAction } from "./triggerAutomation";
 import { RunScriptAction } from "./runScript";
 import { AlarmControlPanelAction } from "./alarmControlPanel";
+import { DisplayStateAction } from "./displayState";
 
 export function registerActions(): void {
     streamDeck.actions.registerAction(new ToggleSwitchAction());
@@ -22,4 +23,5 @@ export function registerActions(): void {
     streamDeck.actions.registerAction(new TriggerAutomationAction());
     streamDeck.actions.registerAction(new RunScriptAction());
     streamDeck.actions.registerAction(new AlarmControlPanelAction());
+    streamDeck.actions.registerAction(new DisplayStateAction());
 }
