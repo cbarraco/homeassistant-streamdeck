@@ -8,7 +8,8 @@
     "build:plugin": "rollup -c",
     "build:ui": "esbuild ui-src/propertyInspector/main.ts ui-src/propertyInspector/credentials/main.ts --bundle --format=esm --platform=browser --outdir=ca.barraco.carlo.homeassistant.sdPlugin/ui/js --sourcemap",
     "watch": "rollup -c -w --watch.onEnd=\"streamdeck restart ca.barraco.carlo.homeassistant\"",
-    "lint": "tsc --noEmit"
+    "lint": "tsc --noEmit",
+    "install:plugin": "streamdeck link ca.barraco.carlo.homeassistant.sdPlugin"
   },
   "dependencies": {
     "@elgato/streamdeck": "^2.0.0",
@@ -23,9 +24,9 @@
     "@tsconfig/node20": "^20.1.2",
     "@types/node": "~20.15.0",
     "@types/ws": "^8.5.10",
+    "esbuild": "^0.21.5",
     "rollup": "^4.0.2",
     "tslib": "^2.6.2",
-    "typescript": "^5.2.2",
-    "esbuild": "^0.21.5"
+    "typescript": "^5.2.2"
   }
 }

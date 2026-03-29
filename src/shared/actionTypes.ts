@@ -3,6 +3,9 @@ export const ActionType = {
     CALL_SERVICE: "ca.barraco.carlo.homeassistant.action.callservice",
     TOGGLE_LIGHT: "ca.barraco.carlo.homeassistant.action.togglelight",
     SET_LIGHT_COLOR: "ca.barraco.carlo.homeassistant.action.setlightcolor",
+    STEP_LIGHT_BRIGHTNESS: "ca.barraco.carlo.homeassistant.action.steplightbrightness",
+    CAMERA_THUMBNAIL: "ca.barraco.carlo.homeassistant.action.camerathumbnail",
+    MEDIA_PLAYER: "ca.barraco.carlo.homeassistant.action.mediaplayer",
 } as const;
 
 export type ActionTypeValue = (typeof ActionType)[keyof typeof ActionType];

@@ -31,6 +31,8 @@ export interface GlobalSettings extends JsonObject {
 
 export type ColorType = "RGB" | "Temperature" | "None" | undefined;
 
+export type BrightnessDirection = "up" | "down";
+
 export interface ActionSettings extends JsonObject {
     entityId?: string;
     serviceId?: string;
@@ -39,4 +41,8 @@ export interface ActionSettings extends JsonObject {
     color?: string;
     colorType?: ColorType;
     temperature?: number;
+    brightnessStep?: number;
+    direction?: BrightnessDirection;
+    refreshInterval?: number;
+    mediaCommand?: string;
 }

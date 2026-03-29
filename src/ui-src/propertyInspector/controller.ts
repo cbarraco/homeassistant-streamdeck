@@ -11,6 +11,9 @@ import { ToggleSwitchPIAction as ToggleSwitchActionPI } from "../actions/toggleS
 import { CallServicePIAction as CallServiceActionPI } from "../actions/callService";
 import { ToggleLightPIAction as ToggleLightActionPI } from "../actions/toggleLight";
 import { SetLightColorPIAction as SetLightColorActionPI } from "../actions/setLightColor";
+import { StepLightBrightnessPIAction as StepLightBrightnessActionPI } from "../actions/stepLightBrightness";
+import { CameraFeedPIAction as CameraFeedActionPI } from "../actions/cameraFeed";
+import { MediaPlayerPIAction as MediaPlayerActionPI } from "../actions/mediaPlayer";
 
 interface StreamDeckPIMessage {
     event: string;
@@ -150,6 +153,15 @@ export class PropertyInspectorController {
         }
         if (action === ActionType.SET_LIGHT_COLOR) {
             return new SetLightColorActionPI(uuid, actionInfo);
+        }
+        if (action === ActionType.STEP_LIGHT_BRIGHTNESS) {
+            return new StepLightBrightnessActionPI(uuid, actionInfo);
+        }
+        if (action === ActionType.CAMERA_THUMBNAIL) {
+            return new CameraFeedActionPI(uuid, actionInfo);
+        }
+        if (action === ActionType.MEDIA_PLAYER) {
+            return new MediaPlayerActionPI(uuid, actionInfo);
         }
         logMessage(`Unknown action type for PI: ${action}`);
         return null;

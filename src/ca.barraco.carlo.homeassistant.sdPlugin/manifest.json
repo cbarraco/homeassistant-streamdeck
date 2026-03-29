@@ -52,6 +52,45 @@
       "Tooltip": "Sets a light entity to specific color in Home Assistant",
       "UUID": "ca.barraco.carlo.homeassistant.action.setlightcolor",
       "PropertyInspectorPath": "ui/index.html"
+    },
+    {
+      "Icon": "imgs/actions/toggleLight/toggleLight",
+      "Name": "Step light brightness",
+      "States": [
+        {
+          "Image": "imgs/actions/toggleLight/toggleLight",
+          "Title": "Brightness"
+        }
+      ],
+      "Tooltip": "Nudges a light's brightness up or down by a configurable step",
+      "UUID": "ca.barraco.carlo.homeassistant.action.steplightbrightness",
+      "PropertyInspectorPath": "ui/index.html"
+    },
+    {
+      "Icon": "imgs/actions/callService/callService",
+      "Name": "Camera Thumbnail",
+      "States": [
+        {
+          "Image": "imgs/actions/callService/callService",
+          "Title": "Camera"
+        }
+      ],
+      "Tooltip": "Shows a live thumbnail from a Home Assistant camera entity",
+      "UUID": "ca.barraco.carlo.homeassistant.action.camerathumbnail",
+      "PropertyInspectorPath": "ui/index.html"
+    },
+    {
+      "Icon": "imgs/actions/callService/callService",
+      "Name": "Media Player",
+      "States": [
+        {
+          "Image": "imgs/actions/callService/callService",
+          "Title": "Media"
+        }
+      ],
+      "Tooltip": "Controls a media player entity in Home Assistant",
+      "UUID": "ca.barraco.carlo.homeassistant.action.mediaplayer",
+      "PropertyInspectorPath": "ui/index.html"
     }
   ],
   "SDKVersion": 3,
