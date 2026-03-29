@@ -13,6 +13,7 @@ import { AlarmControlPanelAction } from "./alarmControlPanel";
 import { DisplayStateAction } from "./displayState";
 import { ControlCoverAction } from "./controlCover";
 import { ClimateControlAction } from "./climateControl";
+import { LockControlAction } from "./lockControl";
 
 export function registerActions(): void {
     streamDeck.actions.registerAction(new ToggleSwitchAction());
@@ -28,4 +29,5 @@ export function registerActions(): void {
     streamDeck.actions.registerAction(new DisplayStateAction());
     streamDeck.actions.registerAction(new ControlCoverAction());
     streamDeck.actions.registerAction(new ClimateControlAction());
+    streamDeck.actions.registerAction(new LockControlAction());
 }

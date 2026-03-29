@@ -169,6 +169,19 @@
       "Tooltip": "Controls a climate/thermostat entity in Home Assistant — set HVAC mode or target temperature, and displays current temperature",
       "UUID": "ca.barraco.carlo.homeassistant.action.climatecontrol",
       "PropertyInspectorPath": "ui/index.html"
+    },
+    {
+      "Icon": "imgs/actions/callService/callService",
+      "Name": "Lock/Unlock a door",
+      "States": [
+        {
+          "Image": "imgs/actions/callService/callService",
+          "Title": "Lock"
+        }
+      ],
+      "Tooltip": "Locks, unlocks, or toggles a lock entity in Home Assistant and displays the current lock state",
+      "UUID": "ca.barraco.carlo.homeassistant.action.lockcontrol",
+      "PropertyInspectorPath": "ui/index.html"
     }
   ],
   "SDKVersion": 3,
