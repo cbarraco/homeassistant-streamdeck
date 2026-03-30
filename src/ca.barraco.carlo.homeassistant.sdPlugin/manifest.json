@@ -195,6 +195,19 @@
       "Tooltip": "Starts, pauses, or cancels a Home Assistant timer and displays a live countdown on the button",
       "UUID": "ca.barraco.carlo.homeassistant.action.timercontrol",
       "PropertyInspectorPath": "ui/index.html"
+    },
+    {
+      "Icon": "imgs/actions/callService/callService",
+      "Name": "Fan Control",
+      "States": [
+        {
+          "Image": "imgs/actions/callService/callService",
+          "Title": "Fan"
+        }
+      ],
+      "Tooltip": "Toggles a fan on/off or steps through speed levels in Home Assistant",
+      "UUID": "ca.barraco.carlo.homeassistant.action.fancontrol",
+      "PropertyInspectorPath": "ui/index.html"
     }
   ],
   "SDKVersion": 3,
