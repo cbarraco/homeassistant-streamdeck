@@ -27,6 +27,7 @@ import { FanControlPIAction as FanControlActionPI } from "./panels/fanControl";
 import { DisplayAttributePIAction as DisplayAttributeActionPI } from "./panels/displayAttribute";
 import { WeatherDisplayPIAction as WeatherDisplayActionPI } from "./panels/weatherDisplay";
 import { VacuumControlPIAction as VacuumControlActionPI } from "./panels/vacuumControl";
+import { InputSelectPIAction as InputSelectActionPI } from "./panels/inputSelect";
 
 interface StreamDeckPIMessage {
     event: string;
@@ -214,6 +215,9 @@ export class PropertyInspectorController {
         }
         if (action === ActionType.VACUUM_CONTROL) {
             return new VacuumControlActionPI(uuid, actionInfo);
+        }
+        if (action === ActionType.INPUT_SELECT) {
+            return new InputSelectActionPI(uuid, actionInfo);
         }
         logMessage(`Unknown action type for PI: ${action}`);
         return null;
