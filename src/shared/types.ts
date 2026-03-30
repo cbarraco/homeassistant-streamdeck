@@ -52,4 +52,6 @@ export interface ActionSettings extends JsonObject {
     hvacMode?: string;
     lockCommand?: string;
     timerCommand?: string;
+    fanCommand?: string;
+    percentageStep?: number;
 }

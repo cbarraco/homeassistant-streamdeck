@@ -15,6 +15,7 @@ import { ControlCoverAction } from "./controlCover";
 import { ClimateControlAction } from "./climateControl";
 import { LockControlAction } from "./lockControl";
 import { TimerControlAction } from "./timerControl";
+import { FanControlAction } from "./fanControl";
 
 export function registerActions(): void {
     streamDeck.actions.registerAction(new ToggleSwitchAction());
@@ -32,4 +33,5 @@ export function registerActions(): void {
     streamDeck.actions.registerAction(new ClimateControlAction());
     streamDeck.actions.registerAction(new LockControlAction());
     streamDeck.actions.registerAction(new TimerControlAction());
+    streamDeck.actions.registerAction(new FanControlAction());
 }
