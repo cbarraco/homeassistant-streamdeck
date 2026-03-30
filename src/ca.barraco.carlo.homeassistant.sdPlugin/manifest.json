@@ -208,6 +208,19 @@
       "Tooltip": "Toggles a fan on/off or steps through speed levels in Home Assistant",
       "UUID": "ca.barraco.carlo.homeassistant.action.fancontrol",
       "PropertyInspectorPath": "ui/index.html"
+    },
+    {
+      "Icon": "imgs/actions/callService/callService",
+      "Name": "Display Entity Attribute",
+      "States": [
+        {
+          "Image": "imgs/actions/callService/callService",
+          "Title": "Attribute"
+        }
+      ],
+      "Tooltip": "Displays a specific attribute of a Home Assistant entity (e.g. temperature, battery, humidity) on the button",
+      "UUID": "ca.barraco.carlo.homeassistant.action.displayattribute",
+      "PropertyInspectorPath": "ui/index.html"
     }
   ],
   "SDKVersion": 3,

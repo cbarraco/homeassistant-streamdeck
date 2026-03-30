@@ -54,4 +54,5 @@ export interface ActionSettings extends JsonObject {
     timerCommand?: string;
     fanCommand?: string;
     percentageStep?: number;
+    attributeKey?: string;
 }
