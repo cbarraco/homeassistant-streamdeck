@@ -9,3 +9,7 @@ export const ConnectionState = {
 
 export type ConnectionStateValue =
   (typeof ConnectionState)[keyof typeof ConnectionState];
+
+export function isDisconnectedState(state: ConnectionStateValue): boolean {
+  return state !== ConnectionState.CONNECTED;
+}

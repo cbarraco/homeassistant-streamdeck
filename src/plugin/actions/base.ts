@@ -20,6 +20,12 @@ import {
 import type { ActionSettings, HomeAssistantCache } from "../../shared/types";
 import { cacheManager } from "../state/cache";
 import { homeAssistantClient } from "../services/homeAssistant";
+import {
+  ConnectionState,
+  isDisconnectedState,
+  type ConnectionStateValue,
+} from "../state/connectionState";
+import { disconnectedSvg } from "../utils/svg";
 
 interface RegisteredContext<TSettings extends ActionSettings> {
   action: KeyAction<TSettings>;
@@ -36,11 +42,15 @@ export abstract class BaseAction<
   private contexts = new Map<string, RegisteredContext<TSettings>>();
   private inspectorVisible = false;
   private unsubscribeFromCache: (() => void) | null = null;
+  private connectionState: ConnectionStateValue = ConnectionState.NOT_CONNECTED;
 
   constructor() {
     super();
     this.unsubscribeFromCache = cacheManager.subscribe((cache) =>
       this.broadcastCache(cache),
+    );
+    homeAssistantClient.on("connectionState", (state) =>
+      this.onConnectionStateChanged(state),
     );
   }
 
@@ -53,6 +63,9 @@ export abstract class BaseAction<
       settings: (ev.payload?.settings ?? {}) as TSettings,
     });
     await this.handleWillAppear(ev);
+    if (isDisconnectedState(this.connectionState)) {
+      await ev.action.setImage(disconnectedSvg());
+    }
   }
 
   override async onWillDisappear(
@@ -176,6 +189,19 @@ export abstract class BaseAction<
 
   protected onCacheUpdated(_cache: HomeAssistantCache): void | Promise<void> {
     // optional override
+  }
+
+  private async onConnectionStateChanged(
+    state: ConnectionStateValue,
+  ): Promise<void> {
+    this.connectionState = state;
+    if (isDisconnectedState(state)) {
+      await Promise.all(
+        Array.from(this.contexts.values()).map((context) =>
+          context.action.setImage(disconnectedSvg()),
+        ),
+      );
+    }
   }
 
   private async broadcastCache(cache: HomeAssistantCache): Promise<void> {
