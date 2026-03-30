@@ -54,4 +54,6 @@ export interface ActionSettings extends JsonObject {
     timerCommand?: string;
     fanCommand?: string;
     percentageStep?: number;
+    longPressServiceId?: string;
+    longPressPayload?: string;
 }

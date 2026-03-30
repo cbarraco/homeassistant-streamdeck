@@ -26,6 +26,11 @@ import {
   type ConnectionStateValue,
 } from "../state/connectionState";
 import { disconnectedSvg } from "../utils/svg";
+import {
+  isLongPress,
+  isLongPressParseError,
+  parseLongPressServiceCall,
+} from "./longPressUtils";
 
 interface RegisteredContext<TSettings extends ActionSettings> {
   action: KeyAction<TSettings>;
@@ -43,6 +48,7 @@ export abstract class BaseAction<
   private inspectorVisible = false;
   private unsubscribeFromCache: (() => void) | null = null;
   private connectionState: ConnectionStateValue = ConnectionState.NOT_CONNECTED;
+  private keyDownTimes = new Map<string, number>();
 
   constructor() {
     super();
@@ -91,10 +97,37 @@ export abstract class BaseAction<
     if (context) {
       context.settings = (ev.payload?.settings ?? {}) as TSettings;
     }
+    this.keyDownTimes.set(ev.action.id, Date.now());
     await this.handleKeyDown(ev);
   }
 
   override async onKeyUp(ev: KeyUpEvent<TSettings>): Promise<void> {
+    const keyDownTime = this.keyDownTimes.get(ev.action.id);
+    this.keyDownTimes.delete(ev.action.id);
+
+    const settings = this.getContextSettings(ev.action.id);
+    const longPressServiceId = settings?.longPressServiceId;
+    if (longPressServiceId) {
+      const holdDurationMs = keyDownTime !== undefined ? Date.now() - keyDownTime : 0;
+      if (isLongPress(holdDurationMs)) {
+        const result = parseLongPressServiceCall(
+          longPressServiceId,
+          settings?.longPressPayload ?? "{}",
+        );
+        if (isLongPressParseError(result)) {
+          await ev.action.showAlert();
+          return;
+        }
+        try {
+          await homeAssistantClient.callService(result.domain, result.service, result.serviceData);
+          await ev.action.showOk();
+        } catch {
+          await ev.action.showAlert();
+        }
+        return;
+      }
+    }
+
     await this.handleKeyUp(ev);
   }
 
