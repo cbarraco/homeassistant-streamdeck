@@ -19,6 +19,7 @@ import { FanControlAction } from "./fanControl";
 import { DisplayAttributeAction } from "./displayAttribute";
 import { WeatherDisplayAction } from "./weatherDisplay";
 import { VacuumControlAction } from "./vacuumControl";
+import { InputSelectAction } from "./inputSelect";
 
 export function registerActions(): void {
     streamDeck.actions.registerAction(new ToggleSwitchAction());
@@ -32,7 +33,6 @@ export function registerActions(): void {
     streamDeck.actions.registerAction(new RunScriptAction());
     streamDeck.actions.registerAction(new AlarmControlPanelAction());
     streamDeck.actions.registerAction(new DisplayStateAction());
-    streamDeck.actions.registerAction(new DisplayAttributeAction());
     streamDeck.actions.registerAction(new ControlCoverAction());
     streamDeck.actions.registerAction(new ClimateControlAction());
     streamDeck.actions.registerAction(new LockControlAction());
@@ -41,4 +41,5 @@ export function registerActions(): void {
     streamDeck.actions.registerAction(new DisplayAttributeAction());
     streamDeck.actions.registerAction(new WeatherDisplayAction());
     streamDeck.actions.registerAction(new VacuumControlAction());
+    streamDeck.actions.registerAction(new InputSelectAction());
 }
