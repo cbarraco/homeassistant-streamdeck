@@ -17,6 +17,7 @@ import { LockControlAction } from "./lockControl";
 import { TimerControlAction } from "./timerControl";
 import { FanControlAction } from "./fanControl";
 import { DisplayAttributeAction } from "./displayAttribute";
+import { WeatherDisplayAction } from "./weatherDisplay";
 
 export function registerActions(): void {
     streamDeck.actions.registerAction(new ToggleSwitchAction());
@@ -36,4 +37,5 @@ export function registerActions(): void {
     streamDeck.actions.registerAction(new TimerControlAction());
     streamDeck.actions.registerAction(new FanControlAction());
     streamDeck.actions.registerAction(new DisplayAttributeAction());
+    streamDeck.actions.registerAction(new WeatherDisplayAction());
 }

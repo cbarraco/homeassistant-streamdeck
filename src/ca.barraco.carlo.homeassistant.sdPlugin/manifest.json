@@ -221,6 +221,19 @@
       "Tooltip": "Displays a specific attribute of a Home Assistant entity (e.g. temperature, battery, humidity) on the button",
       "UUID": "ca.barraco.carlo.homeassistant.action.displayattribute",
       "PropertyInspectorPath": "ui/index.html"
+    },
+    {
+      "Icon": "imgs/actions/callService/callService",
+      "Name": "Weather Display",
+      "States": [
+        {
+          "Image": "imgs/actions/callService/callService",
+          "Title": "Weather"
+        }
+      ],
+      "Tooltip": "Displays current weather conditions and temperature from a Home Assistant weather entity",
+      "UUID": "ca.barraco.carlo.homeassistant.action.weatherdisplay",
+      "PropertyInspectorPath": "ui/index.html"
     }
   ],
   "SDKVersion": 3,
