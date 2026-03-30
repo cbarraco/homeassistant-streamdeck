@@ -11,6 +11,7 @@ import { TriggerAutomationAction } from "./triggerAutomation";
 import { RunScriptAction } from "./runScript";
 import { AlarmControlPanelAction } from "./alarmControlPanel";
 import { DisplayStateAction } from "./displayState";
+import { DisplayAttributeAction } from "./displayAttribute";
 import { ControlCoverAction } from "./controlCover";
 import { ClimateControlAction } from "./climateControl";
 import { LockControlAction } from "./lockControl";
@@ -30,6 +31,7 @@ export function registerActions(): void {
     streamDeck.actions.registerAction(new RunScriptAction());
     streamDeck.actions.registerAction(new AlarmControlPanelAction());
     streamDeck.actions.registerAction(new DisplayStateAction());
+    streamDeck.actions.registerAction(new DisplayAttributeAction());
     streamDeck.actions.registerAction(new ControlCoverAction());
     streamDeck.actions.registerAction(new ClimateControlAction());
     streamDeck.actions.registerAction(new LockControlAction());

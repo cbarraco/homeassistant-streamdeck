@@ -18,6 +18,7 @@ import { TriggerAutomationPIAction as TriggerAutomationActionPI } from "./panels
 import { RunScriptPIAction as RunScriptActionPI } from "./panels/runScript";
 import { AlarmControlPanelPIAction as AlarmControlPanelActionPI } from "./panels/alarmControlPanel";
 import { DisplayStatePIAction as DisplayStateActionPI } from "./panels/displayState";
+import { DisplayAttributePIAction as DisplayAttributeActionPI } from "./panels/displayAttribute";
 import { ControlCoverPIAction as ControlCoverActionPI } from "./panels/controlCover";
 import { ClimateControlPIAction as ClimateControlActionPI } from "./panels/climateControl";
 import { LockControlPIAction as LockControlActionPI } from "./panels/lockControl";
@@ -184,6 +185,9 @@ export class PropertyInspectorController {
         }
         if (action === ActionType.DISPLAY_STATE) {
             return new DisplayStateActionPI(uuid, actionInfo);
+        }
+        if (action === ActionType.DISPLAY_ATTRIBUTE) {
+            return new DisplayAttributeActionPI(uuid, actionInfo);
         }
         if (action === ActionType.CONTROL_COVER) {
             return new ControlCoverActionPI(uuid, actionInfo);
