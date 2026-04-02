@@ -1,6 +1,6 @@
 # homeassistant-streamdeck
 
-Home Assistant integration with the Elgato Stream Deck
+Home Assistant integration with the Stream Deck
 
 ![GitHub](https://img.shields.io/github/license/cbarraco/homeassistant-streamdeck)
 
