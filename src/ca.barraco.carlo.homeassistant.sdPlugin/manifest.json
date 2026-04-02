@@ -224,6 +224,18 @@
     },
     {
       "Icon": "imgs/actions/callService/callService",
+      "Name": "Weather Display",
+      "States": [
+        {
+          "Image": "imgs/actions/callService/callService",
+          "Title": "Weather"
+        }
+      ],
+      "Tooltip": "Displays current weather conditions and temperature from a Home Assistant weather entity",
+      "UUID": "ca.barraco.carlo.homeassistant.action.weatherdisplay",
+    },
+    {
+      "Icon": "imgs/actions/callService/callService",
       "Name": "Vacuum Control",
       "States": [
         {

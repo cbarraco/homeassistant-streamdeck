@@ -16,6 +16,7 @@ export const ActionType = {
     TIMER_CONTROL: "ca.barraco.carlo.homeassistant.action.timercontrol",
     FAN_CONTROL: "ca.barraco.carlo.homeassistant.action.fancontrol",
     DISPLAY_ATTRIBUTE: "ca.barraco.carlo.homeassistant.action.displayattribute",
+    WEATHER_DISPLAY: "ca.barraco.carlo.homeassistant.action.weatherdisplay",
     VACUUM_CONTROL: "ca.barraco.carlo.homeassistant.action.vacuumcontrol",
 } as const;
 
