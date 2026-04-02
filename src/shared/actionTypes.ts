@@ -18,6 +18,7 @@ export const ActionType = {
     DISPLAY_ATTRIBUTE: "ca.barraco.carlo.homeassistant.action.displayattribute",
     WEATHER_DISPLAY: "ca.barraco.carlo.homeassistant.action.weatherdisplay",
     VACUUM_CONTROL: "ca.barraco.carlo.homeassistant.action.vacuumcontrol",
+    INPUT_SELECT: "ca.barraco.carlo.homeassistant.action.inputselect",
 } as const;
 
 export type ActionTypeValue = (typeof ActionType)[keyof typeof ActionType];

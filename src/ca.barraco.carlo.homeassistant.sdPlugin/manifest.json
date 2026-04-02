@@ -233,6 +233,7 @@
       ],
       "Tooltip": "Displays current weather conditions and temperature from a Home Assistant weather entity",
       "UUID": "ca.barraco.carlo.homeassistant.action.weatherdisplay",
+      "PropertyInspectorPath": "ui/index.html"
     },
     {
       "Icon": "imgs/actions/callService/callService",
@@ -245,6 +246,19 @@
       ],
       "Tooltip": "Controls a vacuum entity in Home Assistant — start, stop, pause, or return to dock",
       "UUID": "ca.barraco.carlo.homeassistant.action.vacuumcontrol",
+      "PropertyInspectorPath": "ui/index.html"
+    },
+    {
+      "Icon": "imgs/actions/callService/callService",
+      "Name": "Cycle Input Select",
+      "States": [
+        {
+          "Image": "imgs/actions/callService/callService",
+          "Title": "Select"
+        }
+      ],
+      "Tooltip": "Cycles through the available options of an input_select entity in Home Assistant and displays the current selection",
+      "UUID": "ca.barraco.carlo.homeassistant.action.inputselect",
       "PropertyInspectorPath": "ui/index.html"
     }
   ],
