@@ -32,3 +32,6 @@ export class VacuumControlAction extends BaseAction {
         }
     }
 }
+
+import { selfRegister } from "./registry";
+selfRegister(new VacuumControlAction());

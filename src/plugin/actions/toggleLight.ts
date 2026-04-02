@@ -64,3 +64,6 @@ export class ToggleLightAction extends BaseAction {
         return "#FFFFFF";
     }
 }
+
+import { selfRegister } from "./registry";
+selfRegister(new ToggleLightAction());

@@ -108,3 +108,6 @@ export class ClimateControlAction extends BaseAction {
         return mode;
     }
 }
+
+import { selfRegister } from "./registry";
+selfRegister(new ClimateControlAction());

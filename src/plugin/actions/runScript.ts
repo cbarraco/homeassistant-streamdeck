@@ -25,3 +25,6 @@ export class RunScriptAction extends BaseAction {
         }
     }
 }
+
+import { selfRegister } from "./registry";
+selfRegister(new RunScriptAction());

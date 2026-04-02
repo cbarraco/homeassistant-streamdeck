@@ -39,3 +39,6 @@ export class StepLightBrightnessAction extends BaseAction {
         }
     }
 }
+
+import { selfRegister } from "./registry";
+selfRegister(new StepLightBrightnessAction());

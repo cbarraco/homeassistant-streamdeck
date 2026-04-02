@@ -72,3 +72,6 @@ export class CameraFeedAction extends BaseAction {
         }
     }
 }
+
+import { selfRegister } from "./registry";
+selfRegister(new CameraFeedAction());

@@ -25,3 +25,6 @@ export class TriggerAutomationAction extends BaseAction {
         }
     }
 }
+
+import { selfRegister } from "./registry";
+selfRegister(new TriggerAutomationAction());

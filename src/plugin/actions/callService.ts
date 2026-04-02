@@ -37,3 +37,6 @@ export class CallServiceAction extends BaseAction {
     }
   }
 }
+
+import { selfRegister } from "./registry";
+selfRegister(new CallServiceAction());

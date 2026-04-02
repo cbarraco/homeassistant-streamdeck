@@ -29,3 +29,6 @@ export class AlarmControlPanelAction extends BaseAction {
         }
     }
 }
+
+import { selfRegister } from "./registry";
+selfRegister(new AlarmControlPanelAction());

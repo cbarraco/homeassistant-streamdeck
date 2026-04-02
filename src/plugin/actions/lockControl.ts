@@ -85,3 +85,6 @@ export class LockControlAction extends BaseAction {
         );
     }
 }
+
+import { selfRegister } from "./registry";
+selfRegister(new LockControlAction());

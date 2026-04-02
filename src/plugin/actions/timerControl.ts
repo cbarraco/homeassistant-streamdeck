@@ -185,3 +185,6 @@ export class TimerControlAction extends BaseAction {
         return parts[0] ?? 0;
     }
 }
+
+import { selfRegister } from "./registry";
+selfRegister(new TimerControlAction());
