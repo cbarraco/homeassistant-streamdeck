@@ -11,7 +11,6 @@ import { TriggerAutomationAction } from "./triggerAutomation";
 import { RunScriptAction } from "./runScript";
 import { AlarmControlPanelAction } from "./alarmControlPanel";
 import { DisplayStateAction } from "./displayState";
-import { DisplayAttributeAction } from "./displayAttribute";
 import { ControlCoverAction } from "./controlCover";
 import { ClimateControlAction } from "./climateControl";
 import { LockControlAction } from "./lockControl";
