@@ -7,7 +7,8 @@
       "Bash(git push:*)",
       "Bash(npm install:*)",
       "Bash(npm test:*)",
-      "Bash(git rebase:*)"
+      "Bash(git rebase:*)",
+      "Bash(GIT_EDITOR=true git rebase --continue)"
     ]
   }
 }

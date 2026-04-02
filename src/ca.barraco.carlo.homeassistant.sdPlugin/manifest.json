@@ -233,6 +233,18 @@
       ],
       "Tooltip": "Displays current weather conditions and temperature from a Home Assistant weather entity",
       "UUID": "ca.barraco.carlo.homeassistant.action.weatherdisplay",
+    },
+    {
+      "Icon": "imgs/actions/callService/callService",
+      "Name": "Vacuum Control",
+      "States": [
+        {
+          "Image": "imgs/actions/callService/callService",
+          "Title": "Vacuum"
+        }
+      ],
+      "Tooltip": "Controls a vacuum entity in Home Assistant — start, stop, pause, or return to dock",
+      "UUID": "ca.barraco.carlo.homeassistant.action.vacuumcontrol",
       "PropertyInspectorPath": "ui/index.html"
     }
   ],
