@@ -60,3 +60,6 @@ export class WeatherDisplayAction extends BaseAction {
         );
     }
 }
+
+import { selfRegister } from "./registry";
+selfRegister(new WeatherDisplayAction());

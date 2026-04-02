@@ -68,3 +68,6 @@ export class DisplayAttributeAction extends BaseAction {
         );
     }
 }
+
+import { selfRegister } from "./registry";
+selfRegister(new DisplayAttributeAction());

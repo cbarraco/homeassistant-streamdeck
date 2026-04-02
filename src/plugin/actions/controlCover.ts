@@ -30,3 +30,6 @@ export class ControlCoverAction extends BaseAction {
         }
     }
 }
+
+import { selfRegister } from "./registry";
+selfRegister(new ControlCoverAction());

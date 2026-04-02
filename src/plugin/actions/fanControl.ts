@@ -38,3 +38,6 @@ export class FanControlAction extends BaseAction {
         }
     }
 }
+
+import { selfRegister } from "./registry";
+selfRegister(new FanControlAction());

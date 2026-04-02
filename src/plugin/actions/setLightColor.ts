@@ -85,3 +85,6 @@ export class SetLightColorAction extends BaseAction {
 function clampPercentage(value: number): number {
     return Math.min(100, Math.max(0, Math.round(value)));
 }
+
+import { selfRegister } from "./registry";
+selfRegister(new SetLightColorAction());

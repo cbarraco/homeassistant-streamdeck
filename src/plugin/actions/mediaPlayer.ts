@@ -109,3 +109,6 @@ export class MediaPlayerAction extends BaseAction {
         }
     }
 }
+
+import { selfRegister } from "./registry";
+selfRegister(new MediaPlayerAction());

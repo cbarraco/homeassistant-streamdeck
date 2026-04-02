@@ -47,3 +47,6 @@ export class ToggleSwitchAction extends BaseAction {
         await Promise.all(matchingContexts.map(([, context]) => context.action.setImage(solidColorSvg(color))));
     }
 }
+
+import { selfRegister } from "./registry";
+selfRegister(new ToggleSwitchAction());

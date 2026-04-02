@@ -57,3 +57,6 @@ export class DisplayStateAction extends BaseAction {
         );
     }
 }
+
+import { selfRegister } from "./registry";
+selfRegister(new DisplayStateAction());
