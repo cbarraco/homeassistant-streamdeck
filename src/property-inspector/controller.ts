@@ -24,6 +24,7 @@ import { LockControlPIAction as LockControlActionPI } from "./panels/lockControl
 import { TimerControlPIAction as TimerControlActionPI } from "./panels/timerControl";
 import { FanControlPIAction as FanControlActionPI } from "./panels/fanControl";
 import { DisplayAttributePIAction as DisplayAttributeActionPI } from "./panels/displayAttribute";
+import { VacuumControlPIAction as VacuumControlActionPI } from "./panels/vacuumControl";
 
 interface StreamDeckPIMessage {
     event: string;
@@ -202,6 +203,9 @@ export class PropertyInspectorController {
         }
         if (action === ActionType.DISPLAY_ATTRIBUTE) {
             return new DisplayAttributeActionPI(uuid, actionInfo);
+        }
+        if (action === ActionType.VACUUM_CONTROL) {
+            return new VacuumControlActionPI(uuid, actionInfo);
         }
         logMessage(`Unknown action type for PI: ${action}`);
         return null;
