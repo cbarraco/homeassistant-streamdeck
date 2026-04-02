@@ -6,7 +6,8 @@ import { homeAssistantClient } from "../services/homeAssistant";
 import { cacheManager } from "../state/cache";
 import { BaseAction } from "./base";
 import { ActionType } from "../../shared/actionTypes";
-import { formatWeatherTitle } from "./weatherUtils";
+import { getWeatherAnimationSvg } from "../utils/weatherAnimations";
+import { formatTemperatureLabel } from "./weatherUtils";
 
 @action({ UUID: ActionType.WEATHER_DISPLAY })
 export class WeatherDisplayAction extends BaseAction {
@@ -18,14 +19,14 @@ export class WeatherDisplayAction extends BaseAction {
     protected override async handleWillAppear(ev: WillAppearEvent<ActionSettings>): Promise<void> {
         const entityId = ev.payload.settings?.entityId;
         if (entityId) {
-            await this.updateTitle(entityId);
+            await this.updateImage(entityId);
         }
     }
 
     protected override async handleSettingsChanged(ev: DidReceiveSettingsEvent<ActionSettings>): Promise<void> {
         const entityId = ev.payload.settings?.entityId;
         if (entityId) {
-            await this.updateTitle(entityId);
+            await this.updateImage(entityId);
         }
     }
 
@@ -37,13 +38,16 @@ export class WeatherDisplayAction extends BaseAction {
             return;
         }
 
-        const title = formatWeatherTitle(newState);
+        const svg = getWeatherAnimationSvg(newState.state, formatTemperatureLabel(newState));
         await Promise.all(
-            matchingContexts.map(([, context]) => context.action.setTitle(title)),
+            matchingContexts.map(([, context]) => Promise.all([
+                context.action.setImage(svg),
+                context.action.setTitle(""),
+            ])),
         );
     }
 
-    private async updateTitle(entityId: string): Promise<void> {
+    private async updateImage(entityId: string): Promise<void> {
         const entity = cacheManager.getEntity(entityId);
         if (!entity) {
             logMessage(`WeatherDisplayAction: no cached state for ${entityId}`);
@@ -54,9 +58,12 @@ export class WeatherDisplayAction extends BaseAction {
             ([, context]) => context.settings.entityId === entityId,
         );
 
-        const title = formatWeatherTitle(entity);
+        const svg = getWeatherAnimationSvg(entity.state, formatTemperatureLabel(entity));
         await Promise.all(
-            matchingContexts.map(([, context]) => context.action.setTitle(title)),
+            matchingContexts.map(([, context]) => Promise.all([
+                context.action.setImage(svg),
+                context.action.setTitle(""),
+            ])),
         );
     }
 }
